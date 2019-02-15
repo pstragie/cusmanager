@@ -41,8 +41,8 @@ public class MainPanel {
     private Pane umpirepanel;
     public ObservableList<String> observableTabList;
     private DocumentHandling documentHandler;
-    private Pane leftPane;
-    private Pane rightPane;
+    private Pane leftPane = new Pane();
+    private Pane rightPane = new Pane();
     public TabPane leftTabPane = new TabPane();
     public TabPane rightTabPane = new TabPane();
     private Afdelingen changeAfdelingenpane;
@@ -225,12 +225,16 @@ public class MainPanel {
                     sideTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
                     System.out.println("sideTabPane: " + sideTabPane.getTabs());
                     */
-                    observableTabList.filtered(tab -> tab.contains(newText));
+                    //observableTabList.filtered(tab -> tab.contains(newText));
                     System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
-                    sideTabPane.getTabs().removeAll(observableTabList);
-                    //sideTabPane.getTabs().addAll(observableTabList.filtered(tab -> tab.getText().contains(newText)));
+                    observableTabList.filtered(tab -> !tab.contains(newText)).forEach(t -> {
+                        leftTabPane.getTabs().remove(new Tab(t));
+                    });
+                    //resetTabpaneSide(sideTabPane); // Puts the tabs from the document back
+                    //sideTabPane.getTabs().removeAll(observableTabList);
+                    //sideTabPane.getTabs().addAll(observableTabList.filtered(tab -> tab.contains(newText)));
                     
-                    System.out.println("sideTabPane: " + sideTabPane.getTabs());
+                    System.out.println("sideTabPane: " + leftTabPane.getTabs());
                     
                 }
             });
@@ -273,10 +277,10 @@ public class MainPanel {
         TabPane tabpane2 = new TabPane();
         
         // Observable Tab List        
-        tabpane2.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabpane2.getTabs().addAll(getTabArrayList());
+        leftTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        leftTabPane.getTabs().addAll(getTabArrayList());
             
-        return tabpane2;
+        return leftTabPane;
     }
     
     public ArrayList<String> createListOfItems(String filename) {

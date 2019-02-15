@@ -82,8 +82,10 @@ public class Afdelingen {
                                 System.out.println("remitem");
                                 //umptabpane = new UmpireModel.UmpireTabPane();
                                 tabpane.getTabs().removeIf(tab -> tab.getText().equals(remitem));
-                                // Write to file
+                                
                                 mainPanel.resetTabpaneSide(tabpane);
+                                
+                                // Write to file
                                 ArrayList<String> tmplijst = new ArrayList<>();
                                 mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
                                 documentHandler.storeAfdelingen(tmplijst);
@@ -97,6 +99,7 @@ public class Afdelingen {
                                     tabpane.getTabs().add(new Tab(additem));
                                 }
 
+                                mainPanel.resetTabpaneSide(tabpane);
                                 // Write to file
                                 ArrayList<String> tmplijst = new ArrayList<>();
                                 mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
