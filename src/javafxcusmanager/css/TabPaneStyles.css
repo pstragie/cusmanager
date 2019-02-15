@@ -1,0 +1,24 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 13-feb-2019, 1:44:36
+    Author     : pieter
+*/
+
+.tab-pane {
+    -fx-skin: "com.sun.javafx.scene.control.skin.TabPaneSkin";
+    -fx-tab-min-height: 10;  
+    -fx-tab-max-height: 0; 
+}
+
+.tab-pane .tab-header-area {
+    -fx-padding: 0 0 0 0; 
+}
+
+.tab-pane .tab-header-area .headers-region .tab {
+
+    -fx-padding: 0 0 1 0;
+}
