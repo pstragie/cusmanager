@@ -256,17 +256,18 @@ public class MainPanel {
                 System.out.println("Text changed from "+oldText+" to "+newText);
                 
                 if (newText == null || newText.isEmpty()) {
-                    System.out.println("Nothing to filter");
+                    System.out.println("current observableTabList: " + observableTabList);
+                    System.out.println("Nothing to filter: " + observableTabList);
                     // Reset the tabpane to show all tabs
                     sideTabPane.getTabs().clear();
-                    observableTabList.forEach(t -> {
-                        sideTabPane.getTabs().add(new Tab(t));
-                    });
+                    
+                    sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
                 } else {
                     System.out.println("Filter active: " + newText);
                     System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
                     
                     sideTabPane.getTabs().clear(); // Clear to restart on every change!
+                    observableTabList = getObservableList();
                     observableTabList.filtered(tab -> tab.contains(newText)).forEach(t -> {
                         sideTabPane.getTabs().add(new Tab(t));
                     });
@@ -305,17 +306,16 @@ public class MainPanel {
                 System.out.println("Text changed from "+oldText+" to "+newText);
                 
                 if (newText == null || newText.isEmpty()) {
-                    System.out.println("Nothing to filter");
+                    System.out.println("Nothing to filter: " + observableTabList);
                     // Reset the tabpane to show all tabs
                     sideTabPane.getTabs().clear();
-                    observableTabList.forEach(t -> {
-                        sideTabPane.getTabs().add(new Tab(t));
-                    });
+                    sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
                 } else {
                     System.out.println("Filter active: " + newText);
                     System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
                     
                     sideTabPane.getTabs().clear(); // Clear to restart on every change!
+                    observableTabList = getObservableList();
                     observableTabList.filtered(tab -> tab.contains(newText)).forEach(t -> {
                         sideTabPane.getTabs().add(new Tab(t));
                     });
@@ -397,12 +397,12 @@ public class MainPanel {
                     clublijstPerafdeling.add(k);
                 }
             });
-            System.out.println("clublijstPerafdeling: " + clublijstPerafdeling);
+            System.out.println("clublijstPerafdeling" + "(" + afd + "): " + clublijstPerafdeling);
             ObservableList<String> data = FXCollections.<String>observableArrayList(clublijstPerafdeling);
             clubListview.getItems().addAll(data);
             clubListview.setPrefSize(150, 800);
             clubListview.setOrientation(Orientation.VERTICAL);
-            clubListview.getItems().addAll(clublijstPerafdeling);
+            //clubListview.getItems().addAll(clublijstPerafdeling);
             
             VBox clubsBox = new VBox();
             clubsBox.getChildren().add(clubListview); // Add listview to Vertical Box
@@ -415,24 +415,24 @@ public class MainPanel {
             umpirelijstPerafdeling = new ArrayList<>();
             umpirelijst = new Umpires();
             Map<String, String> clubmap = umpirelijst.getList();
-            System.out.println("clubmap:" + clubmap);
+            System.out.println("umpiremap:" + clubmap);
             clubmap.forEach((k,val) ->  {
                 if (val.equals(afd)) {
                     System.out.println(k);
                     umpirelijstPerafdeling.add(k);
                 }
             });
-            System.out.println("clublijstPerafdeling: " + umpirelijstPerafdeling);
+            System.out.println("umpirelijstPerafdeling" + "(" + afd + "): " + umpirelijstPerafdeling);
             ObservableList<String> data = FXCollections.<String>observableArrayList(umpirelijstPerafdeling);
             umpireListview.getItems().addAll(data);
             umpireListview.setPrefSize(150, 800);
             umpireListview.setOrientation(Orientation.VERTICAL);
-            umpireListview.getItems().addAll(umpirelijstPerafdeling);
+            //umpireListview.getItems().addAll(umpirelijstPerafdeling);
             
-            VBox clubsBox = new VBox();
-            clubsBox.getChildren().add(umpireListview); // Add listview to Vertical Box
+            VBox umpiresBox = new VBox();
+            umpiresBox.getChildren().add(umpireListview); // Add listview to Vertical Box
             
-            return clubsBox; // return VBox with listview of clubs per afdeling
+            return umpiresBox; // return VBox with listview of clubs per afdeling
         }
     
     public ArrayList<String> createListOfItems(String filename) {

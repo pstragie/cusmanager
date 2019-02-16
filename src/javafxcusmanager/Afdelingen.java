@@ -107,7 +107,7 @@ public class Afdelingen {
                                 mainPanel.observableTabList.forEach(t -> {
                                     tabpaneright.getTabs().add(new Tab(t));  // Add from observableTabList to get the correct order!
                                 });
-                                                                
+                                
                                 // Write to file
                                 ArrayList<String> tmplijst = new ArrayList<>();
                                 mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
@@ -205,6 +205,8 @@ public class Afdelingen {
                     public void handle(ActionEvent event) {
                         mainPanel.observableTabList.remove(lastItem);
                         System.out.println("tablijst: " + mainPanel.observableTabList);
+                        
+                        // Write to file
                         ArrayList<String> tmplijst = new ArrayList<>();
                         mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
                         documentHandler.storeAfdelingen(tmplijst);
