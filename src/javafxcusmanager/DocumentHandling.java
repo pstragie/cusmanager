@@ -70,5 +70,43 @@ public class DocumentHandling {
         
     }
     
+    public List<String> getClubsFromFile() {
+        System.out.println("Reading file...");
+        
+        // Read from file
+		List<String> list = new ArrayList<>();
+		String fileName = "clublijst.txt";
+		try(Stream<String> stream = Files.lines(Paths.get(fileName))) {
+			list = stream
+					.filter(line -> !line.startsWith("Clublijst"))
+					.collect(Collectors.toList());
+			
+			
+		} catch(IOException e) {
+                    System.out.println("Error reading file: " + e);
+		}
+		System.out.println("List: " + list);
+                
+        return list;
+    }
     
+    public List<String> getUmpiresFromFile() {
+        System.out.println("Reading file...");
+        
+        // Read from file
+		List<String> list = new ArrayList<>();
+		String fileName = "umpirelijst.txt";
+		try(Stream<String> stream = Files.lines(Paths.get(fileName))) {
+			list = stream
+					.filter(line -> !line.startsWith("Umpirelijst"))
+					.collect(Collectors.toList());
+			
+			
+		} catch(IOException e) {
+                    System.out.println("Error reading file: " + e);
+		}
+		System.out.println("List: " + list);
+                
+        return list;
+    }
 }

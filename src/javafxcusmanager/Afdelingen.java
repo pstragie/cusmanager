@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,8 +39,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import static jdk.nashorn.internal.objects.NativeArray.map;
 
 /**
  *
@@ -58,6 +62,7 @@ public class Afdelingen {
         public ChangeAfdelingName changeafd;
         private DocumentHandling documentHandler;
         
+
         //public static UmpireModel.UmpireTabPane umptabpane;
         
         // Constructor
@@ -95,7 +100,8 @@ public class Afdelingen {
                                
                                 tabpaneleft.getTabs().clear(); // Remove all tabs
                                 mainPanel.observableTabList.forEach(t -> {
-                                    tabpaneleft.getTabs().add(new Tab(t));  // Add from observableTabList to get the correct order!
+                                    Tab newTab = new Tab(t);
+                                    tabpaneleft.getTabs().add(newTab);  // Add from observableTabList to get the correct order!
                                 });
                                 tabpaneright.getTabs().clear(); // Remove all tabs
                                 mainPanel.observableTabList.forEach(t -> {
@@ -107,10 +113,10 @@ public class Afdelingen {
                                 mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
                                 documentHandler.storeAfdelingen(tmplijst);
                             }
-                    }
-                });
+                }
+            });
 
-	}
+        }
 	
 	
         
@@ -118,6 +124,9 @@ public class Afdelingen {
         
         
         public Pane afdelingenPanel() {
+            /** New Frame to add/change/delete afdelingen
+             * 
+             */
             // GridPane layout
             GridPane grid = new GridPane();
             grid.setAlignment(Pos.CENTER_LEFT);

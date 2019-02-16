@@ -6,13 +6,17 @@
 package javafxcusmanager;
 
 import java.util.ArrayList;
+import java.util.Map;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -37,7 +41,6 @@ import javafx.stage.Stage;
 public class MainPanel {
     
     private TextField topPaneTextField, bottomPaneTextField;
-    private ClubModel clubpane;
     private static MenuBar mainMenu;
     private Pane umpirepanel;
     public ObservableList<String> observableTabList;
@@ -46,7 +49,13 @@ public class MainPanel {
     private Pane rightPane = new Pane();
     public TabPane leftTabPane = new TabPane();
     public TabPane rightTabPane = new TabPane();
+    private Pane centerPane = new Pane();
+    public TabPane centerTabPane = new TabPane();
     private Afdelingen changeAfdelingenpane;
+    private Clubs clublijst;
+    private Umpires umpirelijst;
+    private ArrayList<String> clublijstPerafdeling;
+    private ArrayList<String> umpirelijstPerafdeling;
     
     public Pane MainPanel() {     
         
@@ -77,15 +86,20 @@ public class MainPanel {
         // Left Pane -> Clubs
         leftPane = new Pane();
         
-        leftPane = createSidePane(leftTabPane);
+        leftPane = createLeftSidePane(leftTabPane);
         borderPane.setLeft(leftPane);
         
         // Right Pane -> Umpires
         rightPane = new Pane();
-        rightPane = createSidePane(rightTabPane);
+        rightPane = createRightSidePane(rightTabPane);
         borderPane.setRight(rightPane);
         
         borderPane.setBottom(bottomPaneTextField);
+        
+        // Center Pane -> Game schedule
+        centerPane = new Pane();
+        centerPane = createCenterPane(centerTabPane);
+        borderPane.setCenter(centerPane);
         return borderPane;
     }
     
@@ -161,44 +175,77 @@ public class MainPanel {
         return menubar;
     }
     
-    public VBox createSidePane(TabPane sideTabPane) {
+    public VBox createLeftSidePane(TabPane sideTabPane) {
         // Create a VBox with HBox for filter, and TabPane
         VBox vbox = new VBox();
-        
             // Create HBox with textfield and button
-            HBox hbox = createHorBoxFilter(sideTabPane);
+            HBox hbox = createHorBoxFilterClubs(sideTabPane);
             
         vbox.getChildren().add(hbox);
         
             // Create TabPane
-           // TabPane tabpane = new TabPane();
-            //sideTabPane = createTabPane(); // Get Afdelingen from file
             sideTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-            sideTabPane.getTabs().addAll(getTabArrayListFromFile());
+            
+            sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
             //tabpane.getStylesheets().add(getClass().getResource("css/TabPaneStyles.css").toExternalForm());
             Text placeHolder = new Text( " Geen afdelingen gevonden." );
                     placeHolder.setFont( Font.font( null, FontWeight.BOLD, 20 ) );
                     BooleanBinding bb = Bindings.isEmpty( sideTabPane.getTabs() );
                     placeHolder.visibleProperty().bind( bb );
                     placeHolder.managedProperty().bind( bb );
-        vbox.getChildren().add(placeHolder);
-        vbox.getChildren().add(sideTabPane);
+        vbox.getChildren().add(placeHolder); // Show placeholder when no tabs
+        vbox.getChildren().add(sideTabPane); // Show tabs if present
         vbox.setPrefSize(300, 800);
         
         return vbox;
     }
     
+    public VBox createRightSidePane(TabPane sideTabPane) {
+        // Create a VBox with HBox for filter, and TabPane
+        VBox vbox = new VBox();
+            // Create HBox with textfield and button
+            HBox hbox = createHorBoxFilterUmpires(sideTabPane);
+            
+        vbox.getChildren().add(hbox);
+        
+            // Create TabPane
+            sideTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+            
+            sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
+            //tabpane.getStylesheets().add(getClass().getResource("css/TabPaneStyles.css").toExternalForm());
+            Text placeHolder = new Text( " Geen afdelingen gevonden." );
+                    placeHolder.setFont( Font.font( null, FontWeight.BOLD, 20 ) );
+                    BooleanBinding bb = Bindings.isEmpty( sideTabPane.getTabs() );
+                    placeHolder.visibleProperty().bind( bb );
+                    placeHolder.managedProperty().bind( bb );
+        vbox.getChildren().add(placeHolder); // Show placeholder when no tabs
+        vbox.getChildren().add(sideTabPane); // Show tabs if present
+        vbox.setPrefSize(300, 800);
+        
+        return vbox;
+    }
     
+    public VBox createCenterPane(TabPane middleTabPane) {
+        VBox vbox = new VBox();
+        middleTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        middleTabPane.getTabs().add(new Tab("Week"));
+        middleTabPane.getTabs().add(new Tab("Maand"));
+        middleTabPane.getTabs().add(new Tab("Jaar"));
+        VBox calendarBox = new VBox();
+        
+        vbox.getChildren().add(middleTabPane);
+        return vbox;
+    }
     public void resetTabpaneSide(TabPane sideTabPane) {
         // Reset the tabpane to show all tabs
         ObservableList<String> tablist = getTabsList();
         tablist.forEach(tab1 -> {
             sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1));
         });
-        sideTabPane.getTabs().addAll(getTabArrayListFromFile());
+        sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
     }
     
-    public HBox createHorBoxFilter(TabPane sideTabPane) {
+    public HBox createHorBoxFilterUmpires(TabPane sideTabPane) {
         /** Creates a VBox with textfield and button for filtering tabpanes
          * 
          */
@@ -217,37 +264,12 @@ public class MainPanel {
                     });
                 } else {
                     System.out.println("Filter active: " + newText);
-                    // Get all tabs back in the tabpane
-                    //ObservableList<Tab> tablist = getTabsList();
-                    //System.out.println("tablist = " + tablist);
-                    /*
-                    observableTabList.forEach(tab1 -> {
-                        sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1.getText()));
-                        System.out.println("sideTabPane: " + sideTabPane.getTabs());
-                    });
-                    
-                    
-                    sideTabPane.getTabs().addAll(observableTabList);
-                    System.out.println("sideTabPane: " + sideTabPane.getTabs());
-                    // Remove tabs that do not contain newText
-                    sideTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
-                    System.out.println("sideTabPane: " + sideTabPane.getTabs());
-                    */
-                    //observableTabList.filtered(tab -> tab.contains(newText));
                     System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
-                    //FilteredList<String> filteredList;
                     
-                    //observableTabList.filtered(tab -> !tab.contains(newText)).forEach(t -> {
-                      //  sideTabPane.getTabs().remove(new Tab(t));
-                    //});
                     sideTabPane.getTabs().clear(); // Clear to restart on every change!
                     observableTabList.filtered(tab -> tab.contains(newText)).forEach(t -> {
                         sideTabPane.getTabs().add(new Tab(t));
                     });
-                    
-                    //resetTabpaneSide(sideTabPane); // Puts the tabs from the document back
-                    //sideTabPane.getTabs().removeAll(observableTabList);
-                    //sideTabPane.getTabs().addAll(observableTabList.filtered(tab -> tab.contains(newText)));
                     
                     System.out.println("sideTabPane: " + leftTabPane.getTabs());
                     
@@ -261,7 +283,56 @@ public class MainPanel {
                 System.out.println("tabs in pane: " + sideTabPane.getTabs());
                 sideTabPane.getTabs().clear();
                 System.out.println("tabs in pane after removal: " + sideTabPane.getTabs());
-                sideTabPane.getTabs().addAll(getTabArrayListFromFile());
+                sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
+                System.out.println("tabs in pane after adding all from file: " + sideTabPane.getTabs());
+                filterField.setText("");
+            });
+            hbox.getStyleClass().add("bordered-titled-border");
+            hbox.setHgrow(filterField, Priority.ALWAYS);
+            hbox.getChildren().add(filterField);
+            hbox.getChildren().add(filterButton);
+        return hbox;
+    }
+    
+    public HBox createHorBoxFilterClubs(TabPane sideTabPane) {
+        /** Creates a VBox with textfield and button for filtering tabpanes
+         * 
+         */
+        HBox hbox = new HBox();
+            TextField filterField = new TextField();
+            filterField.setPromptText("Filter tabs");
+            filterField.textProperty().addListener((obs, oldText, newText) -> {
+                System.out.println("Text changed from "+oldText+" to "+newText);
+                
+                if (newText == null || newText.isEmpty()) {
+                    System.out.println("Nothing to filter");
+                    // Reset the tabpane to show all tabs
+                    sideTabPane.getTabs().clear();
+                    observableTabList.forEach(t -> {
+                        sideTabPane.getTabs().add(new Tab(t));
+                    });
+                } else {
+                    System.out.println("Filter active: " + newText);
+                    System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
+                    
+                    sideTabPane.getTabs().clear(); // Clear to restart on every change!
+                    observableTabList.filtered(tab -> tab.contains(newText)).forEach(t -> {
+                        sideTabPane.getTabs().add(new Tab(t));
+                    });
+                    
+                    System.out.println("sideTabPane: " + leftTabPane.getTabs());
+                    
+                }
+            });
+            
+            Button filterButton = new Button();
+            filterButton.setText("Reset");
+            filterButton.setOnAction(event -> {
+                System.out.println("Reset clicked, list: " + observableTabList);
+                System.out.println("tabs in pane: " + sideTabPane.getTabs());
+                sideTabPane.getTabs().clear();
+                System.out.println("tabs in pane after removal: " + sideTabPane.getTabs());
+                sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
                 System.out.println("tabs in pane after adding all from file: " + sideTabPane.getTabs());
                 filterField.setText("");
             });
@@ -280,26 +351,89 @@ public class MainPanel {
         this.observableTabList = tabs;
     }
     
-     public ArrayList<Tab> getTabArrayListFromFile() {
+     public ArrayList<Tab> getClubTabArrayListFromFile() {
+        /** Get tabs from the list and add content for that afdeling
+         * 
+         */
         System.out.println("Get Tabs from file\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
         listOfItems.addAll(createListOfItems("afdelingen.txt"));
         ArrayList<Tab> tabs = new ArrayList<>();
         listOfItems.forEach(a -> {
-            tabs.add(new Tab(a));
+            Tab tab = new Tab(a);
+            tab.setContent(createClubContent(a)); // Set filtered content
+            tabs.add(tab);
+            
         });        
         return tabs;
     }
     
-    public TabPane createTabPane() {
-        TabPane tabpane2 = new TabPane();
-        
-        // Observable Tab List        
-        tabpane2.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabpane2.getTabs().addAll(getTabArrayListFromFile());
+    public ArrayList<Tab> getUmpireTabArrayListFromFile() {
+        /** Get tabs from the list and add content for that afdeling
+         * 
+         */
+        System.out.println("Get Tabs from file\n________________");
+        ArrayList<String> listOfItems = new ArrayList<>();
+        listOfItems.addAll(createListOfItems("afdelingen.txt"));
+        ArrayList<Tab> tabs = new ArrayList<>();
+        listOfItems.forEach(a -> {
+            Tab tab = new Tab(a);
+            tab.setContent(createUmpireContent(a)); // Set filtered content
+            tabs.add(tab);
             
-        return tabpane2;
+        });        
+        return tabs;
     }
+    
+    private VBox createClubContent(String afd) {
+            ListView<String> clubListview = new ListView<>();
+            clublijstPerafdeling = new ArrayList<>();
+            clublijst = new Clubs();
+            Map<String, String> clubmap = clublijst.getList();
+            System.out.println("clubmap:" + clubmap);
+            clubmap.forEach((k,val) ->  {
+                if (val.equals(afd)) {
+                    System.out.println(k);
+                    clublijstPerafdeling.add(k);
+                }
+            });
+            System.out.println("clublijstPerafdeling: " + clublijstPerafdeling);
+            ObservableList<String> data = FXCollections.<String>observableArrayList(clublijstPerafdeling);
+            clubListview.getItems().addAll(data);
+            clubListview.setPrefSize(150, 800);
+            clubListview.setOrientation(Orientation.VERTICAL);
+            clubListview.getItems().addAll(clublijstPerafdeling);
+            
+            VBox clubsBox = new VBox();
+            clubsBox.getChildren().add(clubListview); // Add listview to Vertical Box
+            
+            return clubsBox; // return VBox with listview of clubs per afdeling
+        }
+     
+    private VBox createUmpireContent(String afd) {
+            ListView<String> umpireListview = new ListView<>();
+            umpirelijstPerafdeling = new ArrayList<>();
+            umpirelijst = new Umpires();
+            Map<String, String> clubmap = umpirelijst.getList();
+            System.out.println("clubmap:" + clubmap);
+            clubmap.forEach((k,val) ->  {
+                if (val.equals(afd)) {
+                    System.out.println(k);
+                    umpirelijstPerafdeling.add(k);
+                }
+            });
+            System.out.println("clublijstPerafdeling: " + umpirelijstPerafdeling);
+            ObservableList<String> data = FXCollections.<String>observableArrayList(umpirelijstPerafdeling);
+            umpireListview.getItems().addAll(data);
+            umpireListview.setPrefSize(150, 800);
+            umpireListview.setOrientation(Orientation.VERTICAL);
+            umpireListview.getItems().addAll(umpirelijstPerafdeling);
+            
+            VBox clubsBox = new VBox();
+            clubsBox.getChildren().add(umpireListview); // Add listview to Vertical Box
+            
+            return clubsBox; // return VBox with listview of clubs per afdeling
+        }
     
     public ArrayList<String> createListOfItems(String filename) {
         //ArrayList<String> arraylist = new ArrayList<>();
@@ -315,20 +449,7 @@ public class MainPanel {
             border.setCenter(changeAfdelingenpane.afdelingenPanel());
             
         }
-        /*
-        if(s == "Umpire") {
-            newUmpirepane = new NewUmpire.UmpirePanel();
-            border.setCenter(newUmpirepane.umpirePanel());
-        }
-        else 
-        if(s == "Club") {
-            newClubpane = new NewClub.ClubPanel();
-            border.setCenter(newClubpane.clubPanel());
-        }
         
-        else
-        
-        */
         return border;
     }
 }

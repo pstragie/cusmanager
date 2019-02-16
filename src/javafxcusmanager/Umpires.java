@@ -16,41 +16,38 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import javafx.scene.control.Tab;
 
 /**
  *
  * @author pieter
  */
-public final class Clubs {
-    /** KBBSF Clubs
-	 * Te wijzigen lijst van clubs
+public class Umpires {
+    /** KBBSF Umpires
+	 * Te wijzigen lijst van umpires
 	 */
 	
-	public static Map<String, String> clublijst;
+	public static Map<String, String> umpirelijst;
 	private DocumentHandling documentHandler;
-        public ObservableMap observableClublist;
+        public ObservableMap observableUmpirelist;
         
 	// Constructor
-	public Clubs() {
-		clublijst = new HashMap<>();
-		if(clublijst.isEmpty()) {
+	public Umpires() {
+		umpirelijst = new HashMap<>();
+		if(umpirelijst.isEmpty()) {
                     getList();
 		}
-		observableClublist = FXCollections.observableMap(clublijst);
-                observableClublist.addListener((MapChangeListener<String, String>) change -> {
+		observableUmpirelist = FXCollections.observableMap(umpirelijst);
+                observableUmpirelist.addListener((MapChangeListener<String, String>) change -> {
                       
                     
                         if (change.wasAdded()) {
-                            System.out.println("Club added");
+                            System.out.println("Umpire added");
                             //internalStore.add(change.getValueAdded());
                         }
                         if (change.wasRemoved()) {
-                            System.out.println("Club removed");
+                            System.out.println("Umpire removed");
                             //internalStore.remove(change.getValueRemoved());
                         }
                     
@@ -62,64 +59,64 @@ public final class Clubs {
 	public Map<String, String> getList() {
 		// Read from file
 		List<String> list = new ArrayList<>();
-		String fileName = "clublijst.txt";
+		String fileName = "umpirelijst.txt";
 		try(Stream<String> stream = Files.lines(Paths.get(fileName))) {
 			list = stream
-					.filter(line -> !line.startsWith("Clublijst"))
+					.filter(line -> !line.startsWith("Umpirelijst"))
 					.collect(Collectors.toList());
 			
 			
 		} catch(IOException e) {
 		}
-		String club = "";
+		String umpire = "";
 		String afd = "";
 		for(String l: list) {
 			String[] values = l.split(", ");
-			club = values[0];
+			umpire = values[0];
 			afd = values[1];
-			setList(club, afd);
+			setList(umpire, afd);
 		}
-		return clublijst;
+		return umpirelijst;
 	}
 	
 	// Setters
 	public void setList(String K, String V) {
-		clublijst.put(K, V);
+		umpirelijst.put(K, V);
 		try {
-		writeListToFile(clublijst);
+		writeListToFile(umpirelijst);
 		} catch(IOException e) {
 			System.out.println(e);
 		}
 				
 	}
 	
-        public ArrayList<String> getClubArrayListFromFile() {
+        public ArrayList<String> getUmpireArrayListFromFile() {
             /** Get tabs from the list and add content for that afdeling
              * 
              */
             System.out.println("Get Tabs from file\n________________");
             ArrayList<String> listOfItems = new ArrayList<>();
-            listOfItems.addAll(createListOfItems("clublijst.txt"));
-            ArrayList<String> clubs = new ArrayList<>();
+            listOfItems.addAll(createListOfItems("umpirelijst.txt"));
+            ArrayList<String> umpires = new ArrayList<>();
             listOfItems.forEach(a -> {
 
-                clubs.add(a);
+                umpires.add(a);
 
             });        
-            return clubs;
+            return umpires;
         }
         
         public ArrayList<String> createListOfItems(String filename) {
             //ArrayList<String> arraylist = new ArrayList<>();
             documentHandler = new DocumentHandling();
-            ArrayList<String> arraylist = (ArrayList<String>) documentHandler.getClubsFromFile();
+            ArrayList<String> arraylist = (ArrayList<String>) documentHandler.getUmpiresFromFile();
             return arraylist;
         }
         
 	public static void writeListToFile(Map<String,String> map) throws IOException {
-            try (FileWriter fileWriter = new FileWriter("clublijst.txt")) {
-                fileWriter.write("Clublijst\n");
-                clublijst.forEach((k,val) ->  {
+            try (FileWriter fileWriter = new FileWriter("umpirelijst.txt")) {
+                fileWriter.write("Umpirelijst\n");
+                umpirelijst.forEach((k,val) ->  {
                     String fileContent = k + ", " + val + "\n";
                     try {
                         fileWriter.write(fileContent);
