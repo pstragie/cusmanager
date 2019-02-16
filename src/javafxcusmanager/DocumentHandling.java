@@ -28,7 +28,7 @@ public class DocumentHandling {
 
     }
     
-    public ArrayList<String> getAfdelingenFromFile() {
+    public List<String> getAfdelingenFromFile() {
         System.out.println("Reading file...");
         
         // Read from file
@@ -44,10 +44,8 @@ public class DocumentHandling {
                     System.out.println("Error reading file: " + e);
 		}
 		System.out.println("List: " + list);
-                //ArrayList<String> arraylist = new ArrayList<>();
-                ArrayList<String> arraylist = (ArrayList<String>) list;
-		System.out.println("List of Afdelingen: " + arraylist);
-        return arraylist;
+                
+        return list;
     }
     
     public void storeAfdelingen(ArrayList<String> afdelingen) {

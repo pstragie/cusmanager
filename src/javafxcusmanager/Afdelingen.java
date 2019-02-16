@@ -61,7 +61,7 @@ public class Afdelingen {
         //public static UmpireModel.UmpireTabPane umptabpane;
         
         // Constructor
-	public Afdelingen(TabPane tabpane) {
+	public Afdelingen(TabPane tabpaneleft, TabPane tabpaneright) {
             // Afdelingen afkomstig van observableTabList
             System.out.println("Run Constructor");		
             mainPanel = new MainPanel();
@@ -80,10 +80,9 @@ public class Afdelingen {
                         else 
                             for (String remitem: change.getRemoved()) {
                                 System.out.println("remitem");
-                                //umptabpane = new UmpireModel.UmpireTabPane();
-                                tabpane.getTabs().removeIf(tab -> tab.getText().equals(remitem));
-                                
-                                mainPanel.resetTabpaneSide(tabpane);
+
+                                tabpaneleft.getTabs().removeIf(tab -> tab.getText().equals(remitem));
+                                tabpaneright.getTabs().removeIf(tab -> tab.getText().equals(remitem));
                                 
                                 // Write to file
                                 ArrayList<String> tmplijst = new ArrayList<>();
@@ -94,12 +93,15 @@ public class Afdelingen {
                             for (String additem : change.getAddedSubList()) {
                                 System.out.println("additem");
                                
-                                tabpane.getTabs().removeAll(mainPanel.observableTabList);
-                                if(!mainPanel.observableTabList.contains(additem)) {
-                                    tabpane.getTabs().add(new Tab(additem));
-                                }
-
-                                mainPanel.resetTabpaneSide(tabpane);
+                                tabpaneleft.getTabs().clear(); // Remove all tabs
+                                mainPanel.observableTabList.forEach(t -> {
+                                    tabpaneleft.getTabs().add(new Tab(t));  // Add from observableTabList to get the correct order!
+                                });
+                                tabpaneright.getTabs().clear(); // Remove all tabs
+                                mainPanel.observableTabList.forEach(t -> {
+                                    tabpaneright.getTabs().add(new Tab(t));  // Add from observableTabList to get the correct order!
+                                });
+                                                                
                                 // Write to file
                                 ArrayList<String> tmplijst = new ArrayList<>();
                                 mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
@@ -206,8 +208,7 @@ public class Afdelingen {
                     ChangeAfdelingName changeafd1 = new ChangeAfdelingName();
                     changeafd1.changeAfdeling(label.getText());
                 });
-                
-                upbutton.setDisable(false);
+                            
                 upbutton.setOnAction((ActionEvent event) -> { 
                    
                        // Move tab up in the order
@@ -219,12 +220,16 @@ public class Afdelingen {
                                 String oud = mainPanel.observableTabList.get(index-1).toString();
                                 System.out.println("oud: " + oud);
                                 String nieuw = mainPanel.observableTabList.get(index);
+                                int nieuwindex = mainPanel.observableTabList.indexOf(nieuw);
+                                int oudindex = mainPanel.observableTabList.indexOf(oud);
+                                System.out.println("index oud = " + oudindex + ", index nieuw = " + nieuwindex);
                                 System.out.println("nieuw: " + nieuw);
                                 mainPanel.observableTabList.remove(oud);
                                 System.out.println("1 verwijderd: " + mainPanel.observableTabList);
                                 mainPanel.observableTabList.add(index, oud);
                                 System.out.println("New order: " + mainPanel.observableTabList);
 
+                                // Write new order to file
                                 ArrayList<String> tmplijst = new ArrayList<>();
                                 mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
                                 documentHandler.storeAfdelingen(tmplijst);

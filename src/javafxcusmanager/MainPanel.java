@@ -7,6 +7,8 @@ package javafxcusmanager;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -27,6 +29,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
@@ -151,7 +156,7 @@ public class MainPanel {
         
         menuAfdelingenItem1.setOnAction(e -> { 
             Stage stage = new Stage();
-            Scene scene = new Scene(newPaneel("Afdelingen", leftTabPane));
+            Scene scene = new Scene(newAfdelingPaneel("Afdelingen", leftTabPane, rightTabPane));
             stage.setTitle("Afdelingen wijzigen");
             stage.setScene(scene);
             stage.show();
@@ -171,8 +176,16 @@ public class MainPanel {
         
             // Create TabPane
            // TabPane tabpane = new TabPane();
-            sideTabPane = createTabPane(); // Get Afdelingen from file
+            //sideTabPane = createTabPane(); // Get Afdelingen from file
+            sideTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+            sideTabPane.getTabs().addAll(getTabArrayListFromFile());
             //tabpane.getStylesheets().add(getClass().getResource("css/TabPaneStyles.css").toExternalForm());
+            Text placeHolder = new Text( " Geen afdelingen gevonden." );
+                    placeHolder.setFont( Font.font( null, FontWeight.BOLD, 20 ) );
+                    BooleanBinding bb = Bindings.isEmpty( sideTabPane.getTabs() );
+                    placeHolder.visibleProperty().bind( bb );
+                    placeHolder.managedProperty().bind( bb );
+        vbox.getChildren().add(placeHolder);
         vbox.getChildren().add(sideTabPane);
         vbox.setPrefSize(300, 800);
         
@@ -186,7 +199,7 @@ public class MainPanel {
         tablist.forEach(tab1 -> {
             sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1));
         });
-        sideTabPane.getTabs().addAll(getTabArrayList());
+        sideTabPane.getTabs().addAll(getTabArrayListFromFile());
     }
     
     public HBox createHorBoxFilter(TabPane sideTabPane) {
@@ -202,11 +215,10 @@ public class MainPanel {
                 if (newText == null || newText.isEmpty()) {
                     System.out.println("Nothing to filter");
                     // Reset the tabpane to show all tabs
-                    ObservableList<String> tablist = getTabsList();
-                    tablist.forEach(tab1 -> {
-                        sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1));
+                    sideTabPane.getTabs().clear();
+                    observableTabList.forEach(t -> {
+                        sideTabPane.getTabs().add(new Tab(t));
                     });
-                    sideTabPane.getTabs().addAll(getTabArrayList());
                 } else {
                     System.out.println("Filter active: " + newText);
                     // Get all tabs back in the tabpane
@@ -227,9 +239,16 @@ public class MainPanel {
                     */
                     //observableTabList.filtered(tab -> tab.contains(newText));
                     System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
-                    observableTabList.filtered(tab -> !tab.contains(newText)).forEach(t -> {
-                        leftTabPane.getTabs().remove(new Tab(t));
+                    //FilteredList<String> filteredList;
+                    
+                    //observableTabList.filtered(tab -> !tab.contains(newText)).forEach(t -> {
+                      //  sideTabPane.getTabs().remove(new Tab(t));
+                    //});
+                    sideTabPane.getTabs().clear(); // Clear to restart on every change!
+                    observableTabList.filtered(tab -> tab.contains(newText)).forEach(t -> {
+                        sideTabPane.getTabs().add(new Tab(t));
                     });
+                    
                     //resetTabpaneSide(sideTabPane); // Puts the tabs from the document back
                     //sideTabPane.getTabs().removeAll(observableTabList);
                     //sideTabPane.getTabs().addAll(observableTabList.filtered(tab -> tab.contains(newText)));
@@ -242,11 +261,12 @@ public class MainPanel {
             Button filterButton = new Button();
             filterButton.setText("Reset");
             filterButton.setOnAction(event -> {
-                ObservableList<String> tablist = getTabsList();
-                tablist.forEach(tab1 -> {
-                    sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1));
-                });
-                sideTabPane.getTabs().addAll(getTabArrayList());
+                System.out.println("Reset clicked, list: " + observableTabList);
+                System.out.println("tabs in pane: " + sideTabPane.getTabs());
+                sideTabPane.getTabs().clear();
+                System.out.println("tabs in pane after removal: " + sideTabPane.getTabs());
+                sideTabPane.getTabs().addAll(getTabArrayListFromFile());
+                System.out.println("tabs in pane after adding all from file: " + sideTabPane.getTabs());
                 filterField.setText("");
             });
             hbox.getStyleClass().add("bordered-titled-border");
@@ -264,10 +284,12 @@ public class MainPanel {
         this.observableTabList = tabs;
     }
     
-     public ArrayList<Tab> getTabArrayList() {
-        ArrayList<String> listOfItems = createListOfItems("afdelingen.txt");
+     public ArrayList<Tab> getTabArrayListFromFile() {
+        System.out.println("Get Tabs from file\n________________");
+        ArrayList<String> listOfItems = new ArrayList<>();
+        listOfItems.addAll(createListOfItems("afdelingen.txt"));
         ArrayList<Tab> tabs = new ArrayList<>();
-        observableTabList.forEach(a -> {
+        listOfItems.forEach(a -> {
             tabs.add(new Tab(a));
         });        
         return tabs;
@@ -277,10 +299,10 @@ public class MainPanel {
         TabPane tabpane2 = new TabPane();
         
         // Observable Tab List        
-        leftTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        leftTabPane.getTabs().addAll(getTabArrayList());
+        tabpane2.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabpane2.getTabs().addAll(getTabArrayListFromFile());
             
-        return leftTabPane;
+        return tabpane2;
     }
     
     public ArrayList<String> createListOfItems(String filename) {
@@ -290,10 +312,10 @@ public class MainPanel {
         return arraylist;
     }
     
-    public Pane newPaneel(String s, TabPane tabpane) {
+    public Pane newAfdelingPaneel(String s, TabPane tabpaneleft, TabPane tabpaneright) {
         BorderPane border = new BorderPane();
         if(s == "Afdelingen") {
-            changeAfdelingenpane = new Afdelingen(tabpane);
+            changeAfdelingenpane = new Afdelingen(tabpaneleft, tabpaneright);
             border.setCenter(changeAfdelingenpane.afdelingenPanel());
             
         }

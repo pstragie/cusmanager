@@ -1,6 +1,5 @@
 Afdelingen
 Gold
 1BB
-4BB
-6BB
-7BB
+2BB
+3BB
