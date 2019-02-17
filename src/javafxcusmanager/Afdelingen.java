@@ -136,7 +136,7 @@ public class Afdelingen {
             
             // Grid with 2 items: ListView and Button
             // Variable list of textfields
-                                listview = new ListView<>(mainPanel.observableTabList);
+                listview = new ListView<>(mainPanel.observableTabList);
                 //listview.getItems().addAll(observableTabList);
                 //listview.setPrefSize(150, 100);
                 listview.setOrientation(Orientation.VERTICAL);

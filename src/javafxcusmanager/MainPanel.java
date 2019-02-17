@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -16,19 +18,32 @@ import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Background;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -52,11 +67,14 @@ public class MainPanel {
     private Pane centerPane = new Pane();
     public TabPane centerTabPane = new TabPane();
     private Afdelingen changeAfdelingenpane;
+    private GameSchedule gameSchedule;
     private Clubs clublijst;
     private Umpires umpirelijst;
     private ArrayList<String> clublijstPerafdeling;
     private ArrayList<String> umpirelijstPerafdeling;
-    
+    public Button resetButton;
+    private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
+
     public Pane MainPanel() {     
         
         // Fill observableList for the first (and only) time
@@ -85,7 +103,6 @@ public class MainPanel {
         
         // Left Pane -> Clubs
         leftPane = new Pane();
-        
         leftPane = createLeftSidePane(leftTabPane);
         borderPane.setLeft(leftPane);
         
@@ -180,12 +197,11 @@ public class MainPanel {
         VBox vbox = new VBox();
             // Create HBox with textfield and button
             HBox hbox = createHorBoxFilterClubs(sideTabPane);
-            
+        
         vbox.getChildren().add(hbox);
         
             // Create TabPane
             sideTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-            
             sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
             //tabpane.getStylesheets().add(getClass().getResource("css/TabPaneStyles.css").toExternalForm());
             Text placeHolder = new Text( " Geen afdelingen gevonden." );
@@ -227,22 +243,49 @@ public class MainPanel {
     
     public VBox createCenterPane(TabPane middleTabPane) {
         VBox vbox = new VBox();
+        vbox.setBorder(new Border(new BorderStroke(Color.DARKSLATEBLUE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(3, 3, 3, 3))));
+
         middleTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         middleTabPane.getTabs().add(new Tab("Week"));
         middleTabPane.getTabs().add(new Tab("Maand"));
         middleTabPane.getTabs().add(new Tab("Jaar"));
-        VBox calendarBox = new VBox();
-        
+        VBox calendarbox = new VBox();
+            // Get empty Weekend game model
+            TableView table = new TableView();
+            final Label label = new Label("Game Schedule");
+            label.setFont(new Font("Arial", 20));
+
+            table.setEditable(true);
+
+            TableColumn homeTeam = new TableColumn("Home team");
+            TableColumn visitingTeam = new TableColumn("Visiting team");
+            TableColumn umpire = new TableColumn("Umpire");
+
+            table.getColumns().addAll(homeTeam, visitingTeam, umpire);
+
+            calendarbox.setPadding(new Insets(10, 0, 0, 10));
+            calendarbox.getChildren().addAll(label, table);
         vbox.getChildren().add(middleTabPane);
+        vbox.getChildren().add(calendarbox);
+        vbox.setPadding(new Insets(5, 10, 5, 10));
         return vbox;
     }
-    public void resetTabpaneSide(TabPane sideTabPane) {
+    public void resetRightTabpaneSide(TabPane sideTabPane) {
         // Reset the tabpane to show all tabs
         ObservableList<String> tablist = getTabsList();
         tablist.forEach(tab1 -> {
             sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1));
         });
         sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
+    }
+    
+    public void resetLeftTabpaneSide(TabPane sideTabPane) {
+        // Reset the tabpane to show all tabs
+        ObservableList<String> tablist = getTabsList();
+        tablist.forEach(tab1 -> {
+            sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1));
+        });
+        sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
     }
     
     public HBox createHorBoxFilterUmpires(TabPane sideTabPane) {
@@ -277,9 +320,9 @@ public class MainPanel {
                 }
             });
             
-            Button filterButton = new Button();
-            filterButton.setText("Reset");
-            filterButton.setOnAction(event -> {
+            resetButton = new Button();
+            resetButton.setText("Reset");
+            resetButton.setOnAction(event -> {
                 System.out.println("Reset clicked, list: " + observableTabList);
                 System.out.println("tabs in pane: " + sideTabPane.getTabs());
                 sideTabPane.getTabs().clear();
@@ -291,7 +334,7 @@ public class MainPanel {
             hbox.getStyleClass().add("bordered-titled-border");
             hbox.setHgrow(filterField, Priority.ALWAYS);
             hbox.getChildren().add(filterField);
-            hbox.getChildren().add(filterButton);
+            hbox.getChildren().add(resetButton);
         return hbox;
     }
     
@@ -355,7 +398,7 @@ public class MainPanel {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
-        System.out.println("Get Tabs from file\n________________");
+        System.out.println("Get Tabs from file and create club content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
         listOfItems.addAll(createListOfItems("afdelingen.txt"));
         ArrayList<Tab> tabs = new ArrayList<>();
@@ -368,11 +411,12 @@ public class MainPanel {
         return tabs;
     }
     
+    
     public ArrayList<Tab> getUmpireTabArrayListFromFile() {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
-        System.out.println("Get Tabs from file\n________________");
+        System.out.println("Get Tabs from file and create umpire content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
         listOfItems.addAll(createListOfItems("afdelingen.txt"));
         ArrayList<Tab> tabs = new ArrayList<>();
@@ -402,6 +446,51 @@ public class MainPanel {
             clubListview.getItems().addAll(data);
             clubListview.setPrefSize(150, 800);
             clubListview.setOrientation(Orientation.VERTICAL);
+            clubListview.setCellFactory(lv -> {
+                ListCell<String> cell = new ListCell<String>() {
+                    @Override
+                    public void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        setText(item);
+                    }
+                };
+                cell.setOnDragDetected(event -> {
+                   if (! cell.isEmpty()) {
+                       Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
+                       ClipboardContent cc = new ClipboardContent();
+                       cc.putString(cell.getItem());
+                       db.setContent(cc);
+                       dragSource.set(cell);
+                   }
+               });
+
+               cell.setOnDragOver(event -> {
+                   Dragboard db = event.getDragboard();
+                   if (db.hasString()) {
+                       event.acceptTransferModes(TransferMode.MOVE);
+                   }
+               });
+
+               cell.setOnDragDone(event -> clubListview.getItems().remove(cell.getItem()));
+
+               cell.setOnDragDropped(event -> {
+                   Dragboard db = event.getDragboard();
+                   if (db.hasString() && dragSource.get() != null) {
+                       // in this example you could just do
+                       // listView.getItems().add(db.getString());
+                       // but more generally:
+
+                       ListCell<String> dragSourceCell = dragSource.get();
+                       clubListview.getItems().add(dragSourceCell.getItem());
+                       event.setDropCompleted(true);
+                       dragSource.set(null);
+                   } else {
+                       event.setDropCompleted(false);
+                   }
+               });
+
+               return cell ;
+            });
             //clubListview.getItems().addAll(clublijstPerafdeling);
             
             VBox clubsBox = new VBox();
@@ -427,6 +516,51 @@ public class MainPanel {
             umpireListview.getItems().addAll(data);
             umpireListview.setPrefSize(150, 800);
             umpireListview.setOrientation(Orientation.VERTICAL);
+            umpireListview.setCellFactory(lv -> {
+                ListCell<String> cell = new ListCell<String>() {
+                    @Override
+                    public void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        setText(item);
+                    }
+                };
+                cell.setOnDragDetected(event -> {
+                   if (! cell.isEmpty()) {
+                       Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
+                       ClipboardContent cc = new ClipboardContent();
+                       cc.putString(cell.getItem());
+                       db.setContent(cc);
+                       dragSource.set(cell);
+                   }
+               });
+
+               cell.setOnDragOver(event -> {
+                   Dragboard db = event.getDragboard();
+                   if (db.hasString()) {
+                       event.acceptTransferModes(TransferMode.MOVE);
+                   }
+               });
+
+               cell.setOnDragDone(event -> umpireListview.getItems().remove(cell.getItem()));
+
+               cell.setOnDragDropped(event -> {
+                   Dragboard db = event.getDragboard();
+                   if (db.hasString() && dragSource.get() != null) {
+                       // in this example you could just do
+                       // listView.getItems().add(db.getString());
+                       // but more generally:
+
+                       ListCell<String> dragSourceCell = dragSource.get();
+                       umpireListview.getItems().add(dragSourceCell.getItem());
+                       event.setDropCompleted(true);
+                       dragSource.set(null);
+                   } else {
+                       event.setDropCompleted(false);
+                   }
+               });
+
+               return cell ;
+            });
             //umpireListview.getItems().addAll(umpirelijstPerafdeling);
             
             VBox umpiresBox = new VBox();

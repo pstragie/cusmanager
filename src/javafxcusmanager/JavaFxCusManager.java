@@ -26,7 +26,7 @@ public class JavaFxCusManager extends Application {
         StackPane root = new StackPane();
         root.getChildren().add(mainPanel.MainPanel());
         
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 1200, 600);
         scene.getStylesheets().add(getClass().getResource("css/BorderStyles.css").toExternalForm());
         primaryStage.setTitle("CUS Manager");
         primaryStage.setScene(scene);
