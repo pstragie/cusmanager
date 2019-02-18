@@ -15,6 +15,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CustomMenuItem;
@@ -67,12 +68,15 @@ public class MainPanel {
     private Pane centerPane = new Pane();
     public TabPane centerTabPane = new TabPane();
     private Afdelingen changeAfdelingenpane;
+    private UmpireModel umpiremodel;
+    private ClubModel clubmodel;
     private GameSchedule gameSchedule;
     private Clubs clublijst;
     private Umpires umpirelijst;
     private ArrayList<String> clublijstPerafdeling;
     private ArrayList<String> umpirelijstPerafdeling;
     public Button resetButton;
+    private VBox vbox;
     private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
 
     public Pane MainPanel() {     
@@ -196,9 +200,9 @@ public class MainPanel {
         // Create a VBox with HBox for filter, and TabPane
         VBox vbox = new VBox();
             // Create HBox with textfield and button
-            HBox hbox = createHorBoxFilterClubs(sideTabPane);
+            VBox verBox = createHorBoxFilterClubs(sideTabPane);
         
-        vbox.getChildren().add(hbox);
+        vbox.getChildren().add(verBox);
         
             // Create TabPane
             sideTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -220,9 +224,9 @@ public class MainPanel {
         // Create a VBox with HBox for filter, and TabPane
         VBox vbox = new VBox();
             // Create HBox with textfield and button
-            HBox hbox = createHorBoxFilterUmpires(sideTabPane);
+            VBox horBox = createHorBoxFilterUmpires(sideTabPane);
             
-        vbox.getChildren().add(hbox);
+        vbox.getChildren().add(horBox);
         
             // Create TabPane
             sideTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -244,32 +248,29 @@ public class MainPanel {
     public VBox createCenterPane(TabPane middleTabPane) {
         VBox vbox = new VBox();
         vbox.setBorder(new Border(new BorderStroke(Color.DARKSLATEBLUE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(3, 3, 3, 3))));
-
+        
+        HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER);
+        Label gameScheduleLabel = new Label("Game Schedule");
+        gameScheduleLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
+        gameScheduleLabel.setAlignment(Pos.CENTER);
+        hbox.getChildren().add(gameScheduleLabel);
+        //vbox.setAlignment(Pos.CENTER);
+        vbox.getChildren().add(hbox);
         middleTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         middleTabPane.getTabs().add(new Tab("Week"));
         middleTabPane.getTabs().add(new Tab("Maand"));
         middleTabPane.getTabs().add(new Tab("Jaar"));
-        VBox calendarbox = new VBox();
-            // Get empty Weekend game model
-            TableView table = new TableView();
-            final Label label = new Label("Game Schedule");
-            label.setFont(new Font("Arial", 20));
-
-            table.setEditable(true);
-
-            TableColumn homeTeam = new TableColumn("Home team");
-            TableColumn visitingTeam = new TableColumn("Visiting team");
-            TableColumn umpire = new TableColumn("Umpire");
-
-            table.getColumns().addAll(homeTeam, visitingTeam, umpire);
-
-            calendarbox.setPadding(new Insets(10, 0, 0, 10));
-            calendarbox.getChildren().addAll(label, table);
+        //vbox.getChildren().add(gameSchedule.creaameScteCalendar("Week"));
+            
         vbox.getChildren().add(middleTabPane);
-        vbox.getChildren().add(calendarbox);
-        vbox.setPadding(new Insets(5, 10, 5, 10));
+        gameSchedule = new GameSchedule();
+        
+        vbox.getChildren().add(gameSchedule.createCalendar("Week"));
+        vbox.setPadding(new Insets(0, 5, 0, 5));
         return vbox;
     }
+    
     public void resetRightTabpaneSide(TabPane sideTabPane) {
         // Reset the tabpane to show all tabs
         ObservableList<String> tablist = getTabsList();
@@ -288,10 +289,16 @@ public class MainPanel {
         sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
     }
     
-    public HBox createHorBoxFilterUmpires(TabPane sideTabPane) {
+    public VBox createHorBoxFilterUmpires(TabPane sideTabPane) {
         /** Creates a VBox with textfield and button for filtering tabpanes
          * 
          */
+        VBox vbox = new VBox();
+        Label umpireLabel = new Label("Umpires");
+        umpireLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
+        umpireLabel.setAlignment(Pos.CENTER);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.getChildren().add(umpireLabel);
         HBox hbox = new HBox();
             TextField filterField = new TextField();
             filterField.setPromptText("Filter tabs");
@@ -335,13 +342,21 @@ public class MainPanel {
             hbox.setHgrow(filterField, Priority.ALWAYS);
             hbox.getChildren().add(filterField);
             hbox.getChildren().add(resetButton);
-        return hbox;
+            vbox.getChildren().add(hbox);
+        return vbox;
     }
     
-    public HBox createHorBoxFilterClubs(TabPane sideTabPane) {
+    public VBox createHorBoxFilterClubs(TabPane sideTabPane) {
         /** Creates a VBox with textfield and button for filtering tabpanes
          * 
          */
+        VBox vbox = new VBox();
+        Label umpireLabel = new Label("Teams");
+        umpireLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
+        umpireLabel.setAlignment(Pos.CENTER);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.getChildren().add(umpireLabel);
+        
         HBox hbox = new HBox();
             TextField filterField = new TextField();
             filterField.setPromptText("Filter tabs");
@@ -383,7 +398,8 @@ public class MainPanel {
             hbox.setHgrow(filterField, Priority.ALWAYS);
             hbox.getChildren().add(filterField);
             hbox.getChildren().add(filterButton);
-        return hbox;
+            vbox.getChildren().add(hbox);
+        return vbox;
     }
     
      public ObservableList<String> getTabsList() {
@@ -398,13 +414,14 @@ public class MainPanel {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
+        clubmodel = new ClubModel();
         System.out.println("Get Tabs from file and create club content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
         listOfItems.addAll(createListOfItems("afdelingen.txt"));
         ArrayList<Tab> tabs = new ArrayList<>();
         listOfItems.forEach(a -> {
             Tab tab = new Tab(a);
-            tab.setContent(createClubContent(a)); // Set filtered content
+            tab.setContent(clubmodel.createClubContent(a)); // Set filtered content
             tabs.add(tab);
             
         });        
@@ -416,158 +433,23 @@ public class MainPanel {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
+        umpiremodel = new UmpireModel();
         System.out.println("Get Tabs from file and create umpire content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
         listOfItems.addAll(createListOfItems("afdelingen.txt"));
         ArrayList<Tab> tabs = new ArrayList<>();
         listOfItems.forEach(a -> {
             Tab tab = new Tab(a);
-            tab.setContent(createUmpireContent(a)); // Set filtered content
+            tab.setContent(umpiremodel.createUmpireContent(a)); // Set filtered content
             tabs.add(tab);
             
         });        
         return tabs;
     }
     
-    private VBox createClubContent(String afd) {
-            ListView<String> clubListview = new ListView<>();
-            clublijstPerafdeling = new ArrayList<>();
-            clublijst = new Clubs();
-            Map<String, String> clubmap = clublijst.getList();
-            System.out.println("clubmap:" + clubmap);
-            clubmap.forEach((k,val) ->  {
-                if (val.equals(afd)) {
-                    System.out.println(k);
-                    clublijstPerafdeling.add(k);
-                }
-            });
-            System.out.println("clublijstPerafdeling" + "(" + afd + "): " + clublijstPerafdeling);
-            ObservableList<String> data = FXCollections.<String>observableArrayList(clublijstPerafdeling);
-            clubListview.getItems().addAll(data);
-            clubListview.setPrefSize(150, 800);
-            clubListview.setOrientation(Orientation.VERTICAL);
-            clubListview.setCellFactory(lv -> {
-                ListCell<String> cell = new ListCell<String>() {
-                    @Override
-                    public void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        setText(item);
-                    }
-                };
-                cell.setOnDragDetected(event -> {
-                   if (! cell.isEmpty()) {
-                       Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
-                       ClipboardContent cc = new ClipboardContent();
-                       cc.putString(cell.getItem());
-                       db.setContent(cc);
-                       dragSource.set(cell);
-                   }
-               });
-
-               cell.setOnDragOver(event -> {
-                   Dragboard db = event.getDragboard();
-                   if (db.hasString()) {
-                       event.acceptTransferModes(TransferMode.MOVE);
-                   }
-               });
-
-               cell.setOnDragDone(event -> clubListview.getItems().remove(cell.getItem()));
-
-               cell.setOnDragDropped(event -> {
-                   Dragboard db = event.getDragboard();
-                   if (db.hasString() && dragSource.get() != null) {
-                       // in this example you could just do
-                       // listView.getItems().add(db.getString());
-                       // but more generally:
-
-                       ListCell<String> dragSourceCell = dragSource.get();
-                       clubListview.getItems().add(dragSourceCell.getItem());
-                       event.setDropCompleted(true);
-                       dragSource.set(null);
-                   } else {
-                       event.setDropCompleted(false);
-                   }
-               });
-
-               return cell ;
-            });
-            //clubListview.getItems().addAll(clublijstPerafdeling);
-            
-            VBox clubsBox = new VBox();
-            clubsBox.getChildren().add(clubListview); // Add listview to Vertical Box
-            
-            return clubsBox; // return VBox with listview of clubs per afdeling
-        }
+    
      
-    private VBox createUmpireContent(String afd) {
-            ListView<String> umpireListview = new ListView<>();
-            umpirelijstPerafdeling = new ArrayList<>();
-            umpirelijst = new Umpires();
-            Map<String, String> clubmap = umpirelijst.getList();
-            System.out.println("umpiremap:" + clubmap);
-            clubmap.forEach((k,val) ->  {
-                if (val.equals(afd)) {
-                    System.out.println(k);
-                    umpirelijstPerafdeling.add(k);
-                }
-            });
-            System.out.println("umpirelijstPerafdeling" + "(" + afd + "): " + umpirelijstPerafdeling);
-            ObservableList<String> data = FXCollections.<String>observableArrayList(umpirelijstPerafdeling);
-            umpireListview.getItems().addAll(data);
-            umpireListview.setPrefSize(150, 800);
-            umpireListview.setOrientation(Orientation.VERTICAL);
-            umpireListview.setCellFactory(lv -> {
-                ListCell<String> cell = new ListCell<String>() {
-                    @Override
-                    public void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        setText(item);
-                    }
-                };
-                cell.setOnDragDetected(event -> {
-                   if (! cell.isEmpty()) {
-                       Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
-                       ClipboardContent cc = new ClipboardContent();
-                       cc.putString(cell.getItem());
-                       db.setContent(cc);
-                       dragSource.set(cell);
-                   }
-               });
-
-               cell.setOnDragOver(event -> {
-                   Dragboard db = event.getDragboard();
-                   if (db.hasString()) {
-                       event.acceptTransferModes(TransferMode.MOVE);
-                   }
-               });
-
-               cell.setOnDragDone(event -> umpireListview.getItems().remove(cell.getItem()));
-
-               cell.setOnDragDropped(event -> {
-                   Dragboard db = event.getDragboard();
-                   if (db.hasString() && dragSource.get() != null) {
-                       // in this example you could just do
-                       // listView.getItems().add(db.getString());
-                       // but more generally:
-
-                       ListCell<String> dragSourceCell = dragSource.get();
-                       umpireListview.getItems().add(dragSourceCell.getItem());
-                       event.setDropCompleted(true);
-                       dragSource.set(null);
-                   } else {
-                       event.setDropCompleted(false);
-                   }
-               });
-
-               return cell ;
-            });
-            //umpireListview.getItems().addAll(umpirelijstPerafdeling);
-            
-            VBox umpiresBox = new VBox();
-            umpiresBox.getChildren().add(umpireListview); // Add listview to Vertical Box
-            
-            return umpiresBox; // return VBox with listview of clubs per afdeling
-        }
+    
     
     public ArrayList<String> createListOfItems(String filename) {
         //ArrayList<String> arraylist = new ArrayList<>();

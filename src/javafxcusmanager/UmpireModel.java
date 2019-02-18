@@ -12,15 +12,11 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
@@ -28,36 +24,35 @@ import javafx.scene.layout.VBox;
  *
  * @author pieter
  */
-public class ClubModel {
+public class UmpireModel {
     
-        private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
-        private ArrayList<String> clublijstPerafdeling;
-        private Clubs clublijst;
-        
+    private ArrayList<String> umpirelijstPerafdeling;
+    private Umpires umpirelijst;
+    private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
+    
     // Constructor
-	public ClubModel() {
-
-
-	}
-
-	public VBox createClubContent(String afd) {
-            ListView<String> clubListview = new ListView<>();
-            clublijstPerafdeling = new ArrayList<>();
-            clublijst = new Clubs();
-            Map<String, String> clubmap = clublijst.getList();
-            System.out.println("clubmap:" + clubmap);
-            clubmap.forEach((k,val) ->  {
+    public UmpireModel () {
+        
+    }
+    
+    public VBox createUmpireContent(String afd) {
+            ListView<String> umpireListview = new ListView<>();
+            umpirelijstPerafdeling = new ArrayList<>();
+            umpirelijst = new Umpires();
+            Map<String, String> umpiremap = umpirelijst.getList();
+            System.out.println("umpiremap:" + umpiremap);
+            umpiremap.forEach((k,val) ->  {
                 if (val.equals(afd)) {
                     System.out.println(k);
-                    clublijstPerafdeling.add(k);
+                    umpirelijstPerafdeling.add(k);
                 }
             });
-            System.out.println("clublijstPerafdeling" + "(" + afd + "): " + clublijstPerafdeling);
-            ObservableList<String> data = FXCollections.<String>observableArrayList(clublijstPerafdeling);
-            clubListview.getItems().addAll(data);
-            clubListview.setPrefSize(150, 800);
-            clubListview.setOrientation(Orientation.VERTICAL);
-            clubListview.setCellFactory(lv -> {
+            System.out.println("umpirelijstPerafdeling" + "(" + afd + "): " + umpirelijstPerafdeling);
+            ObservableList<String> data = FXCollections.<String>observableArrayList(umpirelijstPerafdeling);
+            umpireListview.getItems().addAll(data);
+            umpireListview.setPrefSize(150, 800);
+            umpireListview.setOrientation(Orientation.VERTICAL);
+            umpireListview.setCellFactory(lv -> {
                 ListCell<String> cell = new ListCell<String>() {
                     @Override
                     public void updateItem(String item, boolean empty) {
@@ -67,7 +62,7 @@ public class ClubModel {
                 };
                 cell.setOnDragDetected(event -> {
                    if (! cell.isEmpty()) {
-                       Dragboard db = cell.startDragAndDrop(TransferMode.COPY);
+                       Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
                        ClipboardContent cc = new ClipboardContent();
                        cc.putString(cell.getItem());
                        db.setContent(cc);
@@ -78,11 +73,11 @@ public class ClubModel {
                cell.setOnDragOver(event -> {
                    Dragboard db = event.getDragboard();
                    if (db.hasString()) {
-                       event.acceptTransferModes(TransferMode.COPY);
+                       event.acceptTransferModes(TransferMode.MOVE);
                    }
                });
 
-               //cell.setOnDragDone(event -> clubListview.getItems().remove(cell.getItem()));
+               cell.setOnDragDone(event -> umpireListview.getItems().remove(cell.getItem()));
 
                cell.setOnDragDropped(event -> {
                    Dragboard db = event.getDragboard();
@@ -92,7 +87,7 @@ public class ClubModel {
                        // but more generally:
 
                        ListCell<String> dragSourceCell = dragSource.get();
-                       clubListview.getItems().add(dragSourceCell.getItem());
+                       umpireListview.getItems().add(dragSourceCell.getItem());
                        event.setDropCompleted(true);
                        dragSource.set(null);
                    } else {
@@ -102,11 +97,11 @@ public class ClubModel {
 
                return cell ;
             });
-            //clubListview.getItems().addAll(clublijstPerafdeling);
+            //umpireListview.getItems().addAll(umpirelijstPerafdeling);
             
-            VBox clubsBox = new VBox();
-            clubsBox.getChildren().add(clubListview); // Add listview to Vertical Box
+            VBox umpiresBox = new VBox();
+            umpiresBox.getChildren().add(umpireListview); // Add listview to Vertical Box
             
-            return clubsBox; // return VBox with listview of clubs per afdeling
+            return umpiresBox; // return VBox with listview of clubs per afdeling
         }
 }
