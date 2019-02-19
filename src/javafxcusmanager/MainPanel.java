@@ -312,11 +312,9 @@ public class MainPanel {
                     System.out.println("Filter active: " + newText);
                     System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
                     
-                    sideTabPane.getTabs().clear(); // Clear to restart on every change!
-                    observableTabList = getObservableList();
-                    observableTabList.filtered(tab -> tab.contains(newText)).forEach(t -> {
-                        sideTabPane.getTabs().add(new Tab(t));
-                    });
+                    sideTabPane.getTabs().clear();
+                    sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
+                    sideTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
                     
                     System.out.println("sideTabPane: " + leftTabPane.getTabs());
                     
@@ -367,13 +365,11 @@ public class MainPanel {
                 } else {
                     System.out.println("Filter active: " + newText);
                     System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
-                    
-                    sideTabPane.getTabs().clear(); // Clear to restart on every change!
-                    observableTabList = getObservableList();
-                    observableTabList.filtered(tab -> tab.contains(newText)).forEach(t -> {
-                        sideTabPane.getTabs().add(new Tab(t));
-                    });
-                    
+                                      
+                    sideTabPane.getTabs().clear();
+                    sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
+                    sideTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
+                    //sideTabPane.getTabs().filtered(tab -> tab.getText().contains(newText));
                     System.out.println("sideTabPane: " + leftTabPane.getTabs());
                     
                 }
@@ -425,11 +421,9 @@ public class MainPanel {
                     System.out.println("Filter active: " + newText);
                     System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
                     
-                    centerTabPane.getTabs().clear(); // Clear to restart on every change!
-                    observableTabList = getObservableList();
-                    observableTabList.filtered(tab -> tab.contains(newText)).forEach(t -> {
-                        centerTabPane.getTabs().add(new Tab(t));
-                    });
+                    centerTabPane.getTabs().clear();
+                    centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+                    centerTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
                     
                     System.out.println("sideTabPane: " + leftTabPane.getTabs());
                     
