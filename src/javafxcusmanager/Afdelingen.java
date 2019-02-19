@@ -5,19 +5,9 @@
  */
 package javafxcusmanager;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -39,11 +29,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import static jdk.nashorn.internal.objects.NativeArray.map;
 
 /**
  *
@@ -66,7 +53,7 @@ public class Afdelingen {
         //public static UmpireModel.UmpireTabPane umptabpane;
         
         // Constructor
-	public Afdelingen(TabPane tabpaneleft, TabPane tabpaneright) {
+	public Afdelingen(TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter) {
             // Afdelingen afkomstig van observableTabList
             System.out.println("Run Constructor");		
             mainPanel = new MainPanel();
@@ -88,6 +75,7 @@ public class Afdelingen {
 
                                 tabpaneleft.getTabs().removeIf(tab -> tab.getText().equals(remitem));
                                 tabpaneright.getTabs().removeIf(tab -> tab.getText().equals(remitem));
+                                tabpanecenter.getTabs().removeIf(tab -> tab.getText().equals(remitem));
                                 
                                 // Write to file
                                 ArrayList<String> tmplijst = new ArrayList<>();
@@ -107,7 +95,10 @@ public class Afdelingen {
                                 mainPanel.observableTabList.forEach(t -> {
                                     tabpaneright.getTabs().add(new Tab(t));  // Add from observableTabList to get the correct order!
                                 });
-                                
+                                tabpanecenter.getTabs().clear(); // Remove all tabs
+                                mainPanel.observableTabList.forEach(t -> {
+                                    tabpanecenter.getTabs().add(new Tab(t));  // Add from observableTabList to get the correct order!
+                                });
                                 // Write to file
                                 ArrayList<String> tmplijst = new ArrayList<>();
                                 mainPanel.observableTabList.forEach(t -> tmplijst.add(t));

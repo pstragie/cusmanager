@@ -5,6 +5,8 @@
  */
 package javafxcusmanager;
 
+import java.text.ParseException;
+import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -32,6 +34,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.util.Callback;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import javafx.scene.control.ScrollPane;
 
 /**
  *
@@ -40,26 +45,98 @@ import javafx.util.Callback;
 public class GameSchedule {
     
     private static final int MAX_ITEMS = 3;
+    public int startOfWeekCount = 0; // 0 = Runs with Year Calendar (January 1); 1 = Runs with competition start (date can be set);
     private final TableView<Game> table = new TableView<>();
     private ObservableList<Game> data = FXCollections.observableArrayList(
         new Game("Frogs", "Wolverines", "Isabelle Verelst"),
         new Game("Wielsbeke", "Doornik", "Pieter Stragier")
     );
-    FilteredList<Game> filteredData = new FilteredList<>(
-            data,
-            game -> data.indexOf(game) < MAX_ITEMS
-    );
+    private ObservableList<Schedule> scheduleData;
     // Constructor
     public GameSchedule() {
-    
+        scheduleData = FXCollections.observableArrayList();
+        SimpleDateFormat formatter = new SimpleDateFormat("EEEE, MMM dd, yyyy HH:mm:ss a");
+        String dateInString = "Friday, Jun 7, 2013 12:10:56 PM";
+        ArrayList<Game> gamesArray = new ArrayList<>();
+        Game game1 = new Game("Frogs", "Wolverines", "Isabelle Verelst");
+        Game game2 = new Game("Wielsbeke", "Doornik", "Pieter Stragier");
+        Game game3 = new Game("Ghent", "Zottegem", "Hermelien");
+        gamesArray.add(game1);
+        gamesArray.add(game2);
+        gamesArray.add(game3);
+        scheduleData.add(new Schedule("Gold", dateInString, gamesArray));
+    }
+
+    private Date stringToDate(String dateString) {
+        SimpleDateFormat formatter = new SimpleDateFormat("EEEE, MMM dd, yyyy HH:mm:ss a");
+        //String dateInString = "Friday, Jun 7, 2013 12:10:56 PM";
+        String dateInString = dateString;
+        Date date = new Date();
+        try {
+
+            date = formatter.parse(dateInString);
+            System.out.println(date);
+            System.out.println(formatter.format(date));
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        
+        return date;
     }
     
-    public VBox createCalendar(String periode) {
+    public VBox createCalendar(String afdeling) {
+        
+        VBox yearCalendar = new VBox();
+        VBox vbox = new VBox();
+        
+        
+        yearCalendar.setPadding(new Insets(5, 0, 5, 0));
+        if(startOfWeekCount == 0) {
+            for(int week=1; week<10; week++) {
+                vbox.getChildren().add(createWeekCalendar(afdeling, week));
+            }
+        } else {
+            for(int week=1; week<=30; week++) {
+                vbox.getChildren().add(createWeekCalendar(afdeling, week));
+            }
+        }
+        ScrollPane sideBarScroller = new ScrollPane(vbox);
+        sideBarScroller.setFitToWidth(true);
+        yearCalendar.getChildren().add(sideBarScroller);
+        return yearCalendar;
+    }
+    
+    public VBox createWeekCalendar(String afdeling, int week) {
         VBox calendarbox = new VBox();
-        // Get empty Weekend game model
+        final Label label = new Label("Week " + week);
+        // TODO: flexible week count according to user selection (1 January or start of competition
+        label.setFont(new Font("Arial", 16));
+        TableView table = new TableView();
+        table.setEditable(true);
+        table.setDisable(false);
+
+        TableColumn homeTeamCol = new TableColumn("Home team");
+        homeTeamCol.prefWidthProperty().bind(table.widthProperty().divide(3));
+        homeTeamCol.setCellValueFactory(
+            new PropertyValueFactory<Game, String>("homeTeamName"));
+        homeTeamCol.setCellFactory(e -> {
+            TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
+                @Override
+                public void updateItem(String item, boolean empty) {
+                    // Make sure you call super.updateItem, or you might get really weird bugs.
+                    super.updateItem(item, empty);
+                    if (item == null || empty) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        setText(item);
+                        setGraphic(null);
+                    }
+                }
+                };
             
-        /*
-            table.setOnDragOver(new EventHandler<DragEvent>() {
+            cell.setOnDragOver(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
                 // data is dragged over the target 
@@ -70,17 +147,44 @@ public class GameSchedule {
                 event.consume();
                 }
             });
-        */
-            /*
-            table.setOnDragDropped(new EventHandler<DragEvent>() {
+
+            // HERE IS HOW TO GET THE ROW AND CELL INDEX
+            cell.setOnDragDetected(eh -> {
+                // Get the row index of this cell
+                int rowIndex = cell.getIndex();
+                System.out.println("Cell row index: " + rowIndex);
+
+                // Get the column index of this cell.
+                int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
+                System.out.println("Cell column index: " + columnIndex);
+            });
+
+            cell.setOnDragDropped(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
+                int rowIndex = cell.getIndex();
+                System.out.println("Cell row index: " + rowIndex);
+
+                // Get the column index of this cell.
+                int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
+                System.out.println("Cell column index: " + columnIndex);
+
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (event.getDragboard().hasString()) {            
 
                     String text = db.getString();
-                    data.add(new Game(text, "iets", "iets anders"));
+
+                    if(rowIndex < 0 || rowIndex >= data.size()) {
+                        int sprong = rowIndex - data.size();
+                        for(int i=0; i<sprong; i++) {
+                            data.add(new Game(null, null, null));
+                        }
+                        data.add(new Game(text, null, null));
+                    } else {
+                        data.set(rowIndex, new Game(text, data.get(rowIndex).visitingteam.get(), data.get(rowIndex).umpire.get()));
+
+                    }
                     table.setItems(data);
                     success = true;
                 }
@@ -88,113 +192,9 @@ public class GameSchedule {
                 event.consume();
                 } 
             });  
-           */
-            
-            final Label label = new Label("Game Schedule");
-            label.setFont(new Font("Arial", 20));
+            return cell;
+        });
 
-            table.setEditable(true);
-            table.setDisable(false);
-            
-            
-            /*
-            Callback<TableColumn, TableCell> cellFactory = 
-                    new Callback<TableColumn, TableCell>() {
-                        public TableCell call(TableColumn p) {
-                            return new EditingCell();
-                        }
-                    };
-            */
-            TableColumn homeTeamCol = new TableColumn("Home team");
-            homeTeamCol.prefWidthProperty().bind(table.widthProperty().divide(3));
-            homeTeamCol.setCellValueFactory(
-                new PropertyValueFactory<Game, String>("homeTeamName"));
-            homeTeamCol.setCellFactory(e -> {
-                TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
-                    @Override
-                    public void updateItem(String item, boolean empty) {
-                        // Make sure you call super.updateItem, or you might get really weird bugs.
-                        super.updateItem(item, empty);
-                        if (item == null || empty) {
-                            setText(null);
-                            setGraphic(null);
-                        } else {
-                            setText(item);
-                            setGraphic(null);
-                        }
-                    }
-                    };
-                
-                cell.setOnDragOver(new EventHandler<DragEvent>() {
-                @Override
-                public void handle(DragEvent event) {
-                    // data is dragged over the target 
-                    Dragboard db = event.getDragboard();
-                    if (event.getDragboard().hasString()){
-                        event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                    }
-                    event.consume();
-                    }
-                });
-                
-                // HERE IS HOW TO GET THE ROW AND CELL INDEX
-                cell.setOnDragDetected(eh -> {
-                    // Get the row index of this cell
-                    int rowIndex = cell.getIndex();
-                    System.out.println("Cell row index: " + rowIndex);
-
-                    // Get the column index of this cell.
-                    int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                    System.out.println("Cell column index: " + columnIndex);
-                });
-        
-                cell.setOnDragDropped(new EventHandler<DragEvent>() {
-                @Override
-                public void handle(DragEvent event) {
-                    int rowIndex = cell.getIndex();
-                    System.out.println("Cell row index: " + rowIndex);
-
-                    // Get the column index of this cell.
-                    int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                    System.out.println("Cell column index: " + columnIndex);
-                    
-                    Dragboard db = event.getDragboard();
-                    boolean success = false;
-                    if (event.getDragboard().hasString()) {            
-
-                        String text = db.getString();
-                        
-                        if(rowIndex < 0 || rowIndex >= data.size()) {
-                            int sprong = rowIndex - data.size();
-                            for(int i=0; i<sprong; i++) {
-                                data.add(new Game(null, null, null));
-                            }
-                            data.add(new Game(text, null, null));
-                        } else {
-                            data.set(rowIndex, new Game(text, data.get(rowIndex).visitingteam.get(), data.get(rowIndex).umpire.get()));
-
-                        }
-                        table.setItems(data);
-                        success = true;
-                    }
-                    event.setDropCompleted(success);
-                    event.consume();
-                    } 
-                });  
-                return cell;
-            });
-            
-            
-
-            //homeTeamCol.setCellFactory(cellFactory);
-            /*homeTeamCol.setOnEditCommit(new EventHandler<CellEditEvent<Game, String>>() {
-                @Override
-                public void handle(CellEditEvent<Game, String> t) {
-                    ((Game) t.getTableView().getItems().get(
-                    t.getTablePosition().getRow())
-                    ).setHomeTeamName(t.getNewValue());
-                }
-            });*/
             TableColumn visitingTeamCol = new TableColumn("Visiting team");
             visitingTeamCol.prefWidthProperty().bind(table.widthProperty().divide(3));
             visitingTeamCol.setCellValueFactory(
@@ -215,180 +215,164 @@ public class GameSchedule {
                         }
                     }
                     };
-                
-                cell.setOnDragOver(new EventHandler<DragEvent>() {
-                @Override
-                public void handle(DragEvent event) {
-                    // data is dragged over the target 
-                    Dragboard db = event.getDragboard();
-                    if (event.getDragboard().hasString()){
-                        event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                    }
-                    event.consume();
-                    }
-                });
-                
-                // HERE IS HOW TO GET THE ROW AND CELL INDEX
-                cell.setOnDragDetected(eh -> {
-                    // Get the row index of this cell
-                    int rowIndex = cell.getIndex();
-                    System.out.println("Cell row index: " + rowIndex);
 
-                    // Get the column index of this cell.
-                    int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                    System.out.println("Cell column index: " + columnIndex);
-                });
-        
-                cell.setOnDragDropped(new EventHandler<DragEvent>() {
-                @Override
-                public void handle(DragEvent event) {
-                    int rowIndex = cell.getIndex();
-                    System.out.println("Cell row index: " + rowIndex);
-
-                    // Get the column index of this cell.
-                    int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                    System.out.println("Cell column index: " + columnIndex);
-                    
-                    Dragboard db = event.getDragboard();
-                    boolean success = false;
-                    if (event.getDragboard().hasString()) {            
-
-                        String text = db.getString();
-                        if(rowIndex < 0 || rowIndex >= data.size()) {
-                            data.add(new Game(null, text, null));
-                        } else {
-                            data.set(rowIndex, new Game(data.get(rowIndex).hometeam.get(), text, data.get(rowIndex).umpire.get()));
-                        }
-                        table.setItems(data);
-                        success = true;
-                    }
-                    event.setDropCompleted(success);
-                    event.consume();
-                    } 
-                });  
-                return cell;
+            cell.setOnDragOver(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                // data is dragged over the target 
+                Dragboard db = event.getDragboard();
+                if (event.getDragboard().hasString()){
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                }
+                event.consume();
+                }
             });
-            //visitingTeamCol.setCellFactory(cellFactory);
-            /*visitingTeamCol.setOnEditCommit(
-            new EventHandler<CellEditEvent<Game, String>>() {
+
+            // HERE IS HOW TO GET THE ROW AND CELL INDEX
+            cell.setOnDragDetected(eh -> {
+                // Get the row index of this cell
+                int rowIndex = cell.getIndex();
+                System.out.println("Cell row index: " + rowIndex);
+
+                // Get the column index of this cell.
+                int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
+                System.out.println("Cell column index: " + columnIndex);
+            });
+
+            cell.setOnDragDropped(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                int rowIndex = cell.getIndex();
+                System.out.println("Cell row index: " + rowIndex);
+
+                // Get the column index of this cell.
+                int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
+                System.out.println("Cell column index: " + columnIndex);
+
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+                if (event.getDragboard().hasString()) {            
+
+                    String text = db.getString();
+                    if(rowIndex < 0 || rowIndex >= data.size()) {
+                        data.add(new Game(null, text, null));
+                    } else {
+                        data.set(rowIndex, new Game(data.get(rowIndex).hometeam.get(), text, data.get(rowIndex).umpire.get()));
+                    }
+                    table.setItems(data);
+                    success = true;
+                }
+                event.setDropCompleted(success);
+                event.consume();
+                } 
+            });  
+
+            return cell;
+        });
+
+
+        TableColumn umpireCol = new TableColumn("Umpire");
+        umpireCol.prefWidthProperty().bind(table.widthProperty().divide(3));
+        umpireCol.setCellValueFactory(
+            new PropertyValueFactory<Game, String>("umpireName")
+        );
+        umpireCol.setCellFactory(e -> {
+            TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
                 @Override
-                public void handle(CellEditEvent<Game, String> t) {
-                    ((Game) t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())
-                        ).setVisitingTeamName(t.getNewValue());
+                public void updateItem(String item, boolean empty) {
+                    // Make sure you call super.updateItem, or you might get really weird bugs.
+                    super.updateItem(item, empty);
+                    if (item == null || empty) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        setText(item);
+                        setGraphic(null);
                     }
                 }
-            );*/
-            TableColumn umpireCol = new TableColumn("Umpire");
-            umpireCol.prefWidthProperty().bind(table.widthProperty().divide(3));
-            umpireCol.setCellValueFactory(
-                new PropertyValueFactory<Game, String>("umpireName")
-            );
-            umpireCol.setCellFactory(e -> {
-                TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
-                    @Override
-                    public void updateItem(String item, boolean empty) {
-                        // Make sure you call super.updateItem, or you might get really weird bugs.
-                        super.updateItem(item, empty);
-                        if (item == null || empty) {
-                            setText(null);
-                            setGraphic(null);
-                        } else {
-                            setText(item);
-                            setGraphic(null);
-                        }
-                    }
-                    };
-                
-                cell.setOnDragOver(new EventHandler<DragEvent>() {
-                @Override
-                public void handle(DragEvent event) {
-                    // data is dragged over the target 
-                    Dragboard db = event.getDragboard();
-                    if (event.getDragboard().hasString()){
-                        event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                    }
-                    event.consume();
-                    }
-                });
-                
-                // HERE IS HOW TO GET THE ROW AND CELL INDEX
-                cell.setOnDragDetected(eh -> {
-                    // Get the row index of this cell
-                    int rowIndex = cell.getIndex();
-                    System.out.println("Cell row index: " + rowIndex);
+                };
 
-                    // Get the column index of this cell.
-                    int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                    System.out.println("Cell column index: " + columnIndex);
-                });
-        
-                cell.setOnDragDropped(new EventHandler<DragEvent>() {
-                @Override
-                public void handle(DragEvent event) {
-                    int rowIndex = cell.getIndex();
-                    System.out.println("Cell row index: " + rowIndex);
-
-                    // Get the column index of this cell.
-                    int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                    System.out.println("Cell column index: " + columnIndex);
-                    
-                    Dragboard db = event.getDragboard();
-                    boolean success = false;
-                    if (event.getDragboard().hasString()) {            
-
-                        String text = db.getString();
-                        if(rowIndex < 0 || rowIndex >= data.size()) {
-                            data.add(new Game(null, null, text));
-                        } else {
-                            data.set(rowIndex, new Game(data.get(rowIndex).hometeam.get(), data.get(rowIndex).visitingteam.get(), text));
-                        }
-                        table.setItems(data);
-                        success = true;
-                    }
-                    event.setDropCompleted(success);
-                    event.consume();
-                    } 
-                });  
-                return cell;
-            });
-            //umpireCol.setCellFactory(cellFactory);
-            /*umpireCol.setOnEditCommit(
-            new EventHandler<CellEditEvent<Game, String>>() {
-                @Override
-                public void handle(CellEditEvent<Game, String> t) {
-                    ((Game) t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())
-                        ).setUmpire1(t.getNewValue());
-                    }
+            cell.setOnDragOver(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                // data is dragged over the target 
+                Dragboard db = event.getDragboard();
+                if (event.getDragboard().hasString()){
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
-            );
-            */
-            System.out.println("Data for table: " + data);
-            
-            table.setItems(data);
-            table.setFixedCellSize(25);
-            table.setMaxHeight(128);
-            table.setMinHeight(128);
-            table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-            
-            //table.prefHeight(100 + 45);
-            //table.prefHeightProperty().bind(Bindings.size(table.getItems()).multiply(table.getFixedCellSize()).add(45));
+                event.consume();
+                }
+            });
+            // HERE IS HOW TO GET THE ROW AND CELL INDEX
+            cell.setOnDragDetected(eh -> {
+                // Get the row index of this cell
+                int rowIndex = cell.getIndex();
+                System.out.println("Cell row index: " + rowIndex);
 
-            System.out.println("table data: " + table.getItems());
-            table.getColumns().addAll(homeTeamCol, visitingTeamCol, umpireCol);
+                // Get the column index of this cell.
+                int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
+                System.out.println("Cell column index: " + columnIndex);
+            });
 
-            table.getSelectionModel().setCellSelectionEnabled(true);
+            cell.setOnDragDropped(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                int rowIndex = cell.getIndex();
+                System.out.println("Cell row index: " + rowIndex);
+
+                // Get the column index of this cell.
+                int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
+                System.out.println("Cell column index: " + columnIndex);
+
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+                if (event.getDragboard().hasString()) {            
+
+                    String text = db.getString();
+                    if(rowIndex < 0 || rowIndex >= data.size()) {
+                        data.add(new Game(null, null, text));
+                    } else {
+                        data.set(rowIndex, new Game(data.get(rowIndex).hometeam.get(), data.get(rowIndex).visitingteam.get(), text));
+                    }
+                    table.setItems(data);
+                    success = true;
+                }
+                event.setDropCompleted(success);
+                event.consume();
+                } 
+            });  
+            return cell;
+        });
+                
             
-            calendarbox.setPadding(new Insets(0, 0, 0, 0));
-            calendarbox.getChildren().addAll(label, table);
+        System.out.println("Data for table: " + data);
+
+        table.setItems(data);
+        table.setFixedCellSize(25);
+        table.setMaxHeight(128);
+        table.setMinHeight(128);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        //table.prefHeight(100 + 45);
+        //table.prefHeightProperty().bind(Bindings.size(table.getItems()).multiply(table.getFixedCellSize()).add(45));
+
+        System.out.println("table data: " + table.getItems());
+        table.getColumns().addAll(homeTeamCol, visitingTeamCol, umpireCol);
+
+        table.getSelectionModel().setCellSelectionEnabled(true);
+
+        calendarbox.setPadding(new Insets(0, 0, 0, 0));
+        calendarbox.getChildren().addAll(label, table);
+
         
-        
-        return calendarbox;
+    return calendarbox;
+
+           
     }
     
     
     public static class Game {
+        
         private final SimpleStringProperty hometeam;
         private final SimpleStringProperty visitingteam;
         private final SimpleStringProperty umpire;
@@ -422,6 +406,38 @@ public class GameSchedule {
         
     }
     
+    public static class Schedule {
+        private final SimpleStringProperty afdeling;
+        private final SimpleStringProperty datum;
+        private final ArrayList<Game> games;
+        
+        private Schedule(String afdelingsNaam, String datumString, ArrayList<Game> gameArray) {
+            this.afdeling = new SimpleStringProperty(afdelingsNaam);
+            this.datum = new SimpleStringProperty(datumString);
+            this.games = new ArrayList<>(gameArray);
+        }
+            
+        public String getAfdelingsNaam() {
+            return afdeling.get();
+        }
+        public void setAfdelingsNaam(String afdelingsNaam) {
+            afdeling.set(afdelingsNaam);
+        }
+        public String getDatumString() {
+            return datum.get();
+        }
+        public void setDatumString(String datumString) {
+            datum.set(datumString);
+        }
+        public ArrayList<Game> getGameArray() {
+            return games;
+        }
+        public void setGameArray(ArrayList<Game> gameArray) {
+            games.addAll(games);
+        }
+    }    
+    
+
     class EditingCell extends TableCell<Game, String> {
  
         private TextField textField;

@@ -187,7 +187,7 @@ public class MainPanel {
         
         menuAfdelingenItem1.setOnAction(e -> { 
             Stage stage = new Stage();
-            Scene scene = new Scene(newAfdelingPaneel("Afdelingen", leftTabPane, rightTabPane));
+            Scene scene = new Scene(newAfdelingPaneel("Afdelingen", leftTabPane, rightTabPane, centerTabPane));
             stage.setTitle("Afdelingen wijzigen");
             stage.setScene(scene);
             stage.show();
@@ -247,26 +247,22 @@ public class MainPanel {
     
     public VBox createCenterPane(TabPane middleTabPane) {
         VBox vbox = new VBox();
+            VBox horBox = createHorBoxFilterGames(middleTabPane);    
+            vbox.getChildren().add(horBox);
         vbox.setBorder(new Border(new BorderStroke(Color.DARKSLATEBLUE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(3, 3, 3, 3))));
         
         HBox hbox = new HBox();
         hbox.setAlignment(Pos.CENTER);
-        Label gameScheduleLabel = new Label("Game Schedule");
-        gameScheduleLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
-        gameScheduleLabel.setAlignment(Pos.CENTER);
-        hbox.getChildren().add(gameScheduleLabel);
+        //Label gameScheduleLabel = new Label("Game Schedule");
+        //gameScheduleLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
+        //gameScheduleLabel.setAlignment(Pos.CENTER);
+        //hbox.getChildren().add(gameScheduleLabel);
         //vbox.setAlignment(Pos.CENTER);
         vbox.getChildren().add(hbox);
         middleTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        middleTabPane.getTabs().add(new Tab("Week"));
-        middleTabPane.getTabs().add(new Tab("Maand"));
-        middleTabPane.getTabs().add(new Tab("Jaar"));
-        //vbox.getChildren().add(gameSchedule.creaameScteCalendar("Week"));
+        middleTabPane.getTabs().addAll(getGameTabArrayListFromFile());
             
         vbox.getChildren().add(middleTabPane);
-        gameSchedule = new GameSchedule();
-        
-        vbox.getChildren().add(gameSchedule.createCalendar("Week"));
         vbox.setPadding(new Insets(0, 5, 0, 5));
         return vbox;
     }
@@ -402,7 +398,64 @@ public class MainPanel {
         return vbox;
     }
     
-     public ObservableList<String> getTabsList() {
+    public VBox createHorBoxFilterGames(TabPane centerTabPane) {
+        /** Creates a VBox with textfield and button for filtering tabpanes
+         * 
+         */
+        VBox vbox = new VBox();
+        Label gameLabel = new Label("Umpires");
+        gameLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
+        gameLabel.setAlignment(Pos.CENTER);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.getChildren().add(gameLabel);
+        HBox hbox = new HBox();
+            TextField filterField = new TextField();
+            filterField.setPromptText("Filter tabs");
+            filterField.textProperty().addListener((obs, oldText, newText) -> {
+                System.out.println("Text changed from "+oldText+" to "+newText);
+                
+                if (newText == null || newText.isEmpty()) {
+                    System.out.println("current observableTabList: " + observableTabList);
+                    System.out.println("Nothing to filter: " + observableTabList);
+                    // Reset the tabpane to show all tabs
+                    centerTabPane.getTabs().clear();
+                    
+                    centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+                } else {
+                    System.out.println("Filter active: " + newText);
+                    System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
+                    
+                    centerTabPane.getTabs().clear(); // Clear to restart on every change!
+                    observableTabList = getObservableList();
+                    observableTabList.filtered(tab -> tab.contains(newText)).forEach(t -> {
+                        centerTabPane.getTabs().add(new Tab(t));
+                    });
+                    
+                    System.out.println("sideTabPane: " + leftTabPane.getTabs());
+                    
+                }
+            });
+            
+            resetButton = new Button();
+            resetButton.setText("Reset");
+            resetButton.setOnAction(event -> {
+                System.out.println("Reset clicked, list: " + observableTabList);
+                System.out.println("tabs in pane: " + centerTabPane.getTabs());
+                centerTabPane.getTabs().clear();
+                System.out.println("tabs in pane after removal: " + centerTabPane.getTabs());
+                centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+                System.out.println("tabs in pane after adding all from file: " + centerTabPane.getTabs());
+                filterField.setText("");
+            });
+            hbox.getStyleClass().add("bordered-titled-border");
+            hbox.setHgrow(filterField, Priority.ALWAYS);
+            hbox.getChildren().add(filterField);
+            hbox.getChildren().add(resetButton);
+            vbox.getChildren().add(hbox);
+        return vbox;
+    }
+    
+    public ObservableList<String> getTabsList() {
         return observableTabList;
     }
     
@@ -428,7 +481,6 @@ public class MainPanel {
         return tabs;
     }
     
-    
     public ArrayList<Tab> getUmpireTabArrayListFromFile() {
         /** Get tabs from the list and add content for that afdeling
          * 
@@ -447,7 +499,23 @@ public class MainPanel {
         return tabs;
     }
     
-    
+    public ArrayList<Tab> getGameTabArrayListFromFile() {
+        /** Get tabs from the list and add content for that afdeling
+         * 
+         */
+        gameSchedule = new GameSchedule();
+        System.out.println("Get Tabs from file and create club content\n________________");
+        ArrayList<String> listOfItems = new ArrayList<>();
+        listOfItems.addAll(createListOfItems("afdelingen.txt"));
+        ArrayList<Tab> tabs = new ArrayList<>();
+        listOfItems.forEach(a -> {
+            Tab tab = new Tab(a);
+            tab.setContent(gameSchedule.createCalendar(a)); // Set filtered content
+            tabs.add(tab);
+            
+        });        
+        return tabs;
+    }
      
     
     
@@ -458,10 +526,10 @@ public class MainPanel {
         return arraylist;
     }
     
-    public Pane newAfdelingPaneel(String s, TabPane tabpaneleft, TabPane tabpaneright) {
+    public Pane newAfdelingPaneel(String s, TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter) {
         BorderPane border = new BorderPane();
         if(s == "Afdelingen") {
-            changeAfdelingenpane = new Afdelingen(tabpaneleft, tabpaneright);
+            changeAfdelingenpane = new Afdelingen(tabpaneleft, tabpaneright, tabpanecenter);
             border.setCenter(changeAfdelingenpane.afdelingenPanel());
             
         }
