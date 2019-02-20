@@ -315,21 +315,15 @@ public class MainPanel {
                     sideTabPane.getTabs().clear();
                     sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
                     sideTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
-                    
-                    System.out.println("sideTabPane: " + leftTabPane.getTabs());
-                    
+                                        
                 }
             });
             
             resetButton = new Button();
             resetButton.setText("Reset");
             resetButton.setOnAction(event -> {
-                System.out.println("Reset clicked, list: " + observableTabList);
-                System.out.println("tabs in pane: " + sideTabPane.getTabs());
                 sideTabPane.getTabs().clear();
-                System.out.println("tabs in pane after removal: " + sideTabPane.getTabs());
                 sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
-                System.out.println("tabs in pane after adding all from file: " + sideTabPane.getTabs());
                 filterField.setText("");
             });
             hbox.getStyleClass().add("bordered-titled-border");
@@ -355,22 +349,17 @@ public class MainPanel {
             TextField filterField = new TextField();
             filterField.setPromptText("Filter tabs");
             filterField.textProperty().addListener((obs, oldText, newText) -> {
-                System.out.println("Text changed from "+oldText+" to "+newText);
                 
                 if (newText == null || newText.isEmpty()) {
-                    System.out.println("Nothing to filter: " + observableTabList);
                     // Reset the tabpane to show all tabs
                     sideTabPane.getTabs().clear();
                     sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
                 } else {
-                    System.out.println("Filter active: " + newText);
-                    System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
                                       
                     sideTabPane.getTabs().clear();
                     sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
                     sideTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
                     //sideTabPane.getTabs().filtered(tab -> tab.getText().contains(newText));
-                    System.out.println("sideTabPane: " + leftTabPane.getTabs());
                     
                 }
             });
@@ -378,12 +367,8 @@ public class MainPanel {
             Button filterButton = new Button();
             filterButton.setText("Reset");
             filterButton.setOnAction(event -> {
-                System.out.println("Reset clicked, list: " + observableTabList);
-                System.out.println("tabs in pane: " + sideTabPane.getTabs());
                 sideTabPane.getTabs().clear();
-                System.out.println("tabs in pane after removal: " + sideTabPane.getTabs());
                 sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
-                System.out.println("tabs in pane after adding all from file: " + sideTabPane.getTabs());
                 filterField.setText("");
             });
             hbox.getStyleClass().add("bordered-titled-border");
@@ -408,37 +393,24 @@ public class MainPanel {
             TextField filterField = new TextField();
             filterField.setPromptText("Filter tabs");
             filterField.textProperty().addListener((obs, oldText, newText) -> {
-                System.out.println("Text changed from "+oldText+" to "+newText);
                 
                 if (newText == null || newText.isEmpty()) {
-                    System.out.println("current observableTabList: " + observableTabList);
-                    System.out.println("Nothing to filter: " + observableTabList);
                     // Reset the tabpane to show all tabs
                     centerTabPane.getTabs().clear();
-                    
                     centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
-                } else {
-                    System.out.println("Filter active: " + newText);
-                    System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
-                    
+                } else {                    
                     centerTabPane.getTabs().clear();
                     centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
                     centerTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
-                    
-                    System.out.println("sideTabPane: " + leftTabPane.getTabs());
-                    
+                                        
                 }
             });
             
             resetButton = new Button();
             resetButton.setText("Reset");
             resetButton.setOnAction(event -> {
-                System.out.println("Reset clicked, list: " + observableTabList);
-                System.out.println("tabs in pane: " + centerTabPane.getTabs());
                 centerTabPane.getTabs().clear();
-                System.out.println("tabs in pane after removal: " + centerTabPane.getTabs());
                 centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
-                System.out.println("tabs in pane after adding all from file: " + centerTabPane.getTabs());
                 filterField.setText("");
             });
             hbox.getStyleClass().add("bordered-titled-border");

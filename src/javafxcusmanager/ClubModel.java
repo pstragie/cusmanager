@@ -45,14 +45,11 @@ public class ClubModel {
             clublijstPerafdeling = new ArrayList<>();
             clublijst = new Clubs();
             Map<String, String> clubmap = clublijst.getList();
-            System.out.println("clubmap:" + clubmap);
             clubmap.forEach((k,val) ->  {
                 if (val.equals(afd)) {
-                    System.out.println(k);
                     clublijstPerafdeling.add(k);
                 }
             });
-            System.out.println("clublijstPerafdeling" + "(" + afd + "): " + clublijstPerafdeling);
             ObservableList<String> data = FXCollections.<String>observableArrayList(clublijstPerafdeling);
             clubListview.getItems().addAll(data);
             clubListview.setPrefSize(150, 800);

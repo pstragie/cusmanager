@@ -22,6 +22,7 @@ import javafx.collections.FXCollections;
 public class DocumentHandling {
     
     private MainPanel mainPanel;
+    private GameSchedule gameschedule;
     
     public DocumentHandling() {
        mainPanel = new MainPanel();
@@ -50,10 +51,6 @@ public class DocumentHandling {
     
     public void storeAfdelingen(ArrayList<String> afdelingen) {
         // Write to file
-        
-        
-        
-        
         try (FileWriter fileWriter = new FileWriter("afdelingen.txt")) {
             fileWriter.write("Afdelingen");
             afdelingen.forEach((k) ->  {
@@ -108,5 +105,23 @@ public class DocumentHandling {
 		System.out.println("List: " + list);
                 
         return list;
+    }
+    
+    public void storeGameSchedule(ArrayList<String> wedstrijdschema) {
+        // Write to file
+        try (FileWriter fileWriter = new FileWriter("wedstrijdschema.txt")) {
+            fileWriter.write("Wedstrijdschema");
+            wedstrijdschema.forEach((k) ->  {
+                String fileContent = "\n" + k;
+                try {
+                    fileWriter.write(fileContent);
+                } catch(IOException e) {
+                    System.out.println(e);
+                }
+            });
+        } catch (IOException e) {
+            System.out.println("Error writing wedstrijdschema: " + e);
+        }
+        
     }
 }

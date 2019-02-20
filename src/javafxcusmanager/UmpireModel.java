@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
@@ -35,19 +36,47 @@ public class UmpireModel {
         
     }
     
+    public static class Umpire {
+        private final SimpleStringProperty umpirenaam;
+        private final SimpleStringProperty umpireadres;
+        private final SimpleStringProperty umpireafdeling;
+        
+        private Umpire(String naamString, String adresString, String afdelingString) {
+            this.umpirenaam = new SimpleStringProperty(naamString);
+            this.umpireadres = new SimpleStringProperty(adresString);
+            this.umpireafdeling = new SimpleStringProperty(afdelingString);
+        }
+            
+        public String getNaamString() {
+            return umpirenaam.get();
+        }
+        public void setAfdelingsNaam(String naamString) {
+            umpirenaam.set(naamString);
+        }
+        public String getAdresString() {
+            return umpireadres.get();
+        }
+        public void setAdresString(String adresString) {
+            umpireadres.set(adresString);
+        }
+        public String getAfdelingString() {
+            return umpireafdeling.get();
+        }
+        public void setAfdelingString(String afdelingString) {
+            umpireafdeling.set(afdelingString);
+        }
+    }    
+    
     public VBox createUmpireContent(String afd) {
             ListView<String> umpireListview = new ListView<>();
             umpirelijstPerafdeling = new ArrayList<>();
             umpirelijst = new Umpires();
             Map<String, String> umpiremap = umpirelijst.getList();
-            System.out.println("umpiremap:" + umpiremap);
             umpiremap.forEach((k,val) ->  {
                 if (val.equals(afd)) {
-                    System.out.println(k);
                     umpirelijstPerafdeling.add(k);
                 }
             });
-            System.out.println("umpirelijstPerafdeling" + "(" + afd + "): " + umpirelijstPerafdeling);
             ObservableList<String> data = FXCollections.<String>observableArrayList(umpirelijstPerafdeling);
             umpireListview.getItems().addAll(data);
             umpireListview.setPrefSize(150, 800);

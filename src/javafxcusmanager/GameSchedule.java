@@ -5,38 +5,36 @@
  */
 package javafxcusmanager;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.util.Callback;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.List;
+import javafx.collections.ListChangeListener;
+import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.ScrollPane;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 
 /**
  *
@@ -45,28 +43,92 @@ import javafx.scene.control.ScrollPane;
 public class GameSchedule {
     
     private static final int MAX_ITEMS = 3;
+    private DocumentHandling documentHandler;
+    
     public int startOfWeekCount = 0; // 0 = Runs with Year Calendar (January 1); 1 = Runs with competition start (date can be set);
     private final TableView<Game> table = new TableView<>();
-    private ObservableList<Game> data = FXCollections.observableArrayList(
-        new Game("Frogs", "Wolverines", "Isabelle Verelst"),
-        new Game("Wielsbeke", "Doornik", "Pieter Stragier")
-    );
+    private Schedule schedule;
+    
     private ObservableList<Schedule> scheduleData;
+    private final ObservableList<Schedule> scheduleDBdata = FXCollections.observableArrayList();
+    
+    private GameSchedulePersistence gsp;
+    private ArrayList<String> emptyArray = new ArrayList<>();
+    private ArrayList<Game> gameArray = new ArrayList<>();
+
     // Constructor
-    public GameSchedule() {
+    public GameSchedule() throws JAXBException, IOException {
+        // Load schedule data from the specified file. The current scheduel data will be replaced
+        
+        
+        
         scheduleData = FXCollections.observableArrayList();
+        gsp = new GameSchedulePersistence();
+        
+        scheduleDBdata.addAll(gsp.scheduleData);
+        System.out.println("database file path = " + gsp.getScheduleFilePath());
+        scheduleData.addListener((ListChangeListener.Change<? extends Schedule> change) -> { 
+                    while(change.next()) {
+                        if(change.wasUpdated()) {
+                            System.out.println("Update detected");
+                            // Write to file
+                                
+                        } else
+                            if (change.wasPermutated()) {
+                                System.out.println("Was permutated");
+                            } else {
+                                if (change.wasAdded()) {
+                                    //System.out.println("Data was added to scheduleData");
+                                    // Write to file
+                                    
+                                    // Save to database
+                                    
+                                    //GameSchedule.write(scheduleData, /home/pieter/wedstrijdschema.txt);
+                                }
+                            }
+                        
+                }
+            });
+        
+        String week = "1";
         SimpleDateFormat formatter = new SimpleDateFormat("EEEE, MMM dd, yyyy HH:mm:ss a");
         String dateInString = "Friday, Jun 7, 2013 12:10:56 PM";
         ArrayList<Game> gamesArray = new ArrayList<>();
-        Game game1 = new Game("Frogs", "Wolverines", "Isabelle Verelst");
-        Game game2 = new Game("Wielsbeke", "Doornik", "Pieter Stragier");
-        Game game3 = new Game("Ghent", "Zottegem", "Hermelien");
+        ArrayList<String> umpArray = new ArrayList<>();
+        umpArray.add("Pieter");
+        umpArray.add("Hermelien");
+        ArrayList<String> emptyArray = new ArrayList<>();
+        Game game1 = new Game("14/04/2019, 15:00", "Frogs", "Wolverines", "Isabelle Verelst", umpArray);
+        Game game2 = new Game("14/04/2019, 15:00", "Wielsbeke", "Doornik", "Pieter Stragier", emptyArray);
+        Game game3 = new Game("14/04/2019, 15:00", "Ghent", "Zottegem", "Hermelien", emptyArray);
         gamesArray.add(game1);
         gamesArray.add(game2);
         gamesArray.add(game3);
-        scheduleData.add(new Schedule("Gold", dateInString, gamesArray));
+        ArrayList<Game> emptyGamesArray = new ArrayList<>();
+        
+        
+        scheduleData.add(new Schedule("Gold", "1", gamesArray));
+        
+        // Add 51 empty weeks
+        for(int i=2; i<53; i++) {
+            scheduleData.add(new Schedule("Gold", Integer.toString(i), emptyGamesArray));
+        }
+        
     }
 
+    
+    public ObservableList<Schedule> scheduleDBdata() { return scheduleDBdata; }
+
+        @XmlElementWrapper(name="schedules")
+        @XmlElement(name = "schedule")
+        public List<Schedule> getAccounts() {
+            return new ArrayList<>(scheduleDBdata);
+        }
+
+        public void setAccounts(List<Schedule> schedules) {
+            this.scheduleDBdata.setAll(schedules);
+        }
+    
     private Date stringToDate(String dateString) {
         SimpleDateFormat formatter = new SimpleDateFormat("EEEE, MMM dd, yyyy HH:mm:ss a");
         //String dateInString = "Friday, Jun 7, 2013 12:10:56 PM";
@@ -108,18 +170,51 @@ public class GameSchedule {
     }
     
     public VBox createWeekCalendar(String afdeling, int week) {
+        
+        // Get data for this week and afdeling!!!
+        ObservableList<Schedule> weekdata = FXCollections.observableArrayList();
+        FilteredList<Schedule> firstFilter = scheduleDBdata.filtered(a -> a.getAfdelingsNaam().equals(afdeling));
+        FilteredList<Schedule> secondFilter = firstFilter.filtered(w -> w.getWeekString().equals(Integer.toString(week)));
+        weekdata.addAll(secondFilter);
+        System.out.println("filteredList: " + secondFilter);
+        // Setup the tableview
         VBox calendarbox = new VBox();
         final Label label = new Label("Week " + week);
         // TODO: flexible week count according to user selection (1 January or start of competition
         label.setFont(new Font("Arial", 16));
+        
         TableView table = new TableView();
         table.setEditable(true);
         table.setDisable(false);
 
+        TableColumn gameDateCol = new TableColumn("Datum");
+        
+        gameDateCol.prefWidthProperty().bind(table.widthProperty().divide(5));
+        gameDateCol.setCellValueFactory(
+                new PropertyValueFactory<>("gameDateString")
+        );
+        gameDateCol.setCellFactory(e -> {
+            TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
+                @Override
+                public void updateItem(String item, boolean empty) {
+                    // Make sure you call super.updateItem, or you might get really weird bugs.
+                    super.updateItem(item, empty);
+                    if (item == null || empty) {
+                        setText("");
+                        setGraphic(null);
+                    } else {
+                        setText(item);
+                        setGraphic(null);
+                    }
+                }
+                };
+            cell.setEditable(true);
+            return cell;
+        });
         TableColumn homeTeamCol = new TableColumn("Home team");
-        homeTeamCol.prefWidthProperty().bind(table.widthProperty().divide(3));
+        homeTeamCol.prefWidthProperty().bind(table.widthProperty().divide(5));
         homeTeamCol.setCellValueFactory(
-            new PropertyValueFactory<Game, String>("homeTeamName"));
+            new PropertyValueFactory<Schedule, String>("homeTeamName"));
         homeTeamCol.setCellFactory(e -> {
             TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
                 @Override
@@ -152,11 +247,8 @@ public class GameSchedule {
             cell.setOnDragDetected(eh -> {
                 // Get the row index of this cell
                 int rowIndex = cell.getIndex();
-                System.out.println("Cell row index: " + rowIndex);
-
                 // Get the column index of this cell.
                 int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                System.out.println("Cell column index: " + columnIndex);
             });
 
             cell.setOnDragDropped(new EventHandler<DragEvent>() {
@@ -175,17 +267,29 @@ public class GameSchedule {
 
                     String text = db.getString();
 
-                    if(rowIndex < 0 || rowIndex >= data.size()) {
-                        int sprong = rowIndex - data.size();
+                    if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
+                        int sprong = rowIndex - secondFilter.size();
                         for(int i=0; i<sprong; i++) {
-                            data.add(new Game(null, null, null));
+                            
+                            gameArray.add(new Game(null, text, null, null, emptyArray));
+                            scheduleDBdata.add(new Schedule(afdeling, Integer.toString(week), gameArray));
+                            
                         }
-                        data.add(new Game(text, null, null));
+                        
                     } else {
-                        data.set(rowIndex, new Game(text, data.get(rowIndex).visitingteam.get(), data.get(rowIndex).umpire.get()));
+                        // Get current gameArray for specific afdeling, week (and rowIndex)
+                        ArrayList<Game> selectedGameArray = secondFilter.get(rowIndex).getGameArray();
+                        // Adjust selected gameArray with new data
+                        selectedGameArray.set(rowIndex, new Game(selectedGameArray.get(rowIndex).getGameDateString(), text, selectedGameArray.get(rowIndex).getVisitingTeamName(), selectedGameArray.get(rowIndex).getPlateUmpireName(), selectedGameArray.get(rowIndex).getBaseUmpireNames()));
+                        // Add adjusted gameArray to schedule
+                        // get index of secondfilter data in scheduleDBdata
+                        int i = scheduleDBdata.indexOf(secondFilter);
+                        System.out.println("index of secondfilter: " + i);
+                        scheduleDBdata.set(i, new Schedule(afdeling, Integer.toString(week), selectedGameArray));
 
                     }
-                    table.setItems(data);
+                    table.setItems(scheduleDBdata);
+                    
                     success = true;
                 }
                 event.setDropCompleted(success);
@@ -196,9 +300,9 @@ public class GameSchedule {
         });
 
             TableColumn visitingTeamCol = new TableColumn("Visiting team");
-            visitingTeamCol.prefWidthProperty().bind(table.widthProperty().divide(3));
+            visitingTeamCol.prefWidthProperty().bind(table.widthProperty().divide(5));
             visitingTeamCol.setCellValueFactory(
-                new PropertyValueFactory<Game, String>("visitingTeamName")
+                new PropertyValueFactory<>("visitingTeamName")
                 );
             visitingTeamCol.setCellFactory(e -> {
                 TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
@@ -232,34 +336,35 @@ public class GameSchedule {
             cell.setOnDragDetected(eh -> {
                 // Get the row index of this cell
                 int rowIndex = cell.getIndex();
-                System.out.println("Cell row index: " + rowIndex);
-
                 // Get the column index of this cell.
                 int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                System.out.println("Cell column index: " + columnIndex);
             });
 
             cell.setOnDragDropped(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
                 int rowIndex = cell.getIndex();
-                System.out.println("Cell row index: " + rowIndex);
-
                 // Get the column index of this cell.
                 int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                System.out.println("Cell column index: " + columnIndex);
 
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (event.getDragboard().hasString()) {            
 
                     String text = db.getString();
-                    if(rowIndex < 0 || rowIndex >= data.size()) {
-                        data.add(new Game(null, text, null));
+                    if(rowIndex < 0 || rowIndex >= scheduleDBdata.size()) {
+                        gameArray.add(new Game(null, null, text, null, emptyArray));
+                            scheduleDBdata.add(new Schedule(afdeling, Integer.toString(week), gameArray));
                     } else {
-                        data.set(rowIndex, new Game(data.get(rowIndex).hometeam.get(), text, data.get(rowIndex).umpire.get()));
-                    }
-                    table.setItems(data);
+                        // Get current gameArray for specific afdeling, week (and rowIndex)
+                        FilteredList<Schedule> firstFilter = scheduleDBdata.filtered(a -> a.getAfdelingsNaam().equals(afdeling));
+                        FilteredList<Schedule> secondFilter = firstFilter.filtered(w -> w.getWeekString().equals(Integer.toString(week)));
+                        ArrayList<Game> selectedGameArray = secondFilter.get(rowIndex).getGameArray();
+                        // Adjust selected gameArray with new data
+                        selectedGameArray.set(rowIndex, new Game(selectedGameArray.get(rowIndex).getGameDateString(), selectedGameArray.get(rowIndex).getHomeTeamName(), text, selectedGameArray.get(rowIndex).getPlateUmpireName(), selectedGameArray.get(rowIndex).getBaseUmpireNames()));
+                        // Add adjusted gameArray to schedule
+                        scheduleDBdata.set(rowIndex, new Schedule(afdeling, Integer.toString(week), selectedGameArray));                    }
+                    table.setItems(scheduleDBdata);
                     success = true;
                 }
                 event.setDropCompleted(success);
@@ -272,11 +377,20 @@ public class GameSchedule {
 
 
         TableColumn umpireCol = new TableColumn("Umpire");
-        umpireCol.prefWidthProperty().bind(table.widthProperty().divide(3));
-        umpireCol.setCellValueFactory(
-            new PropertyValueFactory<Game, String>("umpireName")
+        //umpireCol.prefWidthProperty().bind(table.widthProperty().divide(5).multiply(2));
+        TableColumn plateUmpireCol = new TableColumn("Plate");
+        TableColumn baseUmpiresCol = new TableColumn("Base");
+        plateUmpireCol.prefWidthProperty().bind(table.widthProperty().divide(5));
+        baseUmpiresCol.prefWidthProperty().bind(table.widthProperty().divide(5));
+        umpireCol.getColumns().addAll(plateUmpireCol, baseUmpiresCol);
+        
+        plateUmpireCol.setCellValueFactory(
+            new PropertyValueFactory<>("plateUmpireName")
         );
-        umpireCol.setCellFactory(e -> {
+        baseUmpiresCol.setCellValueFactory(
+            new PropertyValueFactory<>("baseUmpireNames")
+        );
+        plateUmpireCol.setCellFactory(e -> {
             TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
                 @Override
                 public void updateItem(String item, boolean empty) {
@@ -307,11 +421,8 @@ public class GameSchedule {
             cell.setOnDragDetected(eh -> {
                 // Get the row index of this cell
                 int rowIndex = cell.getIndex();
-                System.out.println("Cell row index: " + rowIndex);
-
                 // Get the column index of this cell.
                 int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
-                System.out.println("Cell column index: " + columnIndex);
             });
 
             cell.setOnDragDropped(new EventHandler<DragEvent>() {
@@ -329,12 +440,20 @@ public class GameSchedule {
                 if (event.getDragboard().hasString()) {            
 
                     String text = db.getString();
-                    if(rowIndex < 0 || rowIndex >= data.size()) {
-                        data.add(new Game(null, null, text));
+                    if(rowIndex < 0 || rowIndex >= scheduleDBdata.size()) {
+                        gameArray.add(new Game(null, null, null, text, emptyArray));
+                        scheduleDBdata.add(new Schedule(afdeling, Integer.toString(week), gameArray));
                     } else {
-                        data.set(rowIndex, new Game(data.get(rowIndex).hometeam.get(), data.get(rowIndex).visitingteam.get(), text));
+                        // Get current gameArray for specific afdeling, week (and rowIndex)
+                        FilteredList<Schedule> firstFilter = scheduleDBdata.filtered(a -> a.getAfdelingsNaam().equals(afdeling));
+                        FilteredList<Schedule> secondFilter = firstFilter.filtered(w -> w.getWeekString().equals(Integer.toString(week)));
+                        ArrayList<Game> selectedGameArray = secondFilter.get(rowIndex).getGameArray();
+                        // Adjust selected gameArray with new data
+                        selectedGameArray.set(rowIndex, new Game(selectedGameArray.get(rowIndex).getGameDateString(), selectedGameArray.get(rowIndex).getHomeTeamName(), selectedGameArray.get(rowIndex).getVisitingTeamName(), text, selectedGameArray.get(rowIndex).getBaseUmpireNames()));
+                        // Add adjusted gameArray to schedule
+                        scheduleDBdata.set(rowIndex, new Schedule(afdeling, Integer.toString(week), selectedGameArray));
                     }
-                    table.setItems(data);
+                    table.setItems(scheduleDBdata);
                     success = true;
                 }
                 event.setDropCompleted(success);
@@ -343,22 +462,94 @@ public class GameSchedule {
             });  
             return cell;
         });
-                
-            
-        System.out.println("Data for table: " + data);
+              
+        baseUmpiresCol.setCellFactory(e -> {
+            TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
+                //@Override
+                public void updateItem(String item, boolean empty) {
+                    // Make sure you call super.updateItem, or you might get really weird bugs.
+                    super.updateItem(item, empty);
+                    if (item == null || empty) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        setText(item);
+                        setGraphic(null);
+                    }
+                }
+                };
 
-        table.setItems(data);
+            cell.setOnDragOver(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                // data is dragged over the target 
+                Dragboard db = event.getDragboard();
+                if (event.getDragboard().hasString()){
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                }
+                event.consume();
+                }
+            });
+            // HERE IS HOW TO GET THE ROW AND CELL INDEX
+            cell.setOnDragDetected(eh -> {
+                // Get the row index of this cell
+                int rowIndex = cell.getIndex();
+                // Get the column index of this cell.
+                int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
+            });
+
+            cell.setOnDragDropped(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                int rowIndex = cell.getIndex();
+                // Get the column index of this cell.
+                int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
+
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+                if (event.getDragboard().hasString()) {            
+
+                    String text = db.getString();
+                    if(rowIndex < 0 || rowIndex >= scheduleDBdata.size()) {
+                        ArrayList<String> umpArray = new ArrayList<>();
+                        umpArray.add(text);
+                        
+                        gameArray.add(new Game(null, null, null, null, umpArray));
+                        scheduleDBdata.add(new Schedule(afdeling, Integer.toString(week), gameArray));
+                    } else {
+                        // Get current gameArray for specific afdeling, week (and rowIndex)
+                        FilteredList<Schedule> firstFilter = scheduleDBdata.filtered(a -> a.getAfdelingsNaam().equals(afdeling));
+                        FilteredList<Schedule> secondFilter = firstFilter.filtered(w -> w.getWeekString().equals(Integer.toString(week)));
+                        ArrayList<Game> selectedGameArray = secondFilter.get(rowIndex).getGameArray();
+                        // Get current base umpires
+                        ArrayList<String> umpArray = new ArrayList<>();
+                        umpArray.addAll(selectedGameArray.get(rowIndex).getBaseUmpireNames());
+                        umpArray.add(text);
+                        // Adjust selected gameArray with new data, 
+                        selectedGameArray.set(rowIndex, new Game(selectedGameArray.get(rowIndex).getGameDateString(), selectedGameArray.get(rowIndex).getHomeTeamName(), selectedGameArray.get(rowIndex).getVisitingTeamName(), selectedGameArray.get(rowIndex).getPlateUmpireName(), umpArray));
+                        // Add adjusted gameArray to schedule
+                        scheduleDBdata.set(rowIndex, new Schedule(afdeling, Integer.toString(week), selectedGameArray));
+                    }
+                    table.setItems(scheduleDBdata);
+                    success = true;
+                }
+                event.setDropCompleted(success);
+                event.consume();
+                } 
+            });  
+            return cell;
+        });
+            
+        table.setItems(scheduleData);
         table.setFixedCellSize(25);
-        table.setMaxHeight(128);
-        table.setMinHeight(128);
+        table.setMaxHeight(150);
+        table.setMinHeight(150);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         //table.prefHeight(100 + 45);
         //table.prefHeightProperty().bind(Bindings.size(table.getItems()).multiply(table.getFixedCellSize()).add(45));
 
-        System.out.println("table data: " + table.getItems());
-        table.getColumns().addAll(homeTeamCol, visitingTeamCol, umpireCol);
-
+        table.getColumns().addAll(gameDateCol, homeTeamCol, visitingTeamCol, umpireCol);
         table.getSelectionModel().setCellSelectionEnabled(true);
 
         calendarbox.setPadding(new Insets(0, 0, 0, 0));
@@ -371,71 +562,9 @@ public class GameSchedule {
     }
     
     
-    public static class Game {
-        
-        private final SimpleStringProperty hometeam;
-        private final SimpleStringProperty visitingteam;
-        private final SimpleStringProperty umpire;
 
-        private Game(String homeTeamName, String visitingTeamName, String umpireName) {
-            this.hometeam = new SimpleStringProperty(homeTeamName);
-            this.visitingteam = new SimpleStringProperty(visitingTeamName);
-            this.umpire = new SimpleStringProperty(umpireName);
-        }
-
-        public String getHomeTeamName() {
-            return hometeam.get();
-        }
-        public void setHomeTeamName(String homeTeamName) {
-            hometeam.set(homeTeamName);
-        }
-
-        public String getVisitingTeamName() {
-            return visitingteam.get();
-        }
-        public void setVisitingTeamName(String visitingTeamName) {
-            visitingteam.set(visitingTeamName);
-        }
-
-        public String getUmpireName() {
-            return umpire.get();
-        }
-        public void setUmpireName(String umpireName) {
-            umpire.set(umpireName);
-        }
-        
-    }
     
-    public static class Schedule {
-        private final SimpleStringProperty afdeling;
-        private final SimpleStringProperty datum;
-        private final ArrayList<Game> games;
-        
-        private Schedule(String afdelingsNaam, String datumString, ArrayList<Game> gameArray) {
-            this.afdeling = new SimpleStringProperty(afdelingsNaam);
-            this.datum = new SimpleStringProperty(datumString);
-            this.games = new ArrayList<>(gameArray);
-        }
-            
-        public String getAfdelingsNaam() {
-            return afdeling.get();
-        }
-        public void setAfdelingsNaam(String afdelingsNaam) {
-            afdeling.set(afdelingsNaam);
-        }
-        public String getDatumString() {
-            return datum.get();
-        }
-        public void setDatumString(String datumString) {
-            datum.set(datumString);
-        }
-        public ArrayList<Game> getGameArray() {
-            return games;
-        }
-        public void setGameArray(ArrayList<Game> gameArray) {
-            games.addAll(games);
-        }
-    }    
+    
     
 
     class EditingCell extends TableCell<Game, String> {
