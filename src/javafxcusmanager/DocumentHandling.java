@@ -22,7 +22,6 @@ import javafx.collections.FXCollections;
 public class DocumentHandling {
     
     private MainPanel mainPanel;
-    private GameSchedule gameschedule;
     
     public DocumentHandling() {
        mainPanel = new MainPanel();

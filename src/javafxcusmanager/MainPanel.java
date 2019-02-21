@@ -5,8 +5,8 @@
  */
 package javafxcusmanager;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
@@ -14,25 +14,18 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
@@ -398,9 +391,11 @@ public class MainPanel {
                     // Reset the tabpane to show all tabs
                     centerTabPane.getTabs().clear();
                     centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+                    
                 } else {                    
                     centerTabPane.getTabs().clear();
                     centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+                    
                     centerTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
                                         
                 }
@@ -411,6 +406,7 @@ public class MainPanel {
             resetButton.setOnAction(event -> {
                 centerTabPane.getTabs().clear();
                 centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+            
                 filterField.setText("");
             });
             hbox.getStyleClass().add("bordered-titled-border");

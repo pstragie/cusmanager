@@ -266,7 +266,7 @@ public class Afdelingen {
         
         
         public class ChangeAfdelingName {
-            /** Pup Window to change a klassenaam
+            /** Popup Window to change a klassenaam
              * 
              */
             private Label label;
