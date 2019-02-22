@@ -5,7 +5,6 @@
  */
 package javafxcusmanager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -15,6 +14,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CustomMenuItem;
@@ -61,8 +61,10 @@ public class MainPanel {
     private Pane centerPane = new Pane();
     public TabPane centerTabPane = new TabPane();
     private Afdelingen changeAfdelingenpane;
+    private ClubView clubview;
     private UmpireModel umpiremodel;
     private ClubModel clubmodel;
+    private NewClub newclubpane;
     private GameSchedule gameSchedule;
     private Clubs clublijst;
     private Umpires umpirelijst;
@@ -151,14 +153,16 @@ public class MainPanel {
         menu2.getItems().add(menuClubItem1);
 
         menuClubItem1.setOnAction(e -> {
-            /*
+            
             System.out.println("menuClubItem1 Clicked");
             Stage stage = new Stage();
-            Scene scene = new Scene(newPaneel("Club"));
-            stage.setTitle("Club toevoegen");
+            Scene scene = new Scene(ClubPaneel());
+            stage.setX(800);
+            stage.setY(600);
+            stage.setTitle("Clubs beheren");
             stage.setScene(scene);
             stage.show();
-            */
+            
         });
         
         menuUmpireItem1.setOnAction(e -> {
@@ -497,6 +501,12 @@ public class MainPanel {
         }
         
         return border;
+    }
+    
+    public Pane ClubPaneel() {
+        
+            clubview = new ClubView();
+            return clubview.clubPane();
     }
 }
 

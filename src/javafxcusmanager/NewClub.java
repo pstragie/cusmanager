@@ -24,30 +24,25 @@ public class NewClub {
 	 * @param args
 	 */
 	
-	private static final long serialVersionUID = 1L;
 	
-	public static void main(String[] args) {
-		
 
-	}
-
-
-    public static class ClubPanel extends Pane {
+    public class ClubPanel extends Pane {
 	
-        // Constructor
-        public ClubPanel() {
-        
-        }
-	
-	/* Paneel met invoervakken voor nieuwe club */
+        /* Paneel met invoervakken voor nieuwe club */
 	// Attributen
 	private static final long serialVersionUID = 1L;
 	private boolean confirmed = false;
-	
+	private MainPanel mainPanel;
+
 	private Clubs clubs;
 	public TextField clubnaamtf, afdelingtf, voorzittertf, straattf, huisnummertf, postcodetf, stadtf;
 	private Label clubLabel,  afdelingLabel, voorzitterLabel, straatLabel, huisnrLabel, pcLabel, stadLabel;
 	private Button toevoegen, annuleren;
+        
+        // Constructor
+        public ClubPanel() {
+        
+        }
 
 	// Constructor
 	public Pane clubPanel() {

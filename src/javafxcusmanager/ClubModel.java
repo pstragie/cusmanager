@@ -106,4 +106,6 @@ public class ClubModel {
             
             return clubsBox; // return VBox with listview of clubs per afdeling
         }
+        
+        
 }

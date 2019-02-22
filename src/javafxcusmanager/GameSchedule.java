@@ -184,7 +184,7 @@ public class GameSchedule {
         TableColumn<Game, MonthDay> gameTimeCol = new TableColumn<>("Uur");
         gameTimeCol.setMinWidth(5);
         gameTimeCol.setCellValueFactory(new PropertyValueFactory<>("gameuur"));
-        gameTimeCol.setCellFactory(col -> new GameuurCell());
+        //gameTimeCol.setCellFactory(col -> new GameuurCell());
         gameTimeCol.setEditable(true);
         gameTimeCol.setOnEditCommit(event -> event.getRowValue().setGameDatum(event.getNewValue()));
         
