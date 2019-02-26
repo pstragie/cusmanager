@@ -6,6 +6,7 @@
 package javafxcusmanager;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
  *
@@ -13,31 +14,37 @@ import javafx.beans.property.SimpleStringProperty;
  */
 public class Team {
     
-    private final SimpleStringProperty teamnaam;
-    private final SimpleStringProperty teamafdeling;
+    private SimpleStringProperty teamNaam;
+    private SimpleStringProperty teamAfdeling;
     
-    public Team(String teamnaamString, String teamafdelingString) {
-        this.teamnaam = new SimpleStringProperty(teamnaamString);
-        this.teamafdeling = new SimpleStringProperty(teamafdelingString);
+    public Team(String teamnaam, String teamafdeling) {
+        this.teamNaam = new SimpleStringProperty(teamnaam);
+        this.teamAfdeling = new SimpleStringProperty(teamafdeling);
     }
     
     public String getTeamNaam() {
-        return teamnaam.get();
+        return teamNaam.get();
     }
-    public void setTeamNaam(String teamnaamString) {
-        teamnaam.set(teamnaamString);
+    public void setTeamNaam(String teamnaam) {
+        teamNaam.set(teamnaam);
     }
     public String getTeamAfdeling() {
-        return teamafdeling.get();
+        return teamAfdeling.get();
     }
-    public void setTeamAfdeling(String teamafdelingString) {
-        teamafdeling.set(teamafdelingString);
+    public void setTeamAfdeling(String teamafdeling) {
+        teamAfdeling.set(teamafdeling);
     }
     
+    public StringProperty teamNaamProperty() {
+        return teamNaam;
+    }
+    public StringProperty teamAfdelingProperty() {
+        return teamAfdeling;
+    }
     @Override
     public String toString() {
         String s = new String();
-        s = teamnaam.get() + ": " + teamafdeling.get();
+        s = teamNaam.get() + ": " + teamAfdeling.get();
         return s;
     }
 }

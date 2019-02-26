@@ -5,7 +5,6 @@
  */
 package javafxcusmanager;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import javafx.beans.value.ChangeListener;
@@ -33,13 +32,7 @@ import static java.util.Calendar.*;
 import java.util.List;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
-import javafx.event.EventType;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 /**
  *
@@ -443,7 +436,7 @@ public class GameSchedule {
                         setGraphic(null);
                     }
                 }
-                };
+            };
 
             cell.setOnDragOver(new EventHandler<DragEvent>() {
             @Override

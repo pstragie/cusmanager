@@ -22,7 +22,11 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -43,21 +47,28 @@ import javafxcusmanager.Club;
 public class ClubView {
     
     private MainPanel mainPanel;
+    private Club club;
     private DocumentHandling documentHandler;
     private ArrayList<String> afdelingenArray;
     private ObservableList<Club> clubs;
+    private ObservableList<Team> teams;
+    private ObservableList<Team> list;
     private ArrayList<String> clubArray;
     private String selectedClub;
-    private ListView clubList;
+    //private ListView clubList;
+    private ListView clubListView = new ListView();
+    private TableView<Team> teamTable = new TableView<>();
     
     public ClubView() {
         // Get the list of afdelingen
         // Afdelingen afkomstig van observableTabList
+        list = FXCollections.observableArrayList();
+        
             System.out.println("Run Constructor ClubView");		
-            mainPanel = new MainPanel();
             documentHandler = new DocumentHandling();
-            afdelingenArray = new ArrayList<>(mainPanel.getObservableList());
+            //afdelingenArray = new ArrayList<>(mainPanel.getObservableList());
             clubs = FXCollections.observableArrayList();
+            teams = FXCollections.observableArrayList();
             clubs.addListener((ListChangeListener.Change<? extends Club> change) -> { 
                     while(change.next()) {
                         if(change.wasUpdated()) {
@@ -81,15 +92,39 @@ public class ClubView {
                 }
             });
             
+            teams.addListener((ListChangeListener.Change<? extends Team> change) -> { 
+                    while(change.next()) {
+                        if(change.wasUpdated()) {
+                            System.out.println("Update detected");
+                            // Write to file
+                                
+                        } else
+                            if (change.wasPermutated()) {
+                                System.out.println("Was permutated");
+                            } else {
+                                if (change.wasAdded()) {
+                                    System.out.println("Data was added to teams");
+                                    // Write to file
+                                    //clubList.refresh();
+                                    // Save to database
+                                    
+                                    //GameSchedule.write(gameData, /home/pieter/wedstrijdschema.txt);
+                                }
+                            }
+                        
+                }
+            });
+            
+        
             // Add Test data
             ArrayList<Team> teamArray = new ArrayList<>();
             teamArray.add(new Team("Wolverines Seniors", "Gold"));
             teamArray.add(new Team("Wolfkes", "BB Rookies"));
-            clubs.add(new Club("Wolverines", "0058", "Pieter Stragier", "pstragier@gmail.com", "0486208014", "Coolstraat", "5", "9600", "Ronse", teamArray));
+            clubs.add(new Club("Wolverines", "0058", "Pieter Stragier", "pstragier@gmail.com", "0486208014", "Coolstraat", "5", "9600", "Ronse", new Team("Wolverines Seniors", "Gold")));
             ArrayList<Team> frogsteamArray = new ArrayList<>();
             frogsteamArray.add(new Team("Frogs Seniors", "4BB"));
             frogsteamArray.add(new Team("Slowpitch", "SP Red"));
-            clubs.add(new Club("Frogs", "0012", "Jonas Hoebeke", "jonas.hoebeke@hotmail.com", "04xxxxxxxx", "Scheldekant", "4", "9700", "Oudenaarde", frogsteamArray));
+            clubs.add(new Club("Frogs", "0012", "Jonas Hoebeke", "jonas.hoebeke@hotmail.com", "04xxxxxxxx", "Scheldekant", "4", "9700", "Oudenaarde", new Team("Frogs Seniors", "Gold")));
             
     }
     
@@ -99,21 +134,57 @@ public class ClubView {
         BorderPane borderPane = new BorderPane();
         
         selectedClub = new String();
-        selectedClub = "Wolverines";
-        clubList = new ListView();
+        selectedClub = "Wolverines";        
+            
         
-        ListView clubListView = new ListView();
-        ListView teamListView = new ListView();
-        teamListView.setPadding(new Insets(10, 10, 10, 10));
-        VBox teamVBox = new VBox();
+        
         // Left Side: List of all Clubs in TabPane, Alphabetically
         // VerticalBox with Label, Filter and ListView 
         VBox clubVBox = new VBox();
+        clubVBox.getChildren().add(getClubListView(clubVBox));
+        // Right Side: TabPane (BB & SB) With List of teams per (selected) club --> Listview with Afdeling
+        VBox teamVBox = new VBox();
         
+        
+        
+        teamVBox.getChildren().add(getTeamListView(teamVBox));
+        
+        borderPane.setMargin(teamVBox, new Insets(0, 10, 0, 10));
+        borderPane.setLeft(clubVBox);
+        borderPane.setCenter(teamVBox);
+        borderPane.setBottom(getButtonHBox());
+        
+        
+        return borderPane;
+    }
+    
+    public HBox getButtonHBox() {
+        // HBox with buttons
+        HBox buttonHBox = new HBox(10);
+        buttonHBox.setPadding(new Insets(5, 10, 5, 10));
+        Button addClubButton = new Button("Club toevoegen");
+        addClubButton.setOnAction(event -> { 
+            // Show Pane in borderPane Right
+        });
+        Button addTeamButton = new Button("Team toevoegen");
+        addTeamButton.setOnAction(event -> {
+            // Make empty line in listview editable
+        });
+        Button closeButton = new Button("Sluiten");
+        closeButton.setOnAction(event -> {
+           // Close window (and update teams 
+        });
+        buttonHBox.getChildren().add(addClubButton);
+        buttonHBox.getChildren().add(addTeamButton);
+        buttonHBox.getChildren().add(closeButton);
+        
+        return buttonHBox;
+    }
+    public ListView getClubListView(VBox clubvbox) {
         Label clublabel = new Label("Clubs");
         clublabel.setPadding(new Insets(0, 0, 0, 5));
         clublabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
-        clubVBox.getChildren().add(clublabel);
+        clubvbox.getChildren().add(clublabel);
         
         HBox filterHBox = new HBox(5);
         filterHBox.setPadding(new Insets(2, 5, 2, 5));
@@ -150,7 +221,7 @@ public class ClubView {
         filterHBox.getChildren().add(filterField);
         filterHBox.getChildren().add(resetButton);
         
-        clubVBox.getChildren().add(filterHBox);
+        clubvbox.getChildren().add(filterHBox);
         
         selectedClub = clubs.get(0).getClubNaam();
         
@@ -172,161 +243,56 @@ public class ClubView {
                 
                 cell.setOnMouseClicked(event -> {
                    if (! cell.isEmpty()) {
+                        
                         selectedClub = cell.getItem().toString();
                         System.out.println("Club selected: " + selectedClub);
-                        teamListView.getItems().clear();
                         FilteredList<Club> filteredArray = clubs.filtered(c -> c.getClubNaam().equals(selectedClub));
-                        filteredArray.forEach(c -> c.getClubTeams().forEach(team -> {
-                        teamListView.getItems().add(team);
-                        }));
+                        teams.clear();
+                        teams.add(0, filteredArray.get(0).getClubTeams().get());
+                        System.out.print("Teams: " + teams);
+                        teamTable.refresh();
                    }
-               });
+                });
                return cell;
         });
-                
         
-        clubVBox.getChildren().add(clubListView);
+        return clubListView;
+    }
+    
+    public TableView getTeamListView(VBox teamvbox) {
+        //ListView teamlistview = new ListView();
         
         
-
-        // Right Side: TabPane (BB & SB) With List of teams per (selected) club --> Listview with Afdeling
-        // Vertical Box with Label, ListView 
-        
+        // Team Table
         Label teamlabel = new Label("Teams");
         teamlabel.setPadding(new Insets(0, 0, 0, 5));
         teamlabel.setFont(Font.font(null, FontWeight.BOLD, 20));
-        teamVBox.getChildren().add(teamlabel);        
-        
-        
-        
-        // Filter teams for club and discipline
-        // Get club -> get teams -> filter for discipline
-        FilteredList<Club> filteredArray = clubs.filtered(c -> c.getClubNaam().equals(selectedClub));
-        filteredArray.forEach(c -> c.getClubTeams().forEach(team -> {
-            teamListView.getItems().add(team);
-        }));     
-        /*
-        teamListView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
-                    @Override
-                    public ListCell<String> call(ListView<String> param) {
-                        teamListView.refresh();
-                        return  new ClubView.XCell();
-                    }
-                });
-        */
-        teamVBox.getChildren().add(teamListView);
-        
-        // HBox with buttons
-        HBox buttonHBox = new HBox(10);
-        buttonHBox.setPadding(new Insets(5, 10, 5, 10));
-        Button addClubButton = new Button("Club toevoegen");
-        addClubButton.setOnAction(event -> { 
-            // Show Pane in borderPane Right
-        });
-        Button addTeamButton = new Button("Team toevoegen");
-        addTeamButton.setOnAction(event -> {
-            // Make empty line in listview editable
-        });
-        Button closeButton = new Button("Sluiten");
-        closeButton.setOnAction(event -> {
-           // Close window (and update teams 
-        });
-        buttonHBox.getChildren().add(addClubButton);
-        buttonHBox.getChildren().add(addTeamButton);
-        buttonHBox.getChildren().add(closeButton);
-        borderPane.setMargin(teamVBox, new Insets(0, 10, 0, 10));
-        borderPane.setLeft(clubVBox);
-        borderPane.setCenter(teamVBox);
-        borderPane.setBottom(buttonHBox);
-        
-        return borderPane;
-    }
-    
-    class XCell extends ListCell<String> {
-            
-            HBox hbox = new HBox();
-            Label label = new Label("(empty)");
-            Pane pane = new Pane();
-            Button vbutton = new Button("Wis");
-            Button wbutton = new Button("Wijzig");
-            Button upbutton = new Button("^");
-            String lastItem;
-            
-            public XCell() {
-                super();
-                
-                hbox.getChildren().addAll(label, pane, vbutton, wbutton, upbutton);
-                hbox.setHgrow(pane, Priority.ALWAYS);
-                vbutton.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        mainPanel.observableTabList.remove(lastItem);
-                        System.out.println("tablijst: " + mainPanel.observableTabList);
-                        
-                        // Write to file
-                        ArrayList<String> tmplijst = new ArrayList<>();
-                        mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
-                        documentHandler.storeAfdelingen(tmplijst);
-                        //updateItem(lastItem, true);
-                        
-                    }
-                });
-                wbutton.setOnAction((ActionEvent event) -> {
-                    // Open frame to change label
-                    //Afdelingen.ChangeAfdelingName changeafd1 = new Afdelingen.ChangeAfdelingName();
-                    //changeafd1.changeAfdeling(label.getText());
-                });
-                            
-                upbutton.setOnAction((ActionEvent event) -> { 
-                   
-                       // Move tab up in the order
-                       
-                            // Get upbutton row index
-                            int index = mainPanel.observableTabList.indexOf(lastItem);
-                            if(index >= 1) {
-                                System.out.println("index: " + index);
-                                String oud = mainPanel.observableTabList.get(index-1).toString();
-                                System.out.println("oud: " + oud);
-                                String nieuw = mainPanel.observableTabList.get(index);
-                                int nieuwindex = mainPanel.observableTabList.indexOf(nieuw);
-                                int oudindex = mainPanel.observableTabList.indexOf(oud);
-                                System.out.println("index oud = " + oudindex + ", index nieuw = " + nieuwindex);
-                                System.out.println("nieuw: " + nieuw);
-                                mainPanel.observableTabList.remove(oud);
-                                System.out.println("1 verwijderd: " + mainPanel.observableTabList);
-                                mainPanel.observableTabList.add(index, oud);
-                                System.out.println("New order: " + mainPanel.observableTabList);
+        teamvbox.getChildren().add(teamlabel);        
 
-                                // Write new order to file
-                                ArrayList<String> tmplijst = new ArrayList<>();
-                                mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
-                                documentHandler.storeAfdelingen(tmplijst);
-                            }
-                   
-                }); 
-            }
-            
-
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                
-                setText(null);  // No text in label of super class
-                
-                if (empty) {
-                    lastItem = null;
-                    setGraphic(null);
-                } else {
-                    lastItem = item;
-                    label.setText(item!=null ? item : "<null>");
-                    
-                    setGraphic(hbox);
-                }
-                
-             
-            }
-            
-            
-        }
-    
+        // Create column teamnaam (Data type of String)
+        TableColumn<Team, String> teamCol = new TableColumn<>("Team");
+        teamCol.setCellValueFactory(
+            new PropertyValueFactory<>("teamNaam"));
+        
+        // Create column afdeling
+        TableColumn<Team, String> afdCol = new TableColumn<>("Afdeling");
+        afdCol.setCellValueFactory(
+            new PropertyValueFactory<>("teamAfdeling"));
+        
+        // Set sort type for afdeling column
+        //afdCol.setSortType(TableColumn.SortType.ASCENDING);
+        
+        // Display row data
+        FilteredList fc = clubs.filtered(cl -> cl.getClubNaam().equals(selectedClub));
+        int index = clubs.indexOf(fc.get(0));
+        Team t = clubs.get(index).getClubTeams().get();
+        teams.addAll(t);
+        System.out.println("Teams list: " + t.getTeamNaam());
+        
+        teamTable.getColumns().addAll(teamCol, afdCol);
+        System.out.println("Teams: " + teams);
+        teamTable.setItems(teams);
+        
+        return teamTable;
+    }    
 }
