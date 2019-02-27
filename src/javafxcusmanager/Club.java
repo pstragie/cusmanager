@@ -26,10 +26,10 @@ public class Club {
     private final SimpleStringProperty clubstraatnummer;
     private final SimpleStringProperty clubpostcode;
     private final SimpleStringProperty clubstad;
-    private final ObjectProperty<Team> clubteams;
+    private final ArrayList<Team> clubteams;
     
 
-    public Club(String clubnaamString, String clubnummerString, String clubvoorzitterString, String clubemailString, String clubtelefoonString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, Team clubteamsString) {
+    public Club(String clubnaamString, String clubnummerString, String clubvoorzitterString, String clubemailString, String clubtelefoonString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, ArrayList clubteamsArray) {
         this.clubnaam = new SimpleStringProperty(clubnaamString);
         this.clubnummer = new SimpleStringProperty(clubnummerString);
         this.clubvoorzitter = new SimpleStringProperty(clubvoorzitterString);
@@ -39,7 +39,7 @@ public class Club {
         this.clubstraatnummer = new SimpleStringProperty(clubstraatnummerString);
         this.clubpostcode = new SimpleStringProperty(clubpostcodeString);
         this.clubstad = new SimpleStringProperty(clubstadString);
-        this.clubteams = new SimpleObjectProperty<>(this, "clubteams", clubteamsString);
+        this.clubteams = new ArrayList<Team>(clubteamsArray);
     }
 
     public String getClubNaam() {
@@ -95,12 +95,12 @@ public class Club {
     public void setClubStad(String clubstadString) {
         clubstad.set(clubstadString);
     }
-    public ObjectProperty<Team> getClubTeams() {
+    public ArrayList<Team> getClubTeams() {
         return clubteams;
     }
 
-    public void setClubTeams(Team clubteamsString) {
-        this.clubteams.set(clubteamsString);
+    public void setClubTeams(Team clubteamsArray) {
+        clubteams.add(clubteamsArray);
     }
 
 

@@ -31,26 +31,31 @@ import javafx.scene.layout.VBox;
 public class ClubModel {
     
         private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
-        private ArrayList<String> clublijstPerafdeling;
+        private ArrayList<String> teamlijstPerafdeling;
         private Clubs clublijst;
+        private ObservableList<Club> clubs;
+        private ObservableList<Team> teams;
         
     // Constructor
-	public ClubModel() {
-
+	public ClubModel(ObservableList clubs, ObservableList teams) {
+            this.clubs = clubs;
+            this.teams = teams;
 
 	}
 
 	public VBox createClubContent(String afd) {
             ListView<String> clubListview = new ListView<>();
-            clublijstPerafdeling = new ArrayList<>();
-            clublijst = new Clubs();
-            Map<String, String> clubmap = clublijst.getList();
-            clubmap.forEach((k,val) ->  {
-                if (val.equals(afd)) {
-                    clublijstPerafdeling.add(k);
+            teamlijstPerafdeling = new ArrayList<>();
+            clubs.forEach(c -> {
+                // For each club get all teams
+                ArrayList<Team> arrayteam = c.getClubTeams();
+                for(Team t : arrayteam) {
+                    if (t.getTeamAfdeling().equals(afd)) {
+                        teamlijstPerafdeling.add(t.getTeamNaam());
+                    }
                 }
             });
-            ObservableList<String> data = FXCollections.<String>observableArrayList(clublijstPerafdeling);
+            ObservableList<String> data = FXCollections.<String>observableArrayList(teamlijstPerafdeling);
             clubListview.getItems().addAll(data);
             clubListview.setPrefSize(150, 800);
             clubListview.setOrientation(Orientation.VERTICAL);

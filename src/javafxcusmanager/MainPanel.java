@@ -11,6 +11,7 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -52,7 +53,11 @@ public class MainPanel {
     private TextField topPaneTextField, bottomPaneTextField;
     private static MenuBar mainMenu;
     private Pane umpirepanel;
-    public ObservableList<String> observableTabList;
+    //public ObservableList<String> observableTabList;
+    public ObservableList<Afdeling> afdelingenlijst;
+    public ObservableList<Club> clubs;
+    public ObservableList<Team> teams;
+    //public ObservableList<Umpire> umpires;
     private DocumentHandling documentHandler;
     private Pane leftPane = new Pane();
     private Pane rightPane = new Pane();
@@ -76,14 +81,134 @@ public class MainPanel {
 
     public Pane MainPanel() {     
         
-        // Fill observableList for the first (and only) time
-        observableTabList = FXCollections.observableArrayList();
+        
+        afdelingenlijst = FXCollections.observableArrayList();
+        
+        afdelingenlijst.addListener((ListChangeListener.Change<? extends Afdeling> change) -> { 
+                    while(change.next()) {
+                        if(change.wasUpdated()) {
+                            System.out.println("Update detected");
+                            
+                        } else
+                            if (change.wasPermutated()) {
+                                System.out.println("Was permutated");
+                            }
+                        else 
+                            for (Afdeling remitem: change.getRemoved()) {
+                                System.out.println("remitem afdelingenlijst");
+
+                                
+                                    
+                            }
+                            for (Afdeling additem : change.getAddedSubList()) {
+                                System.out.println("additem afdelingenlijst");
+                               
+                                
+                            }
+                }
+            });
+        afdelingenlijst.add(new Afdeling("Gold", "Baseball"));
+        afdelingenlijst.add(new Afdeling("1BB", "Baseball"));
+        afdelingenlijst.add(new Afdeling("2BB", "Baseball"));
+        afdelingenlijst.add(new Afdeling("1SP", "Softball"));
+        
+        // Club and teams
+        clubs = FXCollections.observableArrayList();
+            teams = FXCollections.observableArrayList();
+            clubs.addListener((ListChangeListener.Change<? extends Club> change) -> { 
+                    while(change.next()) {
+                        if(change.wasUpdated()) {
+                            System.out.println("Update detected");
+                            // Write to file
+                                
+                        } else
+                            if (change.wasPermutated()) {
+                                System.out.println("Was permutated");
+                            } else {
+                                if (change.wasAdded()) {
+                                    System.out.println("Data was added to clubs");
+                                    // Write to file
+                                    //clubList.refresh();
+                                    // Save to database
+                                    
+                                    //GameSchedule.write(gameData, /home/pieter/wedstrijdschema.txt);
+                                }
+                            }
+                        
+                }
+            });
+            
+            teams.addListener((ListChangeListener.Change<? extends Team> change) -> { 
+                    while(change.next()) {
+                        if(change.wasUpdated()) {
+                            System.out.println("Update detected");
+                            // Write to file
+                                
+                        } else
+                            if (change.wasPermutated()) {
+                                System.out.println("Was permutated");
+                            } else {
+                                if (change.wasAdded()) {
+                                    System.out.println("Data was added to teams");
+                                    // Write to file
+                                    //clubList.refresh();
+                                    // Save to database
+                                    
+                                    //GameSchedule.write(gameData, /home/pieter/wedstrijdschema.txt);
+                                }
+                            }
+                        
+                }
+            });
+            
+        // Add Test data
+        ArrayList<Team> teamArray = new ArrayList<>();
+        teamArray.add(new Team("Wolverines Seniors", "Gold"));
+        teamArray.add(new Team("Wolfkes", "BB Rookies"));
+        clubs.add(new Club("Wolverines", "0058", "Pieter Stragier", "pstragier@gmail.com", "0486208014", "Coolstraat", "5", "9600", "Ronse", teamArray));
+        ArrayList<Team> frogsteamArray = new ArrayList<>();
+        frogsteamArray.add(new Team("Frogs Seniors", "4BB"));
+        frogsteamArray.add(new Team("Slowpitch", "SP Red"));
+        clubs.add(new Club("Frogs", "0012", "Jonas Hoebeke", "jonas.hoebeke@hotmail.com", "04xxxxxxxx", "Scheldekant", "4", "9700", "Oudenaarde", frogsteamArray));
+            
         
         
         documentHandler = new DocumentHandling();
-        ArrayList<String> arraylist = (ArrayList<String>) documentHandler.getAfdelingenFromFile();
-        
-        observableTabList.addAll(arraylist);
+        ArrayList<String> arraylist = new ArrayList<>();
+        //observableTabList.addAll(getAfdelingsnamenlijst());
+        afdelingenlijst.addListener((ListChangeListener.Change<? extends Afdeling> change) -> { 
+                    while(change.next()) {
+                        if(change.wasUpdated()) {
+                            System.out.println("Update detected");
+                            
+                        } else
+                            if (change.wasPermutated()) {
+                                System.out.println("Was permutated");
+                            }
+                        else 
+                            for (Afdeling remitem: change.getRemoved()) {
+                                System.out.println("remitem");
+
+                                leftTabPane.getTabs().removeIf(tab -> tab.getText().equals(remitem.getAfdelingsNaam()));
+                                rightTabPane.getTabs().removeIf(tab -> tab.getText().equals(remitem.getAfdelingsNaam()));
+                                centerTabPane.getTabs().removeIf(tab -> tab.getText().equals(remitem.getAfdelingsNaam()));
+                                
+                                // TO DO: Store in Database
+                                
+                                    
+                            }
+                            for (Afdeling additem : change.getAddedSubList()) {
+                                System.out.println("additem");
+                              
+                                leftTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
+                                rightTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
+                                centerTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
+                              
+                                // TO DO: Store in database
+                                
+                            }
+                }
+            });
         
         BorderPane borderPane = new BorderPane();
         
@@ -119,17 +244,12 @@ public class MainPanel {
         return borderPane;
     }
     
-    public ObservableList<String> getObservableList() { 
-        observableTabList = FXCollections.observableArrayList();
-        documentHandler = new DocumentHandling();
-        ArrayList<String> arraylist = (ArrayList<String>) documentHandler.getAfdelingenFromFile();
-        ArrayList<String> tabs = new ArrayList<>();
-        arraylist.forEach(a -> {
-                tabs.add(a);
-            });
-        observableTabList.addAll(tabs);
-        System.out.println("getObservableList: " + observableTabList);
-        return observableTabList;
+    public ArrayList<String> getAfdelingsnamenlijst() { 
+        ArrayList<String> afdelingStrings = new ArrayList<>();
+        afdelingenlijst.forEach(afd -> afdelingStrings.add(afd.getAfdelingsNaam()));
+    
+        //observableTabList.addAll(tabs);
+        return afdelingStrings;
     }
     
     public MenuBar createMainMenu() {
@@ -156,9 +276,9 @@ public class MainPanel {
             
             System.out.println("menuClubItem1 Clicked");
             Stage stage = new Stage();
-            Scene scene = new Scene(ClubPaneel());
-            stage.setX(800);
-            stage.setY(600);
+            Scene scene = new Scene(ClubPaneel(), 800, 800);
+            //stage.setX(1000);
+            //stage.setY(800);
             stage.setTitle("Clubs beheren");
             stage.setScene(scene);
             stage.show();
@@ -184,7 +304,7 @@ public class MainPanel {
         
         menuAfdelingenItem1.setOnAction(e -> { 
             Stage stage = new Stage();
-            Scene scene = new Scene(newAfdelingPaneel("Afdelingen", leftTabPane, rightTabPane, centerTabPane));
+            Scene scene = new Scene(newAfdelingPaneel("Afdelingen", leftTabPane, rightTabPane, centerTabPane, afdelingenlijst));
             stage.setTitle("Afdelingen wijzigen");
             stage.setScene(scene);
             stage.show();
@@ -203,7 +323,7 @@ public class MainPanel {
         
             // Create TabPane
             sideTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-            sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
+            sideTabPane.getTabs().addAll(getClubTabArrayList());
             //tabpane.getStylesheets().add(getClass().getResource("css/TabPaneStyles.css").toExternalForm());
             Text placeHolder = new Text( " Geen afdelingen gevonden." );
                     placeHolder.setFont( Font.font( null, FontWeight.BOLD, 20 ) );
@@ -228,7 +348,7 @@ public class MainPanel {
             // Create TabPane
             sideTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
             
-            sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
+            sideTabPane.getTabs().addAll(getUmpireTabArrayList());
             //tabpane.getStylesheets().add(getClass().getResource("css/TabPaneStyles.css").toExternalForm());
             Text placeHolder = new Text( " Geen afdelingen gevonden." );
                     placeHolder.setFont( Font.font( null, FontWeight.BOLD, 20 ) );
@@ -257,7 +377,7 @@ public class MainPanel {
         //vbox.setAlignment(Pos.CENTER);
         vbox.getChildren().add(hbox);
         middleTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        middleTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+        middleTabPane.getTabs().addAll(getGameTabArrayList());
             
         vbox.getChildren().add(middleTabPane);
         vbox.setPadding(new Insets(0, 5, 0, 5));
@@ -266,20 +386,20 @@ public class MainPanel {
     
     public void resetRightTabpaneSide(TabPane sideTabPane) {
         // Reset the tabpane to show all tabs
-        ObservableList<String> tablist = getTabsList();
+        ObservableList<Afdeling> tablist = getTabsList();
         tablist.forEach(tab1 -> {
-            sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1));
+            sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1.getAfdelingsNaam()));
         });
-        sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
+        sideTabPane.getTabs().addAll(getUmpireTabArrayList());
     }
     
     public void resetLeftTabpaneSide(TabPane sideTabPane) {
         // Reset the tabpane to show all tabs
-        ObservableList<String> tablist = getTabsList();
+        ObservableList<Afdeling> tablist = getTabsList();
         tablist.forEach(tab1 -> {
-            sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1));
+            sideTabPane.getTabs().removeIf(tab -> tab.getText().contains(tab1.getAfdelingsNaam()));
         });
-        sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
+        sideTabPane.getTabs().addAll(getClubTabArrayList());
     }
     
     public VBox createHorBoxFilterUmpires(TabPane sideTabPane) {
@@ -299,18 +419,18 @@ public class MainPanel {
                 System.out.println("Text changed from "+oldText+" to "+newText);
                 
                 if (newText == null || newText.isEmpty()) {
-                    System.out.println("current observableTabList: " + observableTabList);
-                    System.out.println("Nothing to filter: " + observableTabList);
+                    System.out.println("current observableTabList: " + afdelingenlijst);
+                    System.out.println("Nothing to filter: " + afdelingenlijst);
                     // Reset the tabpane to show all tabs
                     sideTabPane.getTabs().clear();
                     
-                    sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
+                    sideTabPane.getTabs().addAll(getUmpireTabArrayList());
                 } else {
                     System.out.println("Filter active: " + newText);
-                    System.out.println("Filtered List = " + observableTabList.filtered(tab -> tab.contains(newText)));
+                    System.out.println("Filtered List = " + afdelingenlijst.filtered(tab -> tab.getAfdelingsNaam().contains(newText)));
                     
                     sideTabPane.getTabs().clear();
-                    sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
+                    sideTabPane.getTabs().addAll(getUmpireTabArrayList());
                     sideTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
                                         
                 }
@@ -320,7 +440,7 @@ public class MainPanel {
             resetButton.setText("Reset");
             resetButton.setOnAction(event -> {
                 sideTabPane.getTabs().clear();
-                sideTabPane.getTabs().addAll(getUmpireTabArrayListFromFile());
+                sideTabPane.getTabs().addAll(getUmpireTabArrayList());
                 filterField.setText("");
             });
             hbox.getStyleClass().add("bordered-titled-border");
@@ -350,11 +470,11 @@ public class MainPanel {
                 if (newText == null || newText.isEmpty()) {
                     // Reset the tabpane to show all tabs
                     sideTabPane.getTabs().clear();
-                    sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
+                    sideTabPane.getTabs().addAll(getClubTabArrayList());
                 } else {
                                       
                     sideTabPane.getTabs().clear();
-                    sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
+                    sideTabPane.getTabs().addAll(getClubTabArrayList());
                     sideTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
                     //sideTabPane.getTabs().filtered(tab -> tab.getText().contains(newText));
                     
@@ -365,7 +485,7 @@ public class MainPanel {
             filterButton.setText("Reset");
             filterButton.setOnAction(event -> {
                 sideTabPane.getTabs().clear();
-                sideTabPane.getTabs().addAll(getClubTabArrayListFromFile());
+                sideTabPane.getTabs().addAll(getClubTabArrayList());
                 filterField.setText("");
             });
             hbox.getStyleClass().add("bordered-titled-border");
@@ -381,7 +501,7 @@ public class MainPanel {
          * 
          */
         VBox vbox = new VBox();
-        Label gameLabel = new Label("Umpires");
+        Label gameLabel = new Label("Game Schedule");
         gameLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
         gameLabel.setAlignment(Pos.CENTER);
         vbox.setAlignment(Pos.CENTER);
@@ -394,11 +514,11 @@ public class MainPanel {
                 if (newText == null || newText.isEmpty()) {
                     // Reset the tabpane to show all tabs
                     centerTabPane.getTabs().clear();
-                    centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+                    centerTabPane.getTabs().addAll(getGameTabArrayList());
                     
                 } else {                    
                     centerTabPane.getTabs().clear();
-                    centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+                    centerTabPane.getTabs().addAll(getGameTabArrayList());
                     
                     centerTabPane.getTabs().removeIf(tab -> !tab.getText().contains(newText));
                                         
@@ -409,7 +529,7 @@ public class MainPanel {
             resetButton.setText("Reset");
             resetButton.setOnAction(event -> {
                 centerTabPane.getTabs().clear();
-                centerTabPane.getTabs().addAll(getGameTabArrayListFromFile());
+                centerTabPane.getTabs().addAll(getGameTabArrayList());
             
                 filterField.setText("");
             });
@@ -421,22 +541,23 @@ public class MainPanel {
         return vbox;
     }
     
-    public ObservableList<String> getTabsList() {
-        return observableTabList;
+    public ObservableList<Afdeling> getTabsList() {
+        return afdelingenlijst;
     }
     
-     public void setTabs(ObservableList<String> tabs) {
-        this.observableTabList = tabs;
+     public void setTabs(ObservableList<Afdeling> tabs) {
+        this.afdelingenlijst = tabs;
     }
     
-     public ArrayList<Tab> getClubTabArrayListFromFile() {
+     
+    public ArrayList<Tab> getClubTabArrayList() {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
-        clubmodel = new ClubModel();
+        clubmodel = new ClubModel(clubs, teams);
         System.out.println("Get Tabs from file and create club content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
-        listOfItems.addAll(createListOfItems("afdelingen.txt"));
+        listOfItems.addAll(getAfdelingsnamenlijst());
         ArrayList<Tab> tabs = new ArrayList<>();
         listOfItems.forEach(a -> {
             Tab tab = new Tab(a);
@@ -447,14 +568,14 @@ public class MainPanel {
         return tabs;
     }
     
-    public ArrayList<Tab> getUmpireTabArrayListFromFile() {
+    public ArrayList<Tab> getUmpireTabArrayList() {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
         umpiremodel = new UmpireModel();
         System.out.println("Get Tabs from file and create umpire content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
-        listOfItems.addAll(createListOfItems("afdelingen.txt"));
+        listOfItems.addAll(getAfdelingsnamenlijst());
         ArrayList<Tab> tabs = new ArrayList<>();
         listOfItems.forEach(a -> {
             Tab tab = new Tab(a);
@@ -465,14 +586,14 @@ public class MainPanel {
         return tabs;
     }
     
-    public ArrayList<Tab> getGameTabArrayListFromFile() {
+    public ArrayList<Tab> getGameTabArrayList() {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
         gameSchedule = new GameSchedule();
         System.out.println("Get Tabs from file and create club content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
-        listOfItems.addAll(createListOfItems("afdelingen.txt"));
+        listOfItems.addAll(getAfdelingsnamenlijst());
         ArrayList<Tab> tabs = new ArrayList<>();
         listOfItems.forEach(a -> {
             Tab tab = new Tab(a);
@@ -492,10 +613,10 @@ public class MainPanel {
         return arraylist;
     }
     
-    public Pane newAfdelingPaneel(String s, TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter) {
+    public Pane newAfdelingPaneel(String s, TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter, ObservableList afdelingenlijst) {
         BorderPane border = new BorderPane();
         if(s == "Afdelingen") {
-            changeAfdelingenpane = new Afdelingen(tabpaneleft, tabpaneright, tabpanecenter);
+            changeAfdelingenpane = new Afdelingen(tabpaneleft, tabpaneright, tabpanecenter, afdelingenlijst);
             border.setCenter(changeAfdelingenpane.afdelingenPanel());
             
         }
@@ -505,7 +626,7 @@ public class MainPanel {
     
     public Pane ClubPaneel() {
         
-            clubview = new ClubView();
+            clubview = new ClubView(clubs, teams);
             return clubview.clubPane();
     }
 }

@@ -5,9 +5,18 @@
  */
 package javafxcusmanager;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -23,7 +32,17 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -41,76 +60,36 @@ public class Afdelingen {
 	 * Te wijzigen lijst van afdelingen
 	 */
 	
-	private static ArrayList<String> afdlijst;
         private MainPanel mainPanel;
         private GridPane grid;
         public ListView listview;
         public static ArrayList<String> lijst;
-        public ChangeAfdelingName changeafd;
         private DocumentHandling documentHandler;
-        
+        private ObservableList<Afdeling> afdelingenlijst;
+        private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
 
         //public static UmpireModel.UmpireTabPane umptabpane;
         
         // Constructor
-	public Afdelingen(TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter) {
+	public Afdelingen(TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter, ObservableList afdelingenlijst) {
             // Afdelingen afkomstig van observableTabList
+            this.afdelingenlijst = afdelingenlijst;
             System.out.println("Run Constructor");		
             mainPanel = new MainPanel();
-            documentHandler = new DocumentHandling();
-            mainPanel.observableTabList = mainPanel.getObservableList();
-                
-            mainPanel.observableTabList.addListener((ListChangeListener.Change<? extends String> change) -> { 
-                    while(change.next()) {
-                        if(change.wasUpdated()) {
-                            System.out.println("Update detected");
-                            
-                        } else
-                            if (change.wasPermutated()) {
-                                System.out.println("Was permutated");
-                            }
-                        else 
-                            for (String remitem: change.getRemoved()) {
-                                System.out.println("remitem");
-
-                                tabpaneleft.getTabs().removeIf(tab -> tab.getText().equals(remitem));
-                                tabpaneright.getTabs().removeIf(tab -> tab.getText().equals(remitem));
-                                tabpanecenter.getTabs().removeIf(tab -> tab.getText().equals(remitem));
-                                
-                                // Write to file
-                                ArrayList<String> tmplijst = new ArrayList<>();
-                                mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
-                                documentHandler.storeAfdelingen(tmplijst);
-                                    
-                            }
-                            for (String additem : change.getAddedSubList()) {
-                                System.out.println("additem");
-                               
-                                tabpaneleft.getTabs().clear(); // Remove all tabs
-                                mainPanel.observableTabList.forEach(t -> {
-                                    Tab newTab = new Tab(t);
-                                    tabpaneleft.getTabs().add(newTab);  // Add from observableTabList to get the correct order!
-                                });
-                                tabpaneright.getTabs().clear(); // Remove all tabs
-                                mainPanel.observableTabList.forEach(t -> {
-                                    tabpaneright.getTabs().add(new Tab(t));  // Add from observableTabList to get the correct order!
-                                });
-                                tabpanecenter.getTabs().clear(); // Remove all tabs
-                                mainPanel.observableTabList.forEach(t -> {
-                                    tabpanecenter.getTabs().add(new Tab(t));  // Add from observableTabList to get the correct order!
-                                });
-                                // Write to file
-                                ArrayList<String> tmplijst = new ArrayList<>();
-                                mainPanel.observableTabList.forEach(t -> tmplijst.add(t));
-                                documentHandler.storeAfdelingen(tmplijst);
-                            }
-                }
-            });
-
+            System.out.println("afdlijst: " + afdelingenlijst);
+            
         }
 	
 	
-        
+        public ArrayList<String> getAfdelingsnamen() {
+            //* Method to fill combobox
+            ArrayList<String> afdLijst = new ArrayList<>();
+            List<String> list = new ArrayList<>();
+            afdelingenlijst.forEach(a -> list.add(a.getAfdelingsNaam()));
+		
+            afdLijst.addAll(list);
+            return afdLijst;
+        }
         
         
         
@@ -127,18 +106,100 @@ public class Afdelingen {
             
             // Grid with 2 items: ListView and Button
             // Variable list of textfields
-                listview = new ListView<>(mainPanel.observableTabList);
-                //listview.getItems().addAll(observableTabList);
-                //listview.setPrefSize(150, 100);
-                listview.setOrientation(Orientation.VERTICAL);
-                listview.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
-                    @Override
-                    public ListCell<String> call(ListView<String> param) {
-                        listview.refresh();
-                        return  new XCell();
+                TableView afdelingstabel = new TableView();
+                afdelingstabel.setRowFactory(tv -> {
+                    TableRow<Afdeling> row = new TableRow<>();
+
+                    row.setOnDragDetected(event -> {
+                        if (! row.isEmpty()) {
+                            Integer index = row.getIndex();
+                            Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
+                            db.setDragView(row.snapshot(null, null));
+                            ClipboardContent cc = new ClipboardContent();
+                            cc.put(SERIALIZED_MIME_TYPE, index);
+                            db.setContent(cc);
+                            event.consume();
+                        }
+                    });
+
+                    row.setOnDragOver(event -> {
+                        Dragboard db = event.getDragboard();
+                        if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+                            if (row.getIndex() != ((Integer)db.getContent(SERIALIZED_MIME_TYPE)).intValue()) {
+                                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                                event.consume();
+                            }
+                        }
+                    });
+
+                    row.setOnDragDropped(event -> {
+                        Dragboard db = event.getDragboard();
+                        if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+                            int draggedIndex = (Integer) db.getContent(SERIALIZED_MIME_TYPE);
+                            Object draggedAfdeling = afdelingstabel.getItems().remove(draggedIndex);
+
+                            int dropIndex ; 
+
+                            if (row.isEmpty()) {
+                                dropIndex = afdelingstabel.getItems().size() ;
+                            } else {
+                                dropIndex = row.getIndex();
+                            }
+
+                            afdelingstabel.getItems().add(dropIndex, draggedAfdeling);
+
+                            event.setDropCompleted(true);
+                            afdelingstabel.getSelectionModel().select(dropIndex);
+                            event.consume();
+                        }
+                    });
+
+                    return row ;
+                });
+                afdelingstabel.setEditable(true);
+                // Create column teamnaam (Data type of String)
+                TableColumn<Afdeling, String> afdCol = new TableColumn<>("Afdeling");
+                afdCol.setEditable(true);
+                afdCol.setCellValueFactory(
+                    new PropertyValueFactory<>("afdelingsnaam"));
+
+                // Create column afdeling
+                TableColumn<Afdeling, String> catCol = new TableColumn<>("Discipline");
+                //catCol.setCellValueFactory(
+                 //   new PropertyValueFactory<>("afdelingscategorie"));
+                catCol.setCellValueFactory(cellData -> cellData.getValue().afdelingscategorieProperty());
+                catCol.setCellFactory(ComboBoxTableCell.forTableColumn("Baseball", "Softball"));
+
+                TableColumn<Afdeling, Afdeling> actionCol = new TableColumn("Wis");
+                actionCol.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
+                actionCol.setSortable(false);
+                actionCol.setCellFactory(param -> new TableCell<Afdeling, Afdeling>() {
+                    private final Button deleteButton = new Button("Wis");
+                    
+                    protected void updateItem(Afdeling afd, boolean empty) {
+                        super.updateItem(afd, empty);
+                        if (afd == null) {
+                            setGraphic(null);
+                            return;
+                        }
+                        setGraphic(deleteButton);
+                        deleteButton.setOnAction(event -> {
+                            getTableView().getItems().remove(afd);
+                            
+                            // Remove from afdelingenlijst
+                            afdelingenlijst.remove(afd);
+                        });
+
                     }
                 });
-                grid.add(listview, 0, 1, 2, 1);
+                afdCol.setPrefWidth(200);
+                catCol.setPrefWidth(200);
+                actionCol.setPrefWidth(50);
+                afdelingstabel.getColumns().addAll(afdCol, catCol, actionCol);
+                
+                afdelingstabel.setItems(afdelingenlijst);
+
+                grid.add(afdelingstabel, 0, 1, 2, 1);
             
             HBox hbbox = new HBox();
             // Button voor toevoegen
@@ -153,7 +214,7 @@ public class Afdelingen {
             
             addButton.setOnAction((ActionEvent event) -> {
                 System.out.println("Toevoegen ---------");
-                    mainPanel.observableTabList.add(nieuwnaam.getText());
+                    afdelingenlijst.add(new Afdeling(nieuwnaam.getText(), ""));
                     nieuwnaam.setText("");
                 });
             
@@ -176,6 +237,7 @@ public class Afdelingen {
             return grid;
         }
         
+        /*
         class XCell extends ListCell<String> {
             
             HBox hbox = new HBox();
@@ -262,80 +324,9 @@ public class Afdelingen {
             
             
         }
+        */
         
         
         
-        public class ChangeAfdelingName {
-            /** Popup Window to change a klassenaam
-             * 
-             */
-            private Label label;
-            private TextField textfield;
-            private Button save;
-            private Button cancel;
-            
-            // Constructor
-            public ChangeAfdelingName() {
-                
-            }
-            
-            public Dialog changeAfdeling(String oudeWaarde) {
-                
-                Dialog<String> dialoog = new Dialog();
-                dialoog.setTitle("Klasse wijzigen");
-                dialoog.setHeaderText("De klasse van de clubs zal automatisch mee veranderen.");
-                
-                dialoog.setContentText("Naam van klasse wijzigen: ");
-                // Create the inputfield 
-                GridPane grid = new GridPane();
-                grid.setHgap(10);
-                grid.setVgap(10);
-                grid.setPadding(new Insets(20, 150, 10, 10));
-                
-                // Set the button types
-                ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
-                dialoog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
-                
-                // Set klassenaam labels and fields
-                TextField klassenaam = new TextField();
-                klassenaam.setPromptText(oudeWaarde);
-                grid.add(new Label("Nieuwe naam: "), 0, 0);
-                grid.add(klassenaam, 1, 0);
-                
-                // Enable/Disable ok button depending on whether nieuwe klasse was entered
-                Node okButton = dialoog.getDialogPane().lookupButton(okButtonType);
-                okButton.setDisable(true);
-                
-                // Do some validation
-                klassenaam.textProperty().addListener((observable, oldValue, newValue) -> { 
-                    okButton.setDisable(newValue.trim().isEmpty());
-                });
-                
-                dialoog.getDialogPane().setContent(grid);
-                
-                // Convert the result to a string when the login button is clicked
-                dialoog.setResultConverter(dialogButton -> { 
-                    if (dialogButton == okButtonType) {
-                        return new String(klassenaam.getText());
-                    }
-                    return null;
-                });
-                
-                Optional<String> result = dialoog.showAndWait();
-                if (result.isPresent()) {
-                    String nieuweWaarde = result.get();
-                    System.out.println("Nieuwe klasse: " + result.get());
-                    // Save change in observed afdelingen list
-                    Tab tab = new Tab(oudeWaarde);
-                    int x = mainPanel.observableTabList.indexOf(tab);
-                    //mainPanel.observableTabList.remove(tab);
-                    mainPanel.observableTabList.set(x, nieuweWaarde);
-                    System.out.println("replaced: " + mainPanel.observableTabList);
-                }
-                                
-                
-                return dialoog;
-            }
-        }
     }
 
