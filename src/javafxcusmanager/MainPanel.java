@@ -57,7 +57,7 @@ public class MainPanel {
     public ObservableList<Afdeling> afdelingenlijst;
     public ObservableList<Club> clubs;
     public ObservableList<Team> teams;
-    //public ObservableList<Umpire> umpires;
+    public ObservableList<Umpire> umpires;
     private DocumentHandling documentHandler;
     private Pane leftPane = new Pane();
     private Pane rightPane = new Pane();
@@ -69,14 +69,9 @@ public class MainPanel {
     private ClubView clubview;
     private UmpireModel umpiremodel;
     private ClubModel clubmodel;
-    private NewClub newclubpane;
     private GameSchedule gameSchedule;
-    private Clubs clublijst;
-    private Umpires umpirelijst;
-    private ArrayList<String> clublijstPerafdeling;
-    private ArrayList<String> umpirelijstPerafdeling;
+
     public Button resetButton;
-    private VBox vbox;
     private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
 
     public Pane MainPanel() {     
@@ -170,7 +165,11 @@ public class MainPanel {
         frogsteamArray.add(new Team("Frogs Seniors", "4BB"));
         frogsteamArray.add(new Team("Slowpitch", "SP Red"));
         clubs.add(new Club("Frogs", "0012", "Jonas Hoebeke", "jonas.hoebeke@hotmail.com", "04xxxxxxxx", "Scheldekant", "4", "9700", "Oudenaarde", frogsteamArray));
-            
+        ArrayList<Afdeling> afdArray = new ArrayList<>();
+        afdArray.add(new Afdeling("Gold", "Baseball"));
+        afdArray.add(new Afdeling("1BB", "Baseball"));
+        umpires = FXCollections.observableArrayList();
+        umpires.add(new Umpire("Pieter Stragier", "050058", "Coolstraat", "5", "9600", "Ronse", "0486208014", "pstragier@gmail.com", "Wolverines", afdArray));
         
         
         documentHandler = new DocumentHandling();
@@ -326,7 +325,7 @@ public class MainPanel {
             sideTabPane.getTabs().addAll(getClubTabArrayList());
             //tabpane.getStylesheets().add(getClass().getResource("css/TabPaneStyles.css").toExternalForm());
             Text placeHolder = new Text( " Geen afdelingen gevonden." );
-                    placeHolder.setFont( Font.font( null, FontWeight.BOLD, 20 ) );
+                    placeHolder.setFont( Font.font( null, FontWeight.BOLD, 14 ) );
                     BooleanBinding bb = Bindings.isEmpty( sideTabPane.getTabs() );
                     placeHolder.visibleProperty().bind( bb );
                     placeHolder.managedProperty().bind( bb );
@@ -351,7 +350,7 @@ public class MainPanel {
             sideTabPane.getTabs().addAll(getUmpireTabArrayList());
             //tabpane.getStylesheets().add(getClass().getResource("css/TabPaneStyles.css").toExternalForm());
             Text placeHolder = new Text( " Geen afdelingen gevonden." );
-                    placeHolder.setFont( Font.font( null, FontWeight.BOLD, 20 ) );
+                    placeHolder.setFont( Font.font( null, FontWeight.BOLD, 14 ) );
                     BooleanBinding bb = Bindings.isEmpty( sideTabPane.getTabs() );
                     placeHolder.visibleProperty().bind( bb );
                     placeHolder.managedProperty().bind( bb );
@@ -572,7 +571,7 @@ public class MainPanel {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
-        umpiremodel = new UmpireModel();
+        umpiremodel = new UmpireModel(umpires);
         System.out.println("Get Tabs from file and create umpire content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
         listOfItems.addAll(getAfdelingsnamenlijst());

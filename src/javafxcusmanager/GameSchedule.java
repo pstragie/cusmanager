@@ -373,7 +373,7 @@ public class GameSchedule {
                 // data is dragged over the target 
                 Dragboard db = event.getDragboard();
                 if (event.getDragboard().hasString()){
-                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                    event.acceptTransferModes(TransferMode.COPY);
                 }
                 event.consume();
                 }
@@ -444,7 +444,7 @@ public class GameSchedule {
                 // data is dragged over the target 
                 Dragboard db = event.getDragboard();
                 if (event.getDragboard().hasString()){
-                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                    event.acceptTransferModes(TransferMode.COPY);
                 }
                 event.consume();
                 }
@@ -482,7 +482,10 @@ public class GameSchedule {
                         umpArray.add(text);
                         // get index of filteredGame in gameData
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
-                        gameData.set(newIndex, new Game(afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeamName(), gameData.get(newIndex).getVisitingTeamName(), gameData.get(newIndex).getPlateUmpireName(), umpArray));
+                        ArrayList<String> baseArray = new ArrayList<>();
+                        baseArray.add(gameData.get(newIndex).getBaseUmpireNameString());
+                        baseArray.add(text);
+                        gameData.set(newIndex, new Game(afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeamName(), gameData.get(newIndex).getVisitingTeamName(), gameData.get(newIndex).getPlateUmpireName(), baseArray));
 
                     }
                     table.setItems(secondFilter);

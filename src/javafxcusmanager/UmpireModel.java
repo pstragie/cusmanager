@@ -7,6 +7,8 @@ package javafxcusmanager;
 
 import java.util.ArrayList;
 import java.util.Map;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -20,6 +22,9 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 /**
  *
@@ -27,56 +32,34 @@ import javafx.scene.layout.VBox;
  */
 public class UmpireModel {
     
-    private ArrayList<String> umpirelijstPerafdeling;
+    private ObservableList<String> umpirelijstPerafdeling;
     private Umpires umpirelijst;
+    private ObservableList<Umpire> umpires;
+
     private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
     
     // Constructor
-    public UmpireModel () {
-        
+    public UmpireModel(ObservableList umpires) {
+        this.umpires = umpires;
     }
     
-    public static class Umpire {
-        private final SimpleStringProperty umpirenaam;
-        private final SimpleStringProperty umpireadres;
-        private final SimpleStringProperty umpireafdeling;
-        
-        private Umpire(String naamString, String adresString, String afdelingString) {
-            this.umpirenaam = new SimpleStringProperty(naamString);
-            this.umpireadres = new SimpleStringProperty(adresString);
-            this.umpireafdeling = new SimpleStringProperty(afdelingString);
-        }
-            
-        public String getNaamString() {
-            return umpirenaam.get();
-        }
-        public void setAfdelingsNaam(String naamString) {
-            umpirenaam.set(naamString);
-        }
-        public String getAdresString() {
-            return umpireadres.get();
-        }
-        public void setAdresString(String adresString) {
-            umpireadres.set(adresString);
-        }
-        public String getAfdelingString() {
-            return umpireafdeling.get();
-        }
-        public void setAfdelingString(String afdelingString) {
-            umpireafdeling.set(afdelingString);
-        }
-    }    
+    
     
     public VBox createUmpireContent(String afd) {
             ListView<String> umpireListview = new ListView<>();
-            umpirelijstPerafdeling = new ArrayList<>();
-            umpirelijst = new Umpires();
-            Map<String, String> umpiremap = umpirelijst.getList();
-            umpiremap.forEach((k,val) ->  {
-                if (val.equals(afd)) {
-                    umpirelijstPerafdeling.add(k);
-                }
-            });
+            umpirelijstPerafdeling = FXCollections.observableArrayList();
+            if (umpires == null) {
+                // Geen umpires in de lijst
+            } else {
+                umpires.forEach(u -> {
+                    ArrayList<Afdeling> arrayAfd = u.getUmpireAfdelingen();
+                    for(Afdeling a : arrayAfd) {
+                        if (a.getAfdelingsNaam().equals(afd)) {
+                            umpirelijstPerafdeling.add(u.getUmpireNaam());
+                        }
+                    }
+                });
+            }
             ObservableList<String> data = FXCollections.<String>observableArrayList(umpirelijstPerafdeling);
             umpireListview.getItems().addAll(data);
             umpireListview.setPrefSize(150, 800);
@@ -91,7 +74,7 @@ public class UmpireModel {
                 };
                 cell.setOnDragDetected(event -> {
                    if (! cell.isEmpty()) {
-                       Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
+                       Dragboard db = cell.startDragAndDrop(TransferMode.COPY);
                        ClipboardContent cc = new ClipboardContent();
                        cc.putString(cell.getItem());
                        db.setContent(cc);
@@ -106,7 +89,7 @@ public class UmpireModel {
                    }
                });
 
-               cell.setOnDragDone(event -> umpireListview.getItems().remove(cell.getItem()));
+               //cell.setOnDragDone(event -> umpireListview.getItems().remove(cell.getItem()));
 
                cell.setOnDragDropped(event -> {
                    Dragboard db = event.getDragboard();
@@ -129,6 +112,12 @@ public class UmpireModel {
             //umpireListview.getItems().addAll(umpirelijstPerafdeling);
             
             VBox umpiresBox = new VBox();
+            Text placeHolder = new Text( " Geen umpires in deze afdeling." );
+                    placeHolder.setFont( Font.font( null, FontWeight.BOLD, 14 ) );
+                    BooleanBinding bb = Bindings.isEmpty ( umpirelijstPerafdeling );
+                    placeHolder.visibleProperty().bind( bb );
+                    placeHolder.managedProperty().bind( bb );
+            umpiresBox.getChildren().add(placeHolder);
             umpiresBox.getChildren().add(umpireListview); // Add listview to Vertical Box
             
             return umpiresBox; // return VBox with listview of clubs per afdeling

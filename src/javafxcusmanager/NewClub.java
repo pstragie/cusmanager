@@ -34,7 +34,7 @@ public class NewClub {
 	private boolean confirmed = false;
 	private MainPanel mainPanel;
 
-	private Clubs clubs;
+	private Club club;
 	public TextField clubnaamtf, afdelingtf, voorzittertf, straattf, huisnummertf, postcodetf, stadtf;
 	private Label clubLabel,  afdelingLabel, voorzitterLabel, straatLabel, huisnrLabel, pcLabel, stadLabel;
 	private Button toevoegen, annuleren;
@@ -95,8 +95,8 @@ public class NewClub {
                     System.out.println("Club: " + clubnaam);
                     String afd = afdelingtf.getText();
                     System.out.println("Afdeling: " + afd);
-                    clubs = new Clubs();
-                    clubs.setList(clubnaam, afd);
+                    //clubs = new Club(clubnaamtf, afdelingtf, clubnaam, clubnaam, clubnaam, clubnaam, clubnaam, clubnaam, clubnaam, clubteamsArray);
+                    //clubs.setList(clubnaam, afd);
                     
                 });
 		annuleren.setOnAction((ActionEvent event) -> {

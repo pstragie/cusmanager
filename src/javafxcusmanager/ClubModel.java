@@ -7,6 +7,8 @@ package javafxcusmanager;
 
 import java.util.ArrayList;
 import java.util.Map;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -23,6 +25,9 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 /**
  *
@@ -31,8 +36,7 @@ import javafx.scene.layout.VBox;
 public class ClubModel {
     
         private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
-        private ArrayList<String> teamlijstPerafdeling;
-        private Clubs clublijst;
+        private ObservableList<String> teamlijstPerafdeling;
         private ObservableList<Club> clubs;
         private ObservableList<Team> teams;
         
@@ -45,16 +49,20 @@ public class ClubModel {
 
 	public VBox createClubContent(String afd) {
             ListView<String> clubListview = new ListView<>();
-            teamlijstPerafdeling = new ArrayList<>();
-            clubs.forEach(c -> {
-                // For each club get all teams
-                ArrayList<Team> arrayteam = c.getClubTeams();
-                for(Team t : arrayteam) {
-                    if (t.getTeamAfdeling().equals(afd)) {
-                        teamlijstPerafdeling.add(t.getTeamNaam());
+            teamlijstPerafdeling = FXCollections.observableArrayList();
+            if (clubs == null) {
+                // Geen clubs
+            } else {
+                clubs.forEach(c -> {
+                    // For each club get all teams
+                    ArrayList<Team> arrayteam = c.getClubTeams();
+                    for(Team t : arrayteam) {
+                        if (t.getTeamAfdeling().equals(afd)) {
+                            teamlijstPerafdeling.add(t.getTeamNaam());
+                        }
                     }
-                }
-            });
+                });
+            }
             ObservableList<String> data = FXCollections.<String>observableArrayList(teamlijstPerafdeling);
             clubListview.getItems().addAll(data);
             clubListview.setPrefSize(150, 800);
@@ -80,7 +88,7 @@ public class ClubModel {
                cell.setOnDragOver(event -> {
                    Dragboard db = event.getDragboard();
                    if (db.hasString()) {
-                       event.acceptTransferModes(TransferMode.COPY);
+                       event.acceptTransferModes(TransferMode.MOVE);
                    }
                });
 
@@ -107,6 +115,12 @@ public class ClubModel {
             //clubListview.getItems().addAll(clublijstPerafdeling);
             
             VBox clubsBox = new VBox();
+            Text placeHolder = new Text( " Geen teams in deze afdeling." );
+                    placeHolder.setFont( Font.font( null, FontWeight.BOLD, 14 ) );
+                    BooleanBinding bb = Bindings.isEmpty( teamlijstPerafdeling );
+                    placeHolder.visibleProperty().bind( bb );
+                    placeHolder.managedProperty().bind( bb );
+            clubsBox.getChildren().add(placeHolder);
             clubsBox.getChildren().add(clubListview); // Add listview to Vertical Box
             
             return clubsBox; // return VBox with listview of clubs per afdeling

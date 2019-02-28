@@ -56,7 +56,6 @@ public class ClubView {
     private ObservableList<String> afdelingenArray;
     private ObservableList<Club> clubs;
     private ObservableList<Team> teams;
-    private ObservableList<Team> list;
     private ArrayList<String> clubArray;
     private String selectedClub;
     private Club clubselection;
@@ -68,11 +67,11 @@ public class ClubView {
     public ClubView(ObservableList clubs, ObservableList teams) {
         this.clubs = clubs;
         this.teams = teams;
+        
         // Get the list of afdelingen
         // Afdelingen afkomstig van observableTabList
         
         //afdelingenArray = FXCollections.observableArrayList(afdelingen.getAfdelingen());
-        list = FXCollections.observableArrayList();
         
             System.out.println("Run Constructor ClubView");		
             documentHandler = new DocumentHandling();
