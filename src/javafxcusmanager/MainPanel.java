@@ -121,12 +121,9 @@ public class MainPanel {
                                 System.out.println("Was permutated");
                             } else {
                                 if (change.wasAdded()) {
-                                    System.out.println("Data was added to clubs");
-                                    // Write to file
-                                    //clubList.refresh();
-                                    // Save to database
+                                    System.out.println("Data " + change + " was added to clubs");
+                                    // Write to database
                                     
-                                    //GameSchedule.write(gameData, /home/pieter/wedstrijdschema.txt);
                                 }
                             }
                         
@@ -158,12 +155,12 @@ public class MainPanel {
             
         // Add Test data
         ArrayList<Team> teamArray = new ArrayList<>();
-        teamArray.add(new Team("Wolverines Seniors", "Gold"));
-        teamArray.add(new Team("Wolfkes", "BB Rookies"));
+        teamArray.add(new Team("Wolverines Seniors", new Afdeling("Gold", "Baseball")));
+        teamArray.add(new Team("Wolfkes", new Afdeling("BB Rookies", "Beeball")));
         clubs.add(new Club("Wolverines", "0058", "Pieter Stragier", "pstragier@gmail.com", "0486208014", "Coolstraat", "5", "9600", "Ronse", teamArray));
         ArrayList<Team> frogsteamArray = new ArrayList<>();
-        frogsteamArray.add(new Team("Frogs Seniors", "4BB"));
-        frogsteamArray.add(new Team("Slowpitch", "SP Red"));
+        frogsteamArray.add(new Team("Frogs Seniors", new Afdeling("4BB", "Baseball")));
+        frogsteamArray.add(new Team("Slowpitch", new Afdeling("SP Red", "Softball")));
         clubs.add(new Club("Frogs", "0012", "Jonas Hoebeke", "jonas.hoebeke@hotmail.com", "04xxxxxxxx", "Scheldekant", "4", "9700", "Oudenaarde", frogsteamArray));
         ArrayList<Afdeling> afdArray = new ArrayList<>();
         afdArray.add(new Afdeling("Gold", "Baseball"));
@@ -227,18 +224,20 @@ public class MainPanel {
         // Left Pane -> Clubs
         leftPane = new Pane();
         leftPane = createLeftSidePane(leftTabPane);
+        borderPane.setMargin(leftPane, new Insets(0, 0, 0, 10));
         borderPane.setLeft(leftPane);
         
         // Right Pane -> Umpires
         rightPane = new Pane();
         rightPane = createRightSidePane(rightTabPane);
         borderPane.setRight(rightPane);
-        
+        borderPane.setMargin(rightPane, new Insets(0, 10, 0, 0));
         borderPane.setBottom(bottomPaneTextField);
         
         // Center Pane -> Game schedule
         centerPane = new Pane();
         centerPane = createCenterPane(centerTabPane);
+        borderPane.setMargin(centerPane, new Insets(0, 10, 0, 10));
         borderPane.setCenter(centerPane);
         return borderPane;
     }
@@ -275,9 +274,7 @@ public class MainPanel {
             
             System.out.println("menuClubItem1 Clicked");
             Stage stage = new Stage();
-            Scene scene = new Scene(ClubPaneel(), 800, 800);
-            //stage.setX(1000);
-            //stage.setY(800);
+            Scene scene = new Scene(ClubPaneel(), 800, 600);
             stage.setTitle("Clubs beheren");
             stage.setScene(scene);
             stage.show();
@@ -303,7 +300,7 @@ public class MainPanel {
         
         menuAfdelingenItem1.setOnAction(e -> { 
             Stage stage = new Stage();
-            Scene scene = new Scene(newAfdelingPaneel("Afdelingen", leftTabPane, rightTabPane, centerTabPane, afdelingenlijst));
+            Scene scene = new Scene(newAfdelingPaneel(leftTabPane, rightTabPane, centerTabPane, afdelingenlijst));
             stage.setTitle("Afdelingen wijzigen");
             stage.setScene(scene);
             stage.show();
@@ -612,20 +609,18 @@ public class MainPanel {
         return arraylist;
     }
     
-    public Pane newAfdelingPaneel(String s, TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter, ObservableList afdelingenlijst) {
+    public Pane newAfdelingPaneel(TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter, ObservableList afdelingenlijst) {
         BorderPane border = new BorderPane();
-        if(s == "Afdelingen") {
+        
             changeAfdelingenpane = new Afdelingen(tabpaneleft, tabpaneright, tabpanecenter, afdelingenlijst);
             border.setCenter(changeAfdelingenpane.afdelingenPanel());
-            
-        }
         
         return border;
     }
     
     public Pane ClubPaneel() {
         
-            clubview = new ClubView(clubs, teams);
+            clubview = new ClubView(clubs, teams, afdelingenlijst);
             return clubview.clubPane();
     }
 }

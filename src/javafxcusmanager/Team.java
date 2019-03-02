@@ -5,6 +5,9 @@
  */
 package javafxcusmanager;
 
+import java.time.MonthDay;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -15,11 +18,11 @@ import javafx.beans.property.StringProperty;
 public class Team {
     
     private SimpleStringProperty teamNaam;
-    private SimpleStringProperty teamAfdeling;
+    private ObjectProperty<Afdeling> teamAfdeling;
     
-    public Team(String teamnaam, String teamafdeling) {
+    public Team(String teamnaam, Afdeling teamafdeling) {
         this.teamNaam = new SimpleStringProperty(teamnaam);
-        this.teamAfdeling = new SimpleStringProperty(teamafdeling);
+        this.teamAfdeling = new SimpleObjectProperty<>(this, "afdelingsnaam", teamafdeling);
     }
     
     public String getTeamNaam() {
@@ -28,17 +31,17 @@ public class Team {
     public void setTeamNaam(String teamnaam) {
         teamNaam.set(teamnaam);
     }
-    public String getTeamAfdeling() {
+    public Afdeling getTeamAfdeling() {
         return teamAfdeling.get();
     }
-    public void setTeamAfdeling(String teamafdeling) {
-        teamAfdeling.set(teamafdeling);
+    public void setTeamAfdeling(Afdeling teamafdeling) {
+        this.teamAfdeling.set(teamafdeling);
     }
     
     public StringProperty teamNaamProperty() {
         return teamNaam;
     }
-    public StringProperty teamAfdelingProperty() {
+    public ObjectProperty<Afdeling> teamAfdelingProperty() {
         return teamAfdeling;
     }
     @Override

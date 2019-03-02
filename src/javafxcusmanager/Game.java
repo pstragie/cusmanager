@@ -5,23 +5,12 @@
  */
 package javafxcusmanager;
 
-import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.DateCell;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TableCell;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
+import javafx.beans.property.StringProperty;
 
 /**
  *
@@ -34,11 +23,13 @@ public class Game {
     private final SimpleStringProperty hometeam;
     private final SimpleStringProperty visitingteam;
     private final SimpleStringProperty plateumpire;
-    private final ArrayList<String> baseumpires;
+    private final SimpleStringProperty base1umpire;
+    private final SimpleStringProperty base2umpire;
+    private final SimpleStringProperty base3umpire;
     private final ObjectProperty<MonthDay> gamedatum ;
     private final ObjectProperty<LocalTime> gameuur;
 
-    public Game(String afdelingString, String weekString, MonthDay gameDate, LocalTime gameUur, String homeTeamName, String visitingTeamName, String plateUmpireName, ArrayList<String> baseUmpArray) {
+    public Game(String afdelingString, String weekString, MonthDay gameDate, LocalTime gameUur, String homeTeamName, String visitingTeamName, String plateUmpireName, String base1UmpireName, String base2UmpireName, String base3UmpireName) {
         this.afdeling = new SimpleStringProperty(afdelingString);
         this.week = new SimpleStringProperty(weekString);
         this.gamedatum = new SimpleObjectProperty<>(this, "gamedatum", gameDate);
@@ -46,7 +37,9 @@ public class Game {
         this.hometeam = new SimpleStringProperty(homeTeamName);
         this.visitingteam = new SimpleStringProperty(visitingTeamName);
         this.plateumpire = new SimpleStringProperty(plateUmpireName);
-        this.baseumpires = baseUmpArray;
+        this.base1umpire = new SimpleStringProperty(base1UmpireName);
+        this.base2umpire = new SimpleStringProperty(base2UmpireName);
+        this.base3umpire = new SimpleStringProperty(base3UmpireName);
     }
 
     public String getAfdelingString() {
@@ -82,23 +75,40 @@ public class Game {
     public void setPlateUmpireName(String plateUmpireName) {
         plateumpire.set(plateUmpireName);
     }
-    public String getBaseUmpireNameString() {
+    
+    /*public String getBaseUmpireNameString() {
         String s = new String(baseumpires.stream().collect(Collectors.joining(", ")));
         return s;
+    }*/
+    
+    public String getBase1UmpireName() {
+        return base1umpire.get();
     }
     
-    public ArrayList<String> getBaseUmpireNames() {
-        return baseumpires;
+    public void setBase1UmpireName(String base1Ump) {
+        base1umpire.set(base1Ump);
     }
     
-    public void setBaseUmpireName(ArrayList<String> baseUmpArray) {
-        baseumpires.addAll(baseUmpArray);
+    public String getBase2UmpireName() {
+        return base2umpire.get();
+    }
+    
+    public void setBase2UmpireName(String base2Ump) {
+        base2umpire.set(base2Ump);
+    }
+     public String getBase3UmpireName() {
+        return base3umpire.get();
+    }
+    
+    public void setBase3UmpireName(String base3Ump) {
+        base3umpire.set(base3Ump);
     }
     
     public MonthDay getGameDatum() {
         return gamedatum.get();
     }
         
+    
     public void setGameDatum(MonthDay gameDate) {
         this.gamedatum.set(gameDate);
     }
@@ -116,6 +126,32 @@ public class Game {
     public ObjectProperty<LocalTime> gameuurProperty() {
         return gameuur;
     }
+    
+    public StringProperty afdelingProperty() {
+        return afdeling;
+    }
+    public StringProperty weekProperty() {
+        return week;
+    }
+    public StringProperty hometeamProperty() {
+        return hometeam;
+    }
+    public StringProperty visitingteamProperty() {
+        return visitingteam;
+    }
+    public StringProperty plateumpireProperty() {
+        return plateumpire;
+    }
+    public StringProperty base1umpireProperty() {
+        return base1umpire;
+    }
+    public StringProperty base2umpireProperty() {
+        return base2umpire;
+    }
+    public StringProperty base3umpireProperty() {
+        return base3umpire;
+    }
+    
     
     @Override
     public String toString() {

@@ -6,7 +6,6 @@
 package javafxcusmanager;
 
 import java.util.ArrayList;
-import java.util.Map;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
@@ -14,16 +13,11 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -57,7 +51,7 @@ public class ClubModel {
                     // For each club get all teams
                     ArrayList<Team> arrayteam = c.getClubTeams();
                     for(Team t : arrayteam) {
-                        if (t.getTeamAfdeling().equals(afd)) {
+                        if (t.getTeamAfdeling().getAfdelingsNaam().equals(afd)) {
                             teamlijstPerafdeling.add(t.getTeamNaam());
                         }
                     }

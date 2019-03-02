@@ -15,10 +15,14 @@ import java.util.Locale;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -57,7 +61,7 @@ public class GamedateCell extends TableCell<Game, MonthDay> {
                     cancelEdit();
                 }
             });
-            
+              
             // Modify default mouse behavior on date picker:
             // Don't hide popup on single click, just set date
             // On double-click, hide popup and commit edit for editor
@@ -97,7 +101,7 @@ public class GamedateCell extends TableCell<Game, MonthDay> {
         @Override
         public void updateItem(MonthDay gameday, boolean empty) {
             super.updateItem(gameday, empty);
-            if (empty) {
+            if (empty || gameday == null) {
                 setText(null);
                 setGraphic(null);
             } else {
