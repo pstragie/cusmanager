@@ -60,8 +60,10 @@ public class GameSchedule {
     private final TableView<Game> table = new TableView<>();
     private MainPanel mainPanel;
     private ObservableList<Game> gameData;
+    private ObservableList<Team> teams;
     private ObservableList<LocalTime> uren;
     private ArrayList<Umpire> emptyArray = new ArrayList<>();
+    
     //private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
     private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
 
@@ -69,7 +71,6 @@ public class GameSchedule {
     // Constructor
     public GameSchedule() {
         // Load schedule data from the specified file. The current scheduel data will be replaced
-        
         
         
         gameData = FXCollections.observableArrayList();
@@ -240,7 +241,7 @@ public class GameSchedule {
         
         homeTeamCol.setCellFactory(e -> {
             
-            TableCell<ObservableList<String>, String> cell = new TableCell<ObservableList<String>, String> () {
+            TableCell<ObservableList<Team>, String> cell = new TableCell<ObservableList<Team>, String> () {
                 @Override
                 public void updateItem(String item, boolean empty) {
                     // Make sure you call super.updateItem, or you might get really weird bugs.
@@ -306,7 +307,7 @@ public class GameSchedule {
             public void handle(DragEvent event) {
                 int rowIndex = cell.getIndex();
                 System.out.println("Cell row index: " + rowIndex);
-
+                
                 // Get the column index of this cell.
                 int columnIndex = cell.getTableView().getColumns().indexOf(cell.getTableColumn());
                 System.out.println("Cell column index: " + columnIndex);
@@ -316,7 +317,8 @@ public class GameSchedule {
                 if (event.getDragboard().hasString()) {            
 
                     String text = db.getString();
-
+                    FilteredList filt = mainPanel.teams.filtered(t -> t.getTeamNaam().equals(text));
+                    System.out.println("filter: " + filt);
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
                         int sprong = rowIndex - secondFilter.size();
                         for(int i=0; i<sprong; i++) {
