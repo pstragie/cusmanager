@@ -6,6 +6,11 @@
 package javafxcusmanager;
 
 import insidefx.undecorator.Undecorator;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -24,6 +29,7 @@ import javafx.stage.StageStyle;
 public class JavaFxCusManager extends Application {
     //Stage stage = new Stage();
     //MainPanel testMainPanel = new MainPanel();
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
         MainPanel mainPanel = new MainPanel();
@@ -50,6 +56,27 @@ public class JavaFxCusManager extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        try {
+            Class.forName("org.apache.derby.jdbc.ClientDriver");
+        } catch (ClassNotFoundException e) {
+            System.out.println(e);
+        }
+        
+        try {
+            Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/cusdb;create=false;user=pstragier;password=Isabelle30?");
+            Statement stmt = con.createStatement();
+            
+            
+            ResultSet rs = stmt.executeQuery("SELECT * FROM APP.Afdelingen");
+            while(rs.next()) {
+                String s = rs.getString("afdelingsnaam");
+                System.out.println(s);
+            }
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        }
+        
+        
         launch(args);
     }
     

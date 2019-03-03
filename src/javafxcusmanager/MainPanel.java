@@ -43,6 +43,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import java.sql.*;
 
 /**
  *
@@ -70,9 +71,8 @@ public class MainPanel {
     private UmpireModel umpiremodel;
     private ClubModel clubmodel;
     private GameSchedule gameSchedule;
-
+    private Database database = new Database();
     public Button resetButton;
-    private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
 
     public Pane MainPanel() {     
         
@@ -102,6 +102,9 @@ public class MainPanel {
                             }
                 }
             });
+        // Check if afdeling exists before adding to database --> Error will occur
+        database.addNewAfdelingToDatabase("5BB", "Baseball", Boolean.TRUE);
+        database.addNewAfdelingToDatabase("6BB", "Baseball", Boolean.TRUE);
         afdelingenlijst.add(new Afdeling("Gold", "Baseball"));
         afdelingenlijst.add(new Afdeling("1BB", "Baseball"));
         afdelingenlijst.add(new Afdeling("2BB", "Baseball"));
