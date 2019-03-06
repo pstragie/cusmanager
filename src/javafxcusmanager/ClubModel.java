@@ -11,6 +11,7 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.control.ListCell;
@@ -44,6 +45,25 @@ public class ClubModel {
 	public VBox createClubContent(String afd) {
             ListView<String> clubListview = new ListView<>();
             teamlijstPerafdeling = FXCollections.observableArrayList();
+            teamlijstPerafdeling.addListener((ListChangeListener.Change<? extends String> change) -> { 
+                while(change.next()) {
+                    if(change.wasUpdated()) {
+                        System.out.println("Update detected");
+                        // Write to file
+
+                    } else
+                        if (change.wasPermutated()) {
+                            System.out.println("Was permutated");
+                        } else {
+                            if (change.wasAdded()) {
+                                //System.out.println("Data " + change + " was added to clubs");
+                                // Write to database
+
+                            }
+                        }
+
+                }
+            });
             if (clubs == null) {
                 // Geen clubs
             } else {
@@ -51,7 +71,8 @@ public class ClubModel {
                     // For each club get all teams
                     ArrayList<Team> arrayteam = c.getClubTeams();
                     for(Team t : arrayteam) {
-                        if (t.getTeamAfdeling().getAfdelingsNaam().equals(afd)) {
+                        //System.out.println("Visible: " + c.getVisible().booleanValue());
+                        if (t.getTeamAfdeling().getAfdelingsNaam().equals(afd) && c.getVisible().booleanValue() == Boolean.TRUE) {
                             teamlijstPerafdeling.add(t.getTeamNaam());
                         }
                     }

@@ -1,7 +1,42 @@
-Clublijst
-Frogs, Gold
-Ghent, 2BB
-Wielsbeke, Gold
-Oostende, 4BB
-Ronse Wolverines, Gold
-Zottegem, 3BB
+Clubs
+Royal Antwerp Eagles;VBSL;2001;;;;;;antwerpeagles@hotmail.com;0477868838;www.antwerpeagles.be
+Hoboken Pioneers;VBSL;2002;;;;;;info@pioneers.be;0468111075;www.pioneers.be
+Royal Greys Merksem;VBSL;2005;;;;;;mdorny@telenet.be;0479350105;www.royalgreys.be
+K. Borgerhout Squirrels;VBSL;2006;;;;;Borgerhout;;;
+K. Deurne Spartans;VBSL;2015;;;;;Deurne;;;
+K. Mortsel Stars;VBSL;2016;;;;;Mortsel;;;
+Brasschaat Braves;VBSL;2022;;;;;Brasschaat;;;
+Berendrecht Bears;VBSL;;;;;;Berendrecht;;;
+Beveren Lions;VBSL;2029;;;;;Beveren;;;
+Chicaboo's Stabroek;VBSL;2030;;;;;Stabroek;;;
+Gent Knights;VBSL;2032;;;;;Gent;;;
+The Merchtem Cats;VBSL;2035;;;;;Merchtem;;;
+Sunville Tigers Zonhoven;VBSL;2037;;;;;Zonhoven;;;
+Zottegem Bebops;VBSL;2041;;;;;Zottegem;;;
+Leuven Twins;VBSL;2042;;;;;Leuven;;;
+Wielsbeke Pitbulls;VBSL;2053;;;;;Wielsbeke;;;
+Oostende Piranhas;VBSL;2059;;;;;Oostende;;;
+Heist-op-den-Berg Afterburners;VBSL;2084;;;;;Heist o/d Berg;;;
+Tongeren Sharks;VBSL;;;;;Tongeren;;;
+Oudenaarde Frogs;VBSL;2095;Jonas Hoebeke;;;;;info@thefrogs.be;0499144750;www.thefrogs.be
+Het Zeeuwse Honk Terneuzen;VBSL;;;;;;Terneuzen;;;
+Limburg White Sox;VBSL;2036;;;;;;;;;
+Neerpelt NStars;VBSL;2115;;;;;Neerpelt;;;
+Olen Titans;VBSL;2118;;;;;Olen;;;
+Wase Baseball Academy;VBSL;2087;;;;;;;;;
+Ronse Wolverines;VBSL;2119;;;;;Ronse;;;
+Tielt-Winge Black Bats;VBSL;;;;;Tielt-Winge;;;
+The Poperinge Frontliners;VBSL;;;;;Poperinge;;;
+Liège Rebels;LFBBS;;;;;;;;;
+Seraing Brown Boys;LFBBS;;;;;;;;;
+Namur Angels;LFBBS;;;;;;;;;
+Andenne Black Bears;LFBBS;;;;;;;;;
+Brussels Kangaroos;LFBBS;;;;;;;;;
+Braine Black Rickers;LFBBS;;;;;;;;;
+Louvain la Neuve Phoenix;LFBBS;;;;;;;;;
+Binche Guardians;LFBBS;;;;;;;;;
+Tournai Celtics;LFBBS;;;;;;;;;
+Mons Athletics;LFBBS;;;;;;;;;
+La Louvière Snarling Wolves;LFBBS;;;;;;;;;
+Silly Devil Rays;LFBBS;;;;;;;;;
+March-en-Famenne Cracks;LFBBS;;;;;;;;;

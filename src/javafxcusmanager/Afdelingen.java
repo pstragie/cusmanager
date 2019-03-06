@@ -8,11 +8,13 @@ package javafxcusmanager;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
@@ -48,16 +50,17 @@ public class Afdelingen {
         private DocumentHandling documentHandler;
         private ObservableList<Afdeling> afdelingenlijst;
         private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
-
+        private Database database;
         //public static UmpireModel.UmpireTabPane umptabpane;
         
         // Constructor
-	public Afdelingen(TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter, ObservableList afdelingenlijst) {
+	public Afdelingen(ObservableList afdelingenlijst) {
             // Afdelingen afkomstig van observableTabList
             this.afdelingenlijst = afdelingenlijst;
             System.out.println("Run Constructor");		
             mainPanel = new MainPanel();
-            System.out.println("afdlijst: " + afdelingenlijst);
+            database = new Database();
+            //System.out.println("afdlijst: " + afdelingenlijst);
             
         }
 	
@@ -169,6 +172,7 @@ public class Afdelingen {
                             
                             // Remove from afdelingenlijst
                             afdelingenlijst.remove(afd);
+                            
                         });
 
                     }
@@ -186,7 +190,11 @@ public class Afdelingen {
             // Button voor toevoegen
             TextField nieuwnaam = new TextField();
             nieuwnaam.setPromptText("Nieuwe afdeling");
-            
+            ComboBox disciplineBox = new ComboBox();
+            disciplineBox.setValue("Baseball");
+            ObservableList<String> disciplines = FXCollections.observableArrayList();
+            disciplines.addAll("Baseball", "Softball");
+            disciplineBox.setItems(disciplines);
             Button addButton = new Button("Nieuw");
             addButton.setDisable(true);
             nieuwnaam.textProperty().addListener((observable, oldValue, newValue) -> { 
@@ -194,8 +202,9 @@ public class Afdelingen {
                 });
             
             addButton.setOnAction((ActionEvent event) -> {
-                System.out.println("Toevoegen ---------");
-                    afdelingenlijst.add(new Afdeling(nieuwnaam.getText(), ""));
+                System.out.println("Toevoegen ---------" + nieuwnaam.getText());
+                    afdelingenlijst.add(new Afdeling(nieuwnaam.getText(), disciplineBox.getSelectionModel().getSelectedItem().toString()));
+                    database.insertNewAfdelingToDatabase(nieuwnaam.getText(), disciplineBox.getSelectionModel().getSelectedItem().toString(), Boolean.TRUE);
                     nieuwnaam.setText("");
                 });
             
@@ -207,6 +216,7 @@ public class Afdelingen {
                 ((Stage)(((Button)event.getSource()).getScene().getWindow())).close();
             });
             hbbox.getChildren().add(nieuwnaam);
+            hbbox.getChildren().add(disciplineBox);
             hbbox.getChildren().add(addButton);
             hbbox.getChildren().add(cancel);
             hbbox.setPadding(new Insets(15, 12, 15, 12));

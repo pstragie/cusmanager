@@ -71,10 +71,7 @@ public class GameSchedule {
     // Constructor
     public GameSchedule() {
         // Load schedule data from the specified file. The current scheduel data will be replaced
-        
-        
         gameData = FXCollections.observableArrayList();
-        
         gameData.addListener((ListChangeListener.Change<? extends Game> change) -> { 
                     while(change.next()) {
                         if(change.wasUpdated()) {
@@ -98,17 +95,9 @@ public class GameSchedule {
                 }
             });
         
-        String week = "1";
-        SimpleDateFormat formatter = new SimpleDateFormat("EEEE, MMM dd, yyyy HH:mm:ss a");
-        String dateInString = "Friday, Jun 7, 2013 12:10:56 PM";
-        ArrayList<Game> gamesArray = new ArrayList<>();
-        ArrayList<Umpire> umpArray = new ArrayList<>();
-        ArrayList<Afdeling> afdArray = new ArrayList<>();
-        afdArray.add(new Afdeling("Gold", "Baseball"));
-        afdArray.add(new Afdeling("1BB", "Baseball"));
-        umpArray.add(new Umpire("Pieter Stragier", "050058", "Coolstraat", "5", "9600", "Ronse", "0486208014", "pstragier@gmail.com", "Wolverines", afdArray));
-        Umpire ump = new Umpire("Lilly Roos Stragier", "050058", "Coolstraat", "5", "9600", "Ronse", "0486208014", "pstragier@gmail.com", "Wolverines", afdArray);
-        ArrayList<Umpire> emptyArray = new ArrayList<>();
+        
+        
+        
         gameData.add(new Game("Gold", "1", MonthDay.of(APRIL, 14), LocalTime.of(2, 30), "Frogs", "Wolverines", "Isabelle Verelst", "Lilly Roos", null, null));
         gameData.add(new Game("Gold", "1", MonthDay.of(APRIL, 14), LocalTime.of(14, 00), "Wielsbeke", "Doornik", "Pieter Stragier", "Lilly Roos", null, null));
         gameData.add(new Game("Gold", "2", MonthDay.of(APRIL, 22), LocalTime.of(14, 00), "Ghent", "Zottegem", "Hermelien", null, null, null));

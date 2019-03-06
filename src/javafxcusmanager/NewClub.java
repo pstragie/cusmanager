@@ -39,8 +39,8 @@ public class NewClub {
 	private boolean confirmed = false;
         private ObservableList<String> afdelingen;
         private ObservableList<Club> clubs;
-	public TextField clubnaamtf, clubnummertf, clubemailtf, clubtelefoontf, voorzittertf, straattf, huisnummertf, postcodetf, stadtf;
-	private Label clubLabel,  clubnummerLabel, clubemailLabel, clubtelefoonLabel, voorzitterLabel, straatLabel, huisnrLabel, pcLabel, stadLabel;
+	public TextField clubnaamtf, ligatf, websitetf, clubnummertf, clubemailtf, clubtelefoontf, voorzittertf, straattf, huisnummertf, postcodetf, stadtf;
+	private Label clubLabel,  ligaLabel, websiteLabel, clubnummerLabel, clubemailLabel, clubtelefoonLabel, voorzitterLabel, straatLabel, huisnrLabel, pcLabel, stadLabel;
 	private Button toevoegen, annuleren;
 
         // Constructor
@@ -81,7 +81,10 @@ public class NewClub {
 		postcodetf.setAlignment(Pos.CENTER_LEFT);
 		stadtf = new TextField ( );
 		stadtf.setAlignment(Pos.CENTER_LEFT);
-		
+		ligatf = new TextField ( );
+                ligatf.setAlignment(Pos.CENTER_LEFT);
+                websitetf = new TextField ( );
+                websitetf.setAlignment(Pos.CENTER_LEFT);
 		// Maak de labels
 		clubLabel = new Label( "Clubnaam" );
                 clubLabel.setMinWidth(100);
@@ -93,7 +96,8 @@ public class NewClub {
 		huisnrLabel = new Label( "Huisnummer" );
 		pcLabel = new Label( "Postcode" );
 		stadLabel = new Label( "Stad" );
-		
+		ligaLabel = new Label ("Liga");
+                websiteLabel = new Label ("Website");
 		toevoegen = new Button( "Toevoegen" );
                 toevoegen.setPrefWidth(100);
 		annuleren = new Button( "Annuleren" );
@@ -102,7 +106,8 @@ public class NewClub {
 		toevoegen.setOnAction((ActionEvent event) -> {
                     confirmed = true;
                     ArrayList<Team> emptyArray = new ArrayList<>();
-                    clubs.add(new Club(clubnaamtf.getText(), clubnummertf.getText(), voorzittertf.getText(), clubemailtf.getText(), clubtelefoontf.getText(), straattf.getText(), huisnummertf.getText(), postcodetf.getText(), stadtf.getText(), emptyArray));  
+                    clubs.add(new Club(clubnaamtf.getText(), ligatf.getText(), clubnummertf.getText(), voorzittertf.getText(), straattf.getText(), huisnummertf.getText(), postcodetf.getText(), stadtf.getText(), clubemailtf.getText(), clubtelefoontf.getText(), websitetf.getText(), emptyArray, Boolean.TRUE));
+                    //clubs.add(new Club(clubnaamtf.getText(), clubnummertf.getText(), voorzittertf.getText(), clubemailtf.getText(), clubtelefoontf.getText(), straattf.getText(), huisnummertf.getText(), postcodetf.getText(), stadtf.getText(), emptyArray));  
                     // Close window
                     Stage stage = (Stage) toevoegen.getScene().getWindow();
                     stage.close();
@@ -134,8 +139,12 @@ public class NewClub {
 		grid.add(postcodetf, 1, 8 );
 		grid.add(stadLabel, 0, 9 );
 		grid.add(stadtf, 1, 9 );
-		grid.add(toevoegen, 0, 10 );
-		grid.add(annuleren, 1, 10 );
+                grid.add(ligaLabel, 0, 10);
+                grid.add(ligatf, 1, 10);
+                grid.add(websiteLabel, 0, 11);
+                grid.add(websitetf, 1, 11);
+		grid.add(toevoegen, 0, 12 );
+		grid.add(annuleren, 1, 12 );
 		
 		return grid;
 	}

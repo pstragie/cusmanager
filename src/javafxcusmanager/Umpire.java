@@ -23,10 +23,11 @@ public class Umpire {
     private final SimpleStringProperty umpiretelefoon;
     private final SimpleStringProperty umpireemail;
     private final SimpleStringProperty umpireclub;
+    private Boolean actief;
     private final ArrayList<Afdeling> umpireafdelingen;
     
 
-    public Umpire(String umpirenaamString, String umpirelicentieString, String umpirestraatString, String umpirehuisnummerString, String umpirepostcodeString, String umpirestadString, String umpiretelefoonString, String umpireemailString, String umpireclubString, ArrayList umpireafdelingenArray) {
+    public Umpire(String umpirenaamString, String umpirelicentieString, String umpirestraatString, String umpirehuisnummerString, String umpirepostcodeString, String umpirestadString, String umpiretelefoonString, String umpireemailString, String umpireclubString, ArrayList umpireafdelingenArray, Boolean bool) {
         this.umpirenaam = new SimpleStringProperty(umpirenaamString);
         this.umpirelicentie = new SimpleStringProperty(umpirelicentieString);
         this.umpirestraat = new SimpleStringProperty(umpirestraatString);
@@ -37,6 +38,7 @@ public class Umpire {
         this.umpireemail = new SimpleStringProperty(umpireemailString);
         this.umpireclub = new SimpleStringProperty(umpireclubString);
         this.umpireafdelingen = new ArrayList<Afdeling>(umpireafdelingenArray);
+        this.actief = new Boolean(bool);
     }
 
     public String getUmpireNaam() {
@@ -105,7 +107,13 @@ public class Umpire {
     public void setUmpireAfdelingen(Afdeling umpireafdelingenArray) {
         umpireafdelingen.add(umpireafdelingenArray);
     }
-
+    
+    public Boolean getActief() {
+        return actief.booleanValue();
+    }
+    public void setActief(Boolean bool) {
+        actief = bool;
+    }
 
     public StringProperty umpirenaamProperty() {
         return umpirenaam;

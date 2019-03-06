@@ -10,6 +10,7 @@ import java.util.Map;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
  *
@@ -18,6 +19,7 @@ import javafx.beans.property.SimpleStringProperty;
 public class Club {
 
     private final SimpleStringProperty clubnaam;
+    private final SimpleStringProperty liga;
     private final SimpleStringProperty clubnummer;
     private final SimpleStringProperty clubvoorzitter;
     private final SimpleStringProperty clubemail;
@@ -26,11 +28,14 @@ public class Club {
     private final SimpleStringProperty clubstraatnummer;
     private final SimpleStringProperty clubpostcode;
     private final SimpleStringProperty clubstad;
+    private final SimpleStringProperty clubwebsite;
+    private Boolean visible;
     private final ArrayList<Team> clubteams;
     
 
-    public Club(String clubnaamString, String clubnummerString, String clubvoorzitterString, String clubemailString, String clubtelefoonString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, ArrayList clubteamsArray) {
+    public Club(String clubnaamString, String ligaString, String clubnummerString, String clubvoorzitterString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, String clubemailString, String clubtelefoonString, String clubwebsiteString, ArrayList clubteamsArray, Boolean bool) {
         this.clubnaam = new SimpleStringProperty(clubnaamString);
+        this.liga = new SimpleStringProperty(ligaString);
         this.clubnummer = new SimpleStringProperty(clubnummerString);
         this.clubvoorzitter = new SimpleStringProperty(clubvoorzitterString);
         this.clubemail = new SimpleStringProperty(clubemailString);
@@ -39,7 +44,9 @@ public class Club {
         this.clubstraatnummer = new SimpleStringProperty(clubstraatnummerString);
         this.clubpostcode = new SimpleStringProperty(clubpostcodeString);
         this.clubstad = new SimpleStringProperty(clubstadString);
+        this.clubwebsite = new SimpleStringProperty(clubwebsiteString);
         this.clubteams = new ArrayList<Team>(clubteamsArray);
+        this.visible = new Boolean(bool);
     }
 
     public String getClubNaam() {
@@ -48,6 +55,12 @@ public class Club {
     public void setClubNaam(String clubnaamString) {
         clubnaam.set(clubnaamString);
     }
+    public String getLiga() {
+        return liga.get();
+    }
+    public void setLiga(String ligaString) {
+        liga.set(ligaString);
+    }
     public String getClubNummer() {
         return clubnummer.get();
     }
@@ -55,6 +68,13 @@ public class Club {
         clubnummer.set(clubnummerString);
     }
 
+    public String getVoorzitter() {
+        return clubvoorzitter.get();
+    }
+    public void setVoorzitter(String clubvoorzitterString) {
+        clubvoorzitter.set(clubvoorzitterString);
+    }
+    
     public String getClubEmail() {
         return clubemail.get();
     }
@@ -95,6 +115,14 @@ public class Club {
     public void setClubStad(String clubstadString) {
         clubstad.set(clubstadString);
     }
+    
+    public String getClubWebsite() {
+        return clubwebsite.get();
+    }
+    
+    public void setClubWebsite(String clubwebsiteString) {
+        clubwebsite.set(clubwebsiteString);
+    }
     public ArrayList<Team> getClubTeams() {
         return clubteams;
     }
@@ -103,14 +131,48 @@ public class Club {
         clubteams.add(clubteamsArray);
     }
 
+    public Boolean getVisible() {
+        return visible.booleanValue();
+    }
+    public void setVisible(Boolean bool) {
+        visible = bool;
+    }
 
+    public StringProperty clubnaamProperty() {
+        return clubnaam;
+    }
+    public StringProperty ligaProperty() {
+        return liga;
+    }
+    public StringProperty clubstraatProperty() {
+        return clubstraat;
+    }
+    public StringProperty clubnummerProperty() {
+        return clubnummer;
+    }
+    public StringProperty clubstraatnummerProperty() {
+        return clubstraatnummer;
+    }
+    public StringProperty clubpostcodeProperty() {
+        return clubpostcode;
+    }
+    public StringProperty clubstadProperty() {
+        return clubstad;
+    }
+    public StringProperty clubemailProperty() {
+        return clubemail;
+    }
+    public StringProperty clubvoorzitterProperty() {
+        return clubvoorzitter;
+    }
+    public StringProperty clubwebsiteProperty() {
+        return clubwebsite;
+    }
+    
     @Override
     public String toString() {
         String string = new String();
-        
-        
-        string = clubnaam.get() + ", " + clubnummer.get() + ", " + clubvoorzitter.get() + ", " + clubemail.get() + ", " + clubtelefoon.get() + ", " + clubstraat.get() + " " + clubstraatnummer.get() + ", " + clubpostcode.get() + ", " + clubstad.get() + "\n";
-
+        string = clubnaam.get() + ", " + liga.get() + ", " + clubnummer.get() + ", " + clubvoorzitter.get() + ", " + clubstraat.get() + " " + clubstraatnummer.get() + ", " + clubpostcode.get() + ", " + clubstad.get() + ", " + clubemail.get() + ", " + clubtelefoon.get() + ", " + clubwebsite.get() + ", " + visible + "\n";
         return string;
     }
 }

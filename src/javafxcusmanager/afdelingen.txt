@@ -1,4 +1,3 @@
-Afdelingen
 Gold;Baseball;True
 1BB;Baseball;True
 2BB;Baseball;True

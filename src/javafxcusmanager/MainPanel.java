@@ -5,22 +5,19 @@
  */
 package javafxcusmanager;
 
+import java.io.File;
 import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -44,6 +41,12 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.sql.*;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.TextInputDialog;
+import javafx.stage.FileChooser;
 
 /**
  *
@@ -68,6 +71,7 @@ public class MainPanel {
     public TabPane centerTabPane = new TabPane();
     private Afdelingen changeAfdelingenpane;
     private ClubView clubview;
+    private UmpireView umpireview;
     private UmpireModel umpiremodel;
     private ClubModel clubmodel;
     private GameSchedule gameSchedule;
@@ -78,112 +82,17 @@ public class MainPanel {
         
         
         afdelingenlijst = FXCollections.observableArrayList();
-        
+        // Get afdelingen from database
+        afdelingenlijst.addAll(database.getAllAfdelingenFromDatabase());
         afdelingenlijst.addListener((ListChangeListener.Change<? extends Afdeling> change) -> { 
-                    while(change.next()) {
-                        if(change.wasUpdated()) {
-                            System.out.println("Update detected");
-                            
-                        } else
-                            if (change.wasPermutated()) {
-                                System.out.println("Was permutated");
-                            }
-                        else 
-                            for (Afdeling remitem: change.getRemoved()) {
-                                System.out.println("remitem afdelingenlijst");
+            while(change.next()) {
+                if(change.wasUpdated()) {
+                    System.out.println("Update detected");
 
-                                
-                                    
-                            }
-                            for (Afdeling additem : change.getAddedSubList()) {
-                                System.out.println("additem afdelingenlijst");
-                               
-                                
-                            }
-                }
-            });
-        // Check if afdeling exists before adding to database --> Error will occur
-        database.addNewAfdelingToDatabase("5BB", "Baseball", Boolean.TRUE);
-        database.addNewAfdelingToDatabase("6BB", "Baseball", Boolean.TRUE);
-        afdelingenlijst.add(new Afdeling("Gold", "Baseball"));
-        afdelingenlijst.add(new Afdeling("1BB", "Baseball"));
-        afdelingenlijst.add(new Afdeling("2BB", "Baseball"));
-        afdelingenlijst.add(new Afdeling("1SP", "Softball"));
-        
-        // Club and teams
-        clubs = FXCollections.observableArrayList();
-            teams = FXCollections.observableArrayList();
-            clubs.addListener((ListChangeListener.Change<? extends Club> change) -> { 
-                    while(change.next()) {
-                        if(change.wasUpdated()) {
-                            System.out.println("Update detected");
-                            // Write to file
-                                
-                        } else
-                            if (change.wasPermutated()) {
-                                System.out.println("Was permutated");
-                            } else {
-                                if (change.wasAdded()) {
-                                    System.out.println("Data " + change + " was added to clubs");
-                                    // Write to database
-                                    
-                                }
-                            }
-                        
-                }
-            });
-            
-            teams.addListener((ListChangeListener.Change<? extends Team> change) -> { 
-                    while(change.next()) {
-                        if(change.wasUpdated()) {
-                            System.out.println("Update detected");
-                            // Write to file
-                                
-                        } else
-                            if (change.wasPermutated()) {
-                                System.out.println("Was permutated");
-                            } else {
-                                if (change.wasAdded()) {
-                                    System.out.println("Data was added to teams");
-                                    // Write to file
-                                    //clubList.refresh();
-                                    // Save to database
-                                    
-                                    //GameSchedule.write(gameData, /home/pieter/wedstrijdschema.txt);
-                                }
-                            }
-                        
-                }
-            });
-            
-        // Add Test data
-        ArrayList<Team> teamArray = new ArrayList<>();
-        teamArray.add(new Team("Wolverines Seniors", new Afdeling("Gold", "Baseball")));
-        teamArray.add(new Team("Wolfkes", new Afdeling("BB Rookies", "Beeball")));
-        clubs.add(new Club("Wolverines", "0058", "Pieter Stragier", "pstragier@gmail.com", "0486208014", "Coolstraat", "5", "9600", "Ronse", teamArray));
-        ArrayList<Team> frogsteamArray = new ArrayList<>();
-        frogsteamArray.add(new Team("Frogs Seniors", new Afdeling("4BB", "Baseball")));
-        frogsteamArray.add(new Team("Slowpitch", new Afdeling("SP Red", "Softball")));
-        clubs.add(new Club("Frogs", "0012", "Jonas Hoebeke", "jonas.hoebeke@hotmail.com", "04xxxxxxxx", "Scheldekant", "4", "9700", "Oudenaarde", frogsteamArray));
-        ArrayList<Afdeling> afdArray = new ArrayList<>();
-        afdArray.add(new Afdeling("Gold", "Baseball"));
-        afdArray.add(new Afdeling("1BB", "Baseball"));
-        umpires = FXCollections.observableArrayList();
-        umpires.add(new Umpire("Pieter Stragier", "050058", "Coolstraat", "5", "9600", "Ronse", "0486208014", "pstragier@gmail.com", "Wolverines", afdArray));
-        
-        
-        documentHandler = new DocumentHandling();
-        ArrayList<String> arraylist = new ArrayList<>();
-        //observableTabList.addAll(getAfdelingsnamenlijst());
-        afdelingenlijst.addListener((ListChangeListener.Change<? extends Afdeling> change) -> { 
-                    while(change.next()) {
-                        if(change.wasUpdated()) {
-                            System.out.println("Update detected");
-                            
-                        } else
-                            if (change.wasPermutated()) {
-                                System.out.println("Was permutated");
-                            }
+                } else
+                    if (change.wasPermutated()) {
+                        System.out.println("Was permutated");
+                    }
                         else 
                             for (Afdeling remitem: change.getRemoved()) {
                                 System.out.println("remitem");
@@ -191,23 +100,105 @@ public class MainPanel {
                                 leftTabPane.getTabs().removeIf(tab -> tab.getText().equals(remitem.getAfdelingsNaam()));
                                 rightTabPane.getTabs().removeIf(tab -> tab.getText().equals(remitem.getAfdelingsNaam()));
                                 centerTabPane.getTabs().removeIf(tab -> tab.getText().equals(remitem.getAfdelingsNaam()));
-                                
+
                                 // TO DO: Store in Database
-                                
-                                    
+                                database.deleteAfdelingFromDatabase(remitem.getAfdelingsNaam());
+
                             }
                             for (Afdeling additem : change.getAddedSubList()) {
                                 System.out.println("additem");
-                              
+
                                 leftTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
                                 rightTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
                                 centerTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
-                              
-                                // TO DO: Store in database
-                                
+
+                                // TO DO: Store in database, Done when button is pressed
+
                             }
-                }
-            });
+            }
+        });
+        
+        
+        
+        // Club and teams
+        clubs = FXCollections.observableArrayList();
+        clubs.addAll(database.getAllClubsFromDatabase());
+        clubs.addListener((ListChangeListener.Change<? extends Club> change) -> { 
+            while(change.next()) {
+                if(change.wasUpdated()) {
+                            System.out.println("Update detected");
+                            // Write to file
+
+                } else
+                    if (change.wasPermutated()) {
+                                System.out.println("Was permutated");
+                            } else {
+                                if (change.wasAdded()) {
+                            System.out.println("Data " + change + " was added to clubs");
+                                    // Write to database
+
+                        }
+                         }
+
+            }
+        });
+        umpires = FXCollections.observableArrayList();
+        umpires.addAll(database.getAllUmpiresFromDatabase());
+        umpires.addListener((ListChangeListener.Change<? extends Umpire> change) -> { 
+            while(change.next()) {
+                if(change.wasUpdated()) {
+                    System.out.println("Clubs Update detected");
+                    // Write to file?
+
+                } else
+                    if (change.wasPermutated()) {
+                        System.out.println("Clubs Was permutated");
+                    } 
+                        else 
+                            for (Umpire additem: change.getAddedSubList()) {
+                            System.out.println("Data " + change + " was added to umpires");
+                            // Write to database: Done when addButton is pressed
+
+                        }
+                        for (Umpire remitem: change.getRemoved()) {
+                            System.out.println("Umpire was removed: " + remitem);
+                            // Remove from database
+                         }
+
+            }
+        });
+        teams = FXCollections.observableArrayList();
+        teams.addListener((ListChangeListener.Change<? extends Team> change) -> { 
+                while(change.next()) {
+                    if(change.wasUpdated()) {
+                        System.out.println("Update detected");
+                        // Write to file
+
+                    } else
+                        if (change.wasPermutated()) {
+                            System.out.println("Was permutated");
+                        } else {
+                            if (change.wasAdded()) {
+                                System.out.println("Data was added to teams");
+                                // Write to file
+                                //clubList.refresh();
+                                // Save to database
+
+                                //GameSchedule.write(gameData, /home/pieter/wedstrijdschema.txt);
+                            }
+                        }
+
+            }
+        });
+            
+        // Add Test data
+        
+        ArrayList<Afdeling> afdArray = new ArrayList<>();
+        afdArray.add(new Afdeling("Gold", "Baseball"));
+        afdArray.add(new Afdeling("1BB", "Baseball"));
+        
+        
+        documentHandler = new DocumentHandling();
         
         BorderPane borderPane = new BorderPane();
         
@@ -258,22 +249,57 @@ public class MainPanel {
         MenuBar menubar = new MenuBar();
 
         // Menu Umpires
-        Menu menu1 = new Menu("Umpires");
-        menubar.getMenus().add(menu1);
-        MenuItem menuUmpireItem1 = new MenuItem("Umpire toevoegen");
-        menu1.getItems().add(menuUmpireItem1);
+        Menu menuUmpires = new Menu("Umpires");
+        menubar.getMenus().add(menuUmpires);
+        MenuItem umpiresBeheren = new MenuItem("Umpires beheren...");
+        umpiresBeheren.setOnAction(e -> {
+              
+            System.out.println("umpiresBeheren Clicked");
+            Stage stage = new Stage();
+            Scene scene = new Scene(UmpirePaneel(), 800, 600);
+            stage.setTitle("Umpires beheren");
+            stage.setScene(scene);
+            stage.show();
+            
+        });
+        
+        menuUmpires.getItems().add(umpiresBeheren);
+        MenuItem umpiresImporteren = new MenuItem("Umpires importeren");
+        menuUmpires.getItems().add(umpiresImporteren);
+        umpiresImporteren.setOnAction(e -> {
+            Stage stage = new Stage();
+            String absPath = getFilePath(stage, "Umpires");
+            if (absPath != "") {
+                // Wis de huidige afdelingen
+                database.deleteAllUmpiresInDatabase();
+                // Import afdelingen in de database
+                ArrayList<Umpire> arrayUmpires = documentHandler.getUmpiresFromFile(absPath);
+                for(Umpire ump : arrayUmpires) {
+                    //System.out.println("Umpire afdeling: " + ump.getAfdelingsNaam());
+                    // Write afdelingen Array as String
+                    String s = "";
+                    for (Afdeling a : ump.getUmpireAfdelingen()) {
+                        s += a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie() + ",";
+                    }
+                    System.out.print("String s = " + s);
+                    database.insertNewUmpireToDatabase(ump.getUmpireNaam(), ump.getUmpireLicentie(), ump.getUmpireStraat(), ump.getUmpireHuisnummer(), ump.getUmpirePostcode(), ump.getUmpireStad(), ump.getUmpireTelefoon(), ump.getUmpireEmail(), ump.getUmpireClub(), s, ump.getActief());
+                }
+                umpires.clear();
+                umpires.addAll(database.getAllUmpiresFromDatabase());
+            }
+        });
         Button button = new Button("Exporteren");
         CustomMenuItem customMenuItem = new CustomMenuItem();
         customMenuItem.setContent(button);
         customMenuItem.setHideOnClick(false);
-        menu1.getItems().add(customMenuItem);
+        menuUmpires.getItems().add(customMenuItem);
         // Menu Clubs
-        Menu menu2 = new Menu("Clubs");
-        menubar.getMenus().add(menu2);        
-        MenuItem menuClubItem1 = new MenuItem("Club toevoegen");
-        menu2.getItems().add(menuClubItem1);
+        Menu clubsAndTeams = new Menu("Clubs & Teams");
+        menubar.getMenus().add(clubsAndTeams);        
+        MenuItem clubsBeheren = new MenuItem("Clubs & Teams beheren...");
+        clubsAndTeams.getItems().add(clubsBeheren);
 
-        menuClubItem1.setOnAction(e -> {
+        clubsBeheren.setOnAction(e -> {
             
             System.out.println("menuClubItem1 Clicked");
             Stage stage = new Stage();
@@ -283,33 +309,80 @@ public class MainPanel {
             stage.show();
             
         });
-        
-        menuUmpireItem1.setOnAction(e -> {
-            /*   
-            System.out.println("menuUmpireItem1 Clicked");
+        MenuItem clubsImporteren = new MenuItem("Clubs & Teams importeren...");
+        clubsAndTeams.getItems().add(clubsImporteren);
+        clubsImporteren.setOnAction(e -> {
             Stage stage = new Stage();
-            Scene scene = new Scene(newPaneel("Umpire"));
-            stage.setTitle("Umpire toevoegen");
-            stage.setScene(scene);
-            stage.show();
-            */
+            String absPath = getFilePath(stage, "Clubs");
+            if (absPath != "") {
+                // Wis de huidige clubs
+                database.deleteAllClubsInDatabase();
+                database.deleteAllTeamsInDatabase();
+                // Import clubs in de database
+                ArrayList<Club> arrayClubs = documentHandler.getClubsFromFile(absPath);
+                for(Club cl : arrayClubs) {
+                    System.out.println(cl);
+                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getVoorzitter(), cl.getClubNummer(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getLiga(), cl.getClubWebsite());
+                    for (Team t: cl.getClubTeams()) {
+                        database.insertTeamsInDatabase(t.getTeamNaam(), t.getTeamAfdeling().getAfdelingsNaam(), cl.getClubNaam(), t.getTeamAfdeling().getAfdelingsCategorie());
+                    }
+                }
+                clubs.clear();
+                clubs.addAll(database.getAllClubsFromDatabase());
+            }
         });
         
         // Menu Afdelingen
-        Menu menu3 = new Menu("Afdelingen");
-        menubar.getMenus().add(menu3);
-        MenuItem menuAfdelingenItem1 = new MenuItem("Afdelingen wijzigen");
-        menu3.getItems().add(menuAfdelingenItem1);
+        Menu menuAfdelingen = new Menu("Afdelingen");
+        menubar.getMenus().add(menuAfdelingen);
+        MenuItem afdelingenBeheren = new MenuItem("Afdelingen beheren...");
+        menuAfdelingen.getItems().add(afdelingenBeheren);
         
-        menuAfdelingenItem1.setOnAction(e -> { 
+        afdelingenBeheren.setOnAction(e -> { 
             Stage stage = new Stage();
             Scene scene = new Scene(newAfdelingPaneel(leftTabPane, rightTabPane, centerTabPane, afdelingenlijst));
             stage.setTitle("Afdelingen wijzigen");
             stage.setScene(scene);
             stage.show();
-        } );
-        
+        });
+        MenuItem afdelingenImporteren = new MenuItem("Import Afdelingen...");
+        menuAfdelingen.getItems().add(afdelingenImporteren);
+        afdelingenImporteren.setOnAction(e -> {
+            Stage stage = new Stage();
+            String absPath = getFilePath(stage, "Afdelingen");
+            if (absPath != "") {
+                // Wis de huidige afdelingen
+                database.deleteAllAfdelingenInDatabase();
+                // Import afdelingen in de database
+                ArrayList<Afdeling> arrayAfdelingen = documentHandler.getAfdelingenFromFile(absPath);
+                for(Afdeling afd : arrayAfdelingen) {
+                    database.insertNewAfdelingToDatabase(afd.getAfdelingsNaam(), afd.getAfdelingsCategorie(), Boolean.TRUE);
+                }
+                afdelingenlijst.clear();
+                afdelingenlijst.addAll(database.getAllAfdelingenFromDatabase());
+            }
+        });
         return menubar;
+    }
+    
+    public String getFilePath(Stage stage, String naam) {
+        
+        
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Bestand selecteren");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+            File selectedFile = fileChooser.showOpenDialog(stage);
+            if (selectedFile != null) {
+                String x = selectedFile.getAbsolutePath();
+                return x;
+            } else {
+                String x = "";
+                return x;
+            }
+      
+        
+        
     }
     
     public VBox createLeftSidePane(TabPane sideTabPane) {
@@ -450,16 +523,22 @@ public class MainPanel {
         return vbox;
     }
     
+    public void resetSideTabPanes() {
+        leftTabPane.getTabs().clear();
+        leftTabPane.getTabs().addAll(getUmpireTabArrayList());
+        rightTabPane.getTabs().clear();
+        rightTabPane.getTabs().addAll(getClubTabArrayList());
+    }
     public VBox createHorBoxFilterClubs(TabPane sideTabPane) {
         /** Creates a VBox with textfield and button for filtering tabpanes
          * 
          */
         VBox vbox = new VBox();
-        Label umpireLabel = new Label("Teams");
-        umpireLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
-        umpireLabel.setAlignment(Pos.CENTER);
+        Label clubLabel = new Label("Teams");
+        clubLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
+        clubLabel.setAlignment(Pos.CENTER);
         vbox.setAlignment(Pos.CENTER);
-        vbox.getChildren().add(umpireLabel);
+        vbox.getChildren().add(clubLabel);
         
         HBox hbox = new HBox();
             TextField filterField = new TextField();
@@ -604,18 +683,18 @@ public class MainPanel {
     }
      
     
-    
-    public ArrayList<String> createListOfItems(String filename) {
+    /*
+    public ArrayList<Afdeling> createListOfItems(String filename) {
         //ArrayList<String> arraylist = new ArrayList<>();
         documentHandler = new DocumentHandling();
-        ArrayList<String> arraylist = (ArrayList<String>) documentHandler.getAfdelingenFromFile();
+        ArrayList<Afdeling> arraylist = documentHandler.getAfdelingenFromFile();
         return arraylist;
     }
-    
+    */
     public Pane newAfdelingPaneel(TabPane tabpaneleft, TabPane tabpaneright, TabPane tabpanecenter, ObservableList afdelingenlijst) {
         BorderPane border = new BorderPane();
         
-            changeAfdelingenpane = new Afdelingen(tabpaneleft, tabpaneright, tabpanecenter, afdelingenlijst);
+            changeAfdelingenpane = new Afdelingen(afdelingenlijst);
             border.setCenter(changeAfdelingenpane.afdelingenPanel());
         
         return border;
@@ -625,6 +704,49 @@ public class MainPanel {
         
             clubview = new ClubView(clubs, teams, afdelingenlijst);
             return clubview.clubPane();
+    }
+    
+    public Pane UmpirePaneel() {
+            umpireview = new UmpireView(umpires, clubs, teams, afdelingenlijst);
+            return umpireview.umpirePane();
+    }
+    public void addAfdeling() {
+        try {
+            // Check if afdeling exists before adding to database --> Error will occur
+            //database.insertNewAfdelingToDatabase("8BB", "baseball", Boolean.TRUE);
+            for (Afdeling afd : afdelingenlijst) {
+                if(database.checkIfAfdelingExists("APP.Afdelingen", afd.getAfdelingsNaam())) {
+                    System.out.println("exists: " + afd.getAfdelingsNaam());
+                } else {
+                    System.out.println("does not exist: " + afd.getAfdelingsNaam());
+                    database.insertNewAfdelingToDatabase(afd.getAfdelingsNaam().toString(), afd.getAfdelingsCategorie().toString(), Boolean.TRUE);
+                    
+                }
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void addClub() {
+        try {
+            // Check if afdeling exists before adding to database --> Error will occur
+            //database.insertNewAfdelingToDatabase("8BB", "baseball", Boolean.TRUE);
+            for (Club cl : clubs) {
+                if(database.checkIfAfdelingExists("APP.Clubs", cl.getClubNaam())) {
+                    System.out.println("exists: " + cl.getClubNaam());
+                } else {
+                    System.out.println("does not exist: " + cl.getClubNaam());
+                    
+                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getLiga(), cl.getClubNummer(), cl.getVoorzitter(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getClubWebsite());
+                    
+                }
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
 

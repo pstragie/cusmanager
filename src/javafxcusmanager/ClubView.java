@@ -5,37 +5,28 @@
  */
 package javafxcusmanager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import static java.lang.System.in;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -44,10 +35,15 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-import javafx.util.converter.DefaultStringConverter;
 import javafxcusmanager.Club;
-
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import java.util.stream.IntStream;
+import javafx.collections.FXCollections;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.text.Text;
 /**
  *
  * @author pieter
@@ -61,6 +57,7 @@ public class ClubView {
     private ObservableList<Team> teams;
     private String selectedClub;
     private Club clubselection;
+    private Database database;
     //private ListView clubList;
     private ListView clubListView = new ListView();
     private TableView<Team> teamTable = new TableView<>();
@@ -69,6 +66,7 @@ public class ClubView {
         this.clubs = clubs;
         this.teams = teams;
         this.afdelingen = afdelingen;   
+        database = new Database();
     }
     
     public Pane clubPane() {
@@ -77,13 +75,18 @@ public class ClubView {
         BorderPane borderPane = new BorderPane();
         
         selectedClub = new String();
-        selectedClub = clubs.get(0).getClubNaam();  
-        
+        if (clubs.size() > 0) {
+            selectedClub = clubs.get(0).getClubNaam();
+        } else {
+            selectedClub = "";
+        }
         
         // Left Side: List of all Clubs in TabPane, Alphabetically
         // VerticalBox with Label, Filter and ListView 
         VBox clubVBox = new VBox(5);
-        clubVBox.getChildren().add(getClubListView(clubVBox));
+        ListView clublistView = new ListView();
+        clublistView = getClubListView(clubVBox);
+        clubVBox.getChildren().add(clublistView);
         // Right Side: TabPane (BB & SB) With List of teams per (selected) club --> Listview with Afdeling
         VBox teamVBox = new VBox(5);
         HBox newteamHBox = new HBox(5);
@@ -124,9 +127,12 @@ public class ClubView {
             stage.setScene(scene);
             stage.show();
         });                   
-             
+        
         
         Button closeButton = new Button("Sluiten");
+        //Text layoutIcon = FontAwesomeIconFactory.get().createIcon(FontAwesomeIcon.CLOSE);
+        //layoutIcon.getStyleClass().addAll("button-icon", "layout-button-icon");
+        //closeButton.setGraphic(layoutIcon);
         closeButton.setOnAction(event -> {
            // Close window (and update teams)
            Stage stage = (Stage) closeButton.getScene().getWindow();
@@ -144,28 +150,26 @@ public class ClubView {
         clubvbox.getChildren().add(clublabel);
         clubvbox.setPadding(new Insets(0, 0, 0, 5));
         //clubvbox.setBorder(new Border);
+        
+        ObservableList<Club> data = FXCollections.observableArrayList(clubs);
+        FilteredList<Club> filteredData = new FilteredList<>(data, s -> true);
+        
         HBox filterHBox = new HBox(5);
         filterHBox.setPadding(new Insets(2, 5, 2, 0));
-        TextField filterField = new TextField();
-        filterField.setPromptText("Club zoeken");
-        filterField.textProperty().addListener((obs, oldText, newText) -> {
-            System.out.println("Text changed from "+oldText+" to "+newText);
+        TextField filterInput = new TextField();
+        filterInput.setPromptText("Club zoeken");
+        filterInput.textProperty().addListener(obs -> {
+            String filter = filterInput.getText();
+            
+            System.out.println("Text changed: " + obs);
 
-            if (newText == null || newText.isEmpty()) {
-                
-                // Reset the tabpane to show all clubs
-                clubListView.getItems().clear();
-                
-                clubs.sorted().forEach(c -> {
-                    clubListView.getItems().add(c.getClubNaam());
-                });
+            if (filter == null || filter.length() == 0) {
+                filteredData.setPredicate(s -> true);
+                System.out.println("newText null or empty");
             } else {
-                clubListView.getItems().clear();
-                clubs.sorted().filtered(c -> c.getClubNaam().startsWith(newText)).forEach(c -> {
-                    clubListView.getItems().add(c.getClubNaam());
-                });
-                //clubListView.getItems().clear();
-                //clubListView.getItems().addAll(clubList);
+                System.out.println("newText not null nor empty");
+                filteredData.setPredicate(s -> s.getClubNaam().contains(filter));
+                
             }
         });
         Button resetButton = new Button("Reset");
@@ -173,15 +177,15 @@ public class ClubView {
         resetButton.setText("Reset");
         resetButton.setOnAction(event -> {
             
-            filterField.setText("");
+            filterInput.setText("");
         });
         filterHBox.getStyleClass().add("bordered-titled-border");
-        filterHBox.setHgrow(filterField, Priority.ALWAYS);
-        filterHBox.getChildren().add(filterField);
+        filterHBox.setHgrow(filterInput, Priority.ALWAYS);
+        filterHBox.getChildren().add(filterInput);
         filterHBox.getChildren().add(resetButton);
         
         clubvbox.getChildren().add(filterHBox);
-        clubListView.setItems(clubs);
+        clubListView.setItems(filteredData);
         clubListView.setPrefHeight(1200);
         //clubs.sorted().forEach(c -> {
         //    clubListView.getItems().add(c);
@@ -191,7 +195,6 @@ public class ClubView {
                     @Override
                     public void updateItem(Club item, boolean empty) {
                         super.updateItem(item, empty);
-                        System.out.println("update club: " + item);
                     if (item == null || empty) {
                         setText(null);
                     } else {
@@ -199,7 +202,50 @@ public class ClubView {
                     }
                     }
                 };
+                cell.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
                 
+                @Override
+                public void handle(ContextMenuEvent menuEvent) {
+                    System.out.println("Context menu requested.");
+                    final ContextMenu cm = new ContextMenu();
+                    MenuItem verbergen = new MenuItem("Verberg/toon teams");
+                    cm.getItems().add(verbergen);
+                    verbergen.setOnAction(wiscel -> {
+                        System.out.println("Verberg teams");
+                        int newIndex = clubs.indexOf(clubs.get(cell.getIndex()));
+                        if (clubs.get(newIndex).getVisible()) {
+                            clubs.get(newIndex).setVisible(Boolean.FALSE);
+                        } else {
+                            clubs.get(newIndex).setVisible(Boolean.TRUE);
+                        }
+                        
+                    });
+                    MenuItem wisRij = new MenuItem("Wis club");
+                    cm.getItems().add(wisRij);
+                    wisRij.setOnAction(wisrij -> {
+                        int newIndex = clubs.indexOf(clubs.get(cell.getIndex()));
+                        clubs.remove(clubs.get(newIndex));
+                    });
+                    cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
+                    .then(cm)
+                    .otherwise((ContextMenu)null));
+                }
+                }); 
+                
+                cell.setOnKeyReleased(event -> {
+                    if (! cell.isEmpty()) {
+                        System.out.println("Key was released");
+                        selectedClub = cell.getItem().getClubNaam();
+                        clubselection = cell.getItem();
+                        //clubselection = cell.getItem();
+                        //clubselection = clubListView.getSelectionModel().getSelectedItem();
+                        teams.clear();
+                        FilteredList fc = clubs.filtered(cl -> cl.getClubNaam().equals(selectedClub));
+                        int index = clubs.indexOf(fc.get(0));
+                        teams.addAll(clubs.get(index).getClubTeams());
+                        teamTable.refresh();
+                    }
+                });
                 cell.setOnMouseClicked(event -> {
                    if (! cell.isEmpty()) {
                         
@@ -216,7 +262,6 @@ public class ClubView {
                 });
                return cell;
         });
-        
         return clubListView;
     }
     
@@ -260,6 +305,8 @@ public class ClubView {
                     int clubIndex = clubs.indexOf(clubselection); // clubselection = type of Club
                     
                     clubs.get(clubIndex).getClubTeams().remove(team);
+                    
+                    database.removeTeamFromDatabase(team);
                 });
                 
             }
@@ -307,7 +354,7 @@ public class ClubView {
             teams.add(new Team(newTeamTF.getText(), afd));
             Team nieuwTeam = new Team(newTeamTF.getText(), afd);
             clubs.get(clubIndex).getClubTeams().add(nieuwTeam);
-            
+            database.insertTeamsInDatabase(nieuwTeam.getTeamNaam(), nieuwTeam.getTeamAfdeling().toString(), clubs.get(clubIndex).getClubNaam(), nieuwTeam.getTeamAfdeling().getAfdelingsCategorie());
         });
         hbox.setPadding(new Insets(5, 0, 0, 0));
         return hbox;

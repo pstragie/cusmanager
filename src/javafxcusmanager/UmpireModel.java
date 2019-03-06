@@ -13,6 +13,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.control.ListCell;
@@ -48,10 +49,31 @@ public class UmpireModel {
     public VBox createUmpireContent(String afd) {
             ListView<String> umpireListview = new ListView<>();
             umpirelijstPerafdeling = FXCollections.observableArrayList();
+            umpirelijstPerafdeling.addListener((ListChangeListener.Change<? extends String> change) -> { 
+            while(change.next()) {
+                if(change.wasUpdated()) {
+                    System.out.println("Update umpire detected");
+                    // Write to file
+
+                } else
+                    if (change.wasPermutated()) {
+                        System.out.println("Was permutated: umpire");
+                    } else {
+                        if (change.wasAdded()) {
+                            //System.out.println("Data " + change + " was added to clubs");
+                            // Write to database
+
+                        }
+                    }
+
+            }
+        });
             if (umpires == null) {
                 // Geen umpires in de lijst
             } else {
+                
                 umpires.forEach(u -> {
+                    // For each afdeling get the umpires
                     ArrayList<Afdeling> arrayAfd = u.getUmpireAfdelingen();
                     for(Afdeling a : arrayAfd) {
                         if (a.getAfdelingsNaam().equals(afd)) {

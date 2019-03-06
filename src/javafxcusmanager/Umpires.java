@@ -96,7 +96,7 @@ public class Umpires {
              */
             System.out.println("Get Tabs from file\n________________");
             ArrayList<String> listOfItems = new ArrayList<>();
-            listOfItems.addAll(createListOfItems("umpirelijst.txt"));
+            //listOfItems.addAll(createListOfItems("umpirelijst.txt"));
             ArrayList<String> umpires = new ArrayList<>();
             listOfItems.forEach(a -> {
 
@@ -105,14 +105,14 @@ public class Umpires {
             });        
             return umpires;
         }
-        
+        /*
         public ArrayList<String> createListOfItems(String filename) {
             //ArrayList<String> arraylist = new ArrayList<>();
             documentHandler = new DocumentHandling();
-            ArrayList<String> arraylist = (ArrayList<String>) documentHandler.getUmpiresFromFile();
+            ArrayList<String> arraylist = documentHandler.getUmpiresFromFile();
             return arraylist;
         }
-        
+        */
 	public static void writeListToFile(Map<String,String> map) throws IOException {
             try (FileWriter fileWriter = new FileWriter("umpirelijst.txt")) {
                 fileWriter.write("Umpirelijst\n");
