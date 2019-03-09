@@ -172,7 +172,7 @@ public class Club {
     @Override
     public String toString() {
         String string = new String();
-        string = clubnaam.get() + ", " + liga.get() + ", " + clubnummer.get() + ", " + clubvoorzitter.get() + ", " + clubstraat.get() + " " + clubstraatnummer.get() + ", " + clubpostcode.get() + ", " + clubstad.get() + ", " + clubemail.get() + ", " + clubtelefoon.get() + ", " + clubwebsite.get() + ", " + visible + "\n";
+        string = clubnaam.get();
         return string;
     }
 }

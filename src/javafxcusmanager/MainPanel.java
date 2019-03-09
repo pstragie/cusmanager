@@ -256,7 +256,7 @@ public class MainPanel {
               
             System.out.println("umpiresBeheren Clicked");
             Stage stage = new Stage();
-            Scene scene = new Scene(UmpirePaneel(), 800, 600);
+            Scene scene = new Scene(UmpirePaneel(), 1000, 800);
             stage.setTitle("Umpires beheren");
             stage.setScene(scene);
             stage.show();
@@ -282,7 +282,7 @@ public class MainPanel {
                         s += a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie() + ",";
                     }
                     System.out.print("String s = " + s);
-                    database.insertNewUmpireToDatabase(ump.getUmpireNaam(), ump.getUmpireLicentie(), ump.getUmpireStraat(), ump.getUmpireHuisnummer(), ump.getUmpirePostcode(), ump.getUmpireStad(), ump.getUmpireTelefoon(), ump.getUmpireEmail(), ump.getUmpireClub(), s, ump.getActief());
+                    database.insertNewUmpireToDatabase(ump.getUmpireNaam(), ump.getUmpireVoornaam(), ump.getUmpireLicentie(), ump.getUmpireStraat(), ump.getUmpireHuisnummer(), ump.getUmpirePostcode(), ump.getUmpireStad(), ump.getUmpireTelefoon(), ump.getUmpireEmail(), ump.getUmpireClub().toString(), s, ump.getActief());
                 }
                 umpires.clear();
                 umpires.addAll(database.getAllUmpiresFromDatabase());

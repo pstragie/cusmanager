@@ -77,7 +77,7 @@ public class UmpireModel {
                     ArrayList<Afdeling> arrayAfd = u.getUmpireAfdelingen();
                     for(Afdeling a : arrayAfd) {
                         if (a.getAfdelingsNaam().equals(afd)) {
-                            umpirelijstPerafdeling.add(u.getUmpireNaam());
+                            umpirelijstPerafdeling.add(u.getUmpireVoornaam() + " " + u.getUmpireNaam());
                         }
                     }
                 });

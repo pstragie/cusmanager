@@ -6,15 +6,21 @@
 package javafxcusmanager;
 
 import java.util.ArrayList;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
  *
- * @author pieter
+ * @author Pieter Stragier
+ * @author www.pws-solutions.be
+ * @version 1.0
+ * @since 1.0
  */
 public class Umpire {
     private final SimpleStringProperty umpirenaam;
+    private final SimpleStringProperty umpirevoornaam;
     private final SimpleStringProperty umpirelicentie;
     private final SimpleStringProperty umpirestraat;
     private final SimpleStringProperty umpirehuisnummer;
@@ -22,13 +28,29 @@ public class Umpire {
     private final SimpleStringProperty umpirestad;
     private final SimpleStringProperty umpiretelefoon;
     private final SimpleStringProperty umpireemail;
-    private final SimpleStringProperty umpireclub;
+    //private final SimpleStringProperty umpireclub;
+    private final ObjectProperty<Club> umpireclub;
     private Boolean actief;
     private final ArrayList<Afdeling> umpireafdelingen;
     
-
-    public Umpire(String umpirenaamString, String umpirelicentieString, String umpirestraatString, String umpirehuisnummerString, String umpirepostcodeString, String umpirestadString, String umpiretelefoonString, String umpireemailString, String umpireclubString, ArrayList umpireafdelingenArray, Boolean bool) {
+    /** Represents the umpires details
+     * 
+     * @param umpirenaamString umpire familienaam
+     * @param umpirevoornaamString umpire voornaam
+     * @param umpirelicentieString umpire licentie
+     * @param umpirestraatString umpire straat
+     * @param umpirehuisnummerString umpire huisnummer
+     * @param umpirepostcodeString umpire postcode
+     * @param umpirestadString umpire stad
+     * @param umpiretelefoonString umpire telefoon
+     * @param umpireemailString umpire email
+     * @param umpireclubString umpire club
+     * @param umpireafdelingenArray umpire afdelingen
+     * @param bool umpire actief/niet-actief
+     */
+    public Umpire(String umpirenaamString, String umpirevoornaamString, String umpirelicentieString, String umpirestraatString, String umpirehuisnummerString, String umpirepostcodeString, String umpirestadString, String umpiretelefoonString, String umpireemailString, Club umpireclubString, ArrayList umpireafdelingenArray, Boolean bool) {
         this.umpirenaam = new SimpleStringProperty(umpirenaamString);
+        this.umpirevoornaam = new SimpleStringProperty(umpirevoornaamString);
         this.umpirelicentie = new SimpleStringProperty(umpirelicentieString);
         this.umpirestraat = new SimpleStringProperty(umpirestraatString);
         this.umpirehuisnummer = new SimpleStringProperty(umpirehuisnummerString);
@@ -36,16 +58,38 @@ public class Umpire {
         this.umpirestad = new SimpleStringProperty(umpirestadString);
         this.umpiretelefoon = new SimpleStringProperty(umpiretelefoonString);
         this.umpireemail = new SimpleStringProperty(umpireemailString);
-        this.umpireclub = new SimpleStringProperty(umpireclubString);
+        this.umpireclub = new SimpleObjectProperty(umpireclubString);
         this.umpireafdelingen = new ArrayList<Afdeling>(umpireafdelingenArray);
         this.actief = new Boolean(bool);
     }
-
+    
+    /** Gets the umpire's last name.
+     * 
+     * @return A string representing the umpire's last name. 
+     */
     public String getUmpireNaam() {
         return umpirenaam.get();
     }
+    /** Sets the umpire's last name.
+     * 
+     * @param umpirenaamString A String containing the umpire's last name.
+     */
     public void setUmpireNaam(String umpirenaamString) {
         umpirenaam.set(umpirenaamString);
+    }
+    /** Gets the umpire's first name.
+     * 
+     * @return A string representing the umpire's first name.
+     */
+    public String getUmpireVoornaam() {
+        return umpirevoornaam.get();
+    }
+    /** Sets the umpire's first name.
+     * 
+     * @param umpirevoornaamString A String containing the umpire's first name.
+     */
+    public void setUmpireVoornaam(String umpirevoornaamString) {
+        umpirevoornaam.set(umpirevoornaamString);
     }
     public String getUmpireLicentie() {
         return umpirelicentie.get();
@@ -94,10 +138,10 @@ public class Umpire {
         umpireemail.set(umpireemailString);
     }
 
-    public String getUmpireClub() {
+    public Club getUmpireClub() {
         return umpireclub.get();
     }
-    public void setUmpireClub(String umpireclubString) {
+    public void setUmpireClub(Club umpireclubString) {
         umpireclub.set(umpireclubString);
     }
     public ArrayList<Afdeling> getUmpireAfdelingen() {
@@ -117,6 +161,9 @@ public class Umpire {
 
     public StringProperty umpirenaamProperty() {
         return umpirenaam;
+    }
+    public StringProperty umpirevoornaamProperty() {
+        return umpirevoornaam;
     }
     public StringProperty umpirelicentieProperty() {
         return umpirelicentie;

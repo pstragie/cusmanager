@@ -36,13 +36,13 @@ import javafx.stage.Stage;
 
 /**
  *
- * @author pieter
+ * @author Pieter Stragier
+ * @author www.pws-solutions.be
+ * @version 1.0
+ * @since 1.0
  */
 public class Afdelingen {
-    /** Competitie-afdelingen
-	 * Te wijzigen lijst van afdelingen
-	 */
-	
+    	
         private MainPanel mainPanel;
         private GridPane grid;
         public ListView listview;
@@ -54,6 +54,10 @@ public class Afdelingen {
         //public static UmpireModel.UmpireTabPane umptabpane;
         
         // Constructor
+        /** Afdelingen
+         * 
+         * @param afdelingenlijst Lijst van alle afdelingen
+         */
 	public Afdelingen(ObservableList afdelingenlijst) {
             // Afdelingen afkomstig van observableTabList
             this.afdelingenlijst = afdelingenlijst;
@@ -64,7 +68,10 @@ public class Afdelingen {
             
         }
 	
-	
+	/** Haal alle afdelingsnamen op
+         * 
+         * @return ArrayList van String.
+         */
         public ArrayList<String> getAfdelingsnamen() {
             //* Method to fill combobox
             ArrayList<String> afdLijst = new ArrayList<>();
@@ -76,7 +83,10 @@ public class Afdelingen {
         }
         
         
-        
+        /** Afdelingspaneel
+         * 
+         * @return Paneel
+         */
         public Pane afdelingenPanel() {
             /** New Frame to add/change/delete afdelingen
              * 

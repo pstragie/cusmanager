@@ -24,17 +24,27 @@ import javafx.scene.control.Dialog;
 
 /**
  *
- * @author pieter
+ * @author Pieter Stragier
+ * @version 1.0
+ * @since 1.0
  */
 public class DocumentHandling {
     
     private MainPanel mainPanel;
-    
+    private Database database;
+    /** Documentverwerking
+     * 
+     */
     public DocumentHandling() {
        mainPanel = new MainPanel();
 
     }
     
+    /** Retrieve afdelingen from file
+     * 
+     * @param filepath filepath selected with filechooser
+     * @return ArrayList van Afdeling
+     */
     public ArrayList<Afdeling> getAfdelingenFromFile(String filepath) {
         System.out.println("Reading file...");
         ArrayList<Afdeling> list = new ArrayList<>();
@@ -72,6 +82,11 @@ public class DocumentHandling {
         return list;
     }
     
+    /** Haal clubs uit bestand
+     * 
+     * @param filepath
+     * @return 
+     */
     public ArrayList<Club> getClubsFromFile(String filepath) {
         System.out.println("Reading file...");
         ArrayList<Club> list = new ArrayList<>();
@@ -114,6 +129,10 @@ public class DocumentHandling {
         return list;
     }
     
+    /** Sla afdelingen op in bestand
+     * 
+     * @param afdelingen 
+     */
     public void storeAfdelingen(ArrayList<String> afdelingen) {
         // Write to file
         try (FileWriter fileWriter = new FileWriter("afdelingen.txt")) {
@@ -133,7 +152,11 @@ public class DocumentHandling {
     }
     
     
-    
+    /** Haal umpires uit bestand
+     * 
+     * @param filepath
+     * @return 
+     */
     public ArrayList<Umpire> getUmpiresFromFile(String filepath) {
         System.out.println("Reading file...");
         String header = null;
@@ -159,7 +182,7 @@ public class DocumentHandling {
                             System.out.println("parts: " + parts.length);
                             System.out.println("parts: 0:" + parts[0] + " 1: " + parts[1] + " 2: " + parts[2] + " 3: " + parts[3] + " 4: " + parts[4] + " 5: " + parts[5] + " 6: " + parts[6] + " 7: " + parts[7] + " 8: " + parts[8] + " 9: " + parts[9]);
                             // Extract teams from part 11
-                            String[] afdparts = parts[9].split(",");
+                            String[] afdparts = parts[10].split(",");
                             ArrayList<Afdeling> arraylist = new ArrayList<>();
                             for(String s : afdparts) {
                                 //String afdlijst = s.split(",");
@@ -167,8 +190,9 @@ public class DocumentHandling {
                                 arraylist.add(new Afdeling(afdsplit[0], afdsplit[1]));
   
                             }
-
-                            list.add(new Umpire(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], arraylist, Boolean.getBoolean(parts[10])));
+                            database = new Database();
+                            Club yclub = database.getClubFromDatabase(parts[9]);
+                            list.add(new Umpire(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], yclub, arraylist, Boolean.getBoolean(parts[11])));
                 });
                 
 
@@ -187,6 +211,10 @@ public class DocumentHandling {
         return list;
     }
     
+    /** Sla wedstrijdschema op in bestand
+     * 
+     * @param wedstrijdschema 
+     */
     public void storeGameSchedule(ArrayList<String> wedstrijdschema) {
         // Write to file
         try (FileWriter fileWriter = new FileWriter("wedstrijdschema.txt")) {

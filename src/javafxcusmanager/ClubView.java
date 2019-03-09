@@ -262,6 +262,7 @@ public class ClubView {
                 });
                return cell;
         });
+        clubListView.getSelectionModel().select(0);
         return clubListView;
     }
     

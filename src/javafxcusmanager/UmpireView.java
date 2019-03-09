@@ -5,11 +5,13 @@
  */
 package javafxcusmanager;
 
+import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -49,13 +51,18 @@ public class UmpireView {
     private ObservableList<Team> teams;
     private ObservableList<Umpire> umpires;
     private NewUmpire newUmpire;
-    private String selectedUmpire;
     private Umpire umpireselection;
     private Database database;
     //private ListView clubList;
     private ListView umpirelistview = new ListView();
     private TableView<Team> teamTable = new TableView<>();
     private GridPane detailPane;
+    private Boolean nieuwUmpire = Boolean.FALSE;
+    private BorderPane borderPane;
+    private Button opslaan, wijzigingenAnnuleren;
+    private BorderPane leftPane;
+    private Pane lpane;
+    private HBox hbox;
     
     public UmpireView(ObservableList umpires, ObservableList clubs, ObservableList teams, ObservableList afdelingen) {
         this.umpires = umpires;
@@ -63,25 +70,28 @@ public class UmpireView {
         this.teams = teams;
         this.afdelingen = afdelingen;   
         database = new Database();
+        borderPane = new BorderPane();
     }
     
     public Pane umpirePane() {
         // New Window
         
-        BorderPane borderPane = new BorderPane();
         
-        selectedUmpire = new String();
+        
+        
         if (umpires.size() > 0) {
-            selectedUmpire = umpires.get(0).getUmpireNaam();
+            umpireselection = umpires.get(0);
         } else {
-            selectedUmpire = "";
+            ArrayList<Afdeling> emptyArray = new ArrayList<>();
+            Club emptyClub = new Club("", "", "", "", "", "", "", "", "", "", "", emptyArray, Boolean.FALSE);
+            umpireselection = new Umpire("", "", "", "", "", "", "", "", "", emptyClub, emptyArray, Boolean.FALSE);
         }
         
         // Left Side: List of all Clubs in TabPane, Alphabetically
         // VerticalBox with Label, Filter and ListView 
         VBox umpireVBox = new VBox(5);
         ListView umpirelistView = new ListView();
-        umpirelistView = getUmpireListView(umpireVBox);
+        umpirelistView = getUmpireListView(umpireVBox, lpane);
         umpireVBox.getChildren().add(umpirelistView);
         // Right Side: TabPane (BB & SB) With List of teams per (selected) club --> Listview with Afdeling
         VBox teamVBox = new VBox(5);
@@ -92,11 +102,56 @@ public class UmpireView {
         //borderPane.setMargin(detailPane, new Insets(0, 10, 0, 10));
         borderPane.setLeft(umpireVBox);
         borderPane.setBottom(getButtonHBox());
+        
         newUmpire = new NewUmpire();
-        borderPane.setCenter(newUmpire.NewUmpire(afdelingen));
+        if (!umpireselection.getUmpireNaam().isEmpty()) {
+            nieuwUmpire = false;
+        }
+        leftPane = new BorderPane();
+        lpane = setDetails(umpireselection, nieuwUmpire);
         
-        
-        
+        leftPane.setCenter(lpane);
+        hbox = new HBox(5);
+        opslaan = new Button( "Opslaan" );
+        opslaan.setOnAction((ActionEvent event) -> {
+            // Wijzigingen opslaan in database (en umpires lijst?)
+            
+            // Convert afdeling to 1BB:Baseball and convert to String (to fit database)
+            ArrayList<String> afdWithDis = new ArrayList<>();
+            /*
+            umpireselection.getUmpireAfdelingen().stream().map((a) -> a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie()).forEachOrdered((s) -> {
+                afdWithDis.add(s);
+            });
+            */
+            newUmpire.afdelingenArray.forEach((a) -> {
+                afdWithDis.add(a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie());
+            });
+            ArrayList<Afdeling> afdArray2 = new ArrayList<>();
+            newUmpire.afdelingenArray.forEach((a) -> {
+                afdArray2.add(a);
+            });
+            System.out.println("Afd array: " + afdArray2);
+            String afdelingArrayString = String.join(",", afdWithDis);
+            System.out.println("afdArrayString: " + afdelingArrayString);
+            /*
+            int umpIndex = umpires.indexOf(umpireselection);
+            umpires.remove(umpireselection);
+            Umpire changedUmpire = new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.getComboBoxValue(), afdArray2, newUmpire.getActiefCheckBoxValue());
+            umpires.add(changedUmpire);
+            */
+            //this.umpireList.add(changedUmpire);
+            //database = new Database();
+            System.out.println("nieuw huisnummer: " + newUmpire.huisnummertf.getText());
+            database.updateUmpireToDatabase(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.getComboBoxValue().getClubNaam(), afdelingArrayString, newUmpire.getActiefCheckBoxValue());
+        });
+		wijzigingenAnnuleren = new Button( "Wijzigingen annuleren" );
+                wijzigingenAnnuleren.setOnAction(event -> { 
+                    // Reset original data
+                });
+        hbox.getChildren().addAll(opslaan, wijzigingenAnnuleren);
+        hbox.setPadding(new Insets(5, 5, 5, 5));
+        leftPane.setBottom(hbox);
+        borderPane.setCenter(leftPane);
         return borderPane;
     }
     
@@ -137,7 +192,7 @@ public class UmpireView {
         return buttonHBox;
     }
     
-    public ListView getUmpireListView(VBox umpirevbox) {
+    public ListView getUmpireListView(VBox umpirevbox, Pane pane) {
         Label umpirelabel = new Label("Umpires");
         umpirelabel.setPadding(new Insets(0, 0, 0, 5));
         umpirelabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
@@ -147,7 +202,7 @@ public class UmpireView {
         
         ObservableList<Umpire> data = FXCollections.observableArrayList(umpires);
         FilteredList<Umpire> filteredData = new FilteredList<>(data, s -> true);
-        
+
         HBox filterHBox = new HBox(5);
         filterHBox.setPadding(new Insets(2, 5, 2, 0));
         TextField filterInput = new TextField();
@@ -155,11 +210,14 @@ public class UmpireView {
         filterInput.textProperty().addListener(obs -> {
             String filter = filterInput.getText();
             
+            System.out.println("Text change: " + obs);
+            
             if (filter == null || filter.length() == 0) {
                 filteredData.setPredicate(s -> true);
                 
             } else {
-                filteredData.setPredicate(s -> s.getUmpireNaam().contains(filter));
+                // Filter op voornaam en/of familienaam
+                filteredData.setPredicate(s -> s.getUmpireNaam().contains(filter) || s.getUmpireVoornaam().contains(filter));
             }
         });
         Button resetButton = new Button("Reset");
@@ -170,12 +228,12 @@ public class UmpireView {
             filterInput.setText("");
         });
         filterHBox.getStyleClass().add("bordered-titled-border");
-        filterHBox.setHgrow(filterInput, Priority.ALWAYS);
+        HBox.setHgrow(filterInput, Priority.ALWAYS);
         filterHBox.getChildren().add(filterInput);
         filterHBox.getChildren().add(resetButton);
         
         umpirevbox.getChildren().add(filterHBox);
-        umpirelistview.setItems(umpires);
+        umpirelistview.setItems(filteredData);
         umpirelistview.setPrefHeight(1200);
         //clubs.sorted().forEach(c -> {
         //    clubListView.getItems().add(c);
@@ -188,7 +246,7 @@ public class UmpireView {
                     if (item == null || empty) {
                         setText(null);
                     } else {
-                        setText(item.getUmpireNaam());
+                        setText(item.getUmpireVoornaam() + " " + item.getUmpireNaam());
                     }
                     }
                 };
@@ -210,7 +268,7 @@ public class UmpireView {
                         }
                         
                     });
-                    MenuItem wisRij = new MenuItem("Wis club");
+                    MenuItem wisRij = new MenuItem("Wis umpire");
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = clubs.indexOf(clubs.get(cell.getIndex()));
@@ -226,18 +284,25 @@ public class UmpireView {
                 cell.setOnMouseClicked(event -> {
                    if (! cell.isEmpty()) {
                         
-                        selectedUmpire = cell.getItem().getUmpireNaam();
                         umpireselection = cell.getItem();
-                        
+                        nieuwUmpire = Boolean.FALSE;
                         // Refresh pane on the left side
+                        lpane = setDetails(umpireselection, nieuwUmpire);
+                        leftPane.setCenter(lpane);
+                        
+                       
                    }
                 });
                return cell;
         });
+        umpirelistview.getSelectionModel().select(0);
         return umpirelistview;
     }
     
     
-    
+    private Pane setDetails(Umpire umpireselection, Boolean nieuwUmpire) {
+        Pane p = new Pane(newUmpire.NewUmpire(umpireselection, afdelingen, nieuwUmpire, clubs, umpires));
+        return p;
+    }
     
 }

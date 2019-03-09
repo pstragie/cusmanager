@@ -1,0 +1,8 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix}Restricted License.
+${licensePrefix}No dispersal allowed.
+<#if licenseLast??>
+${licenseLast}
+</#if>
