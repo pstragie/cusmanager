@@ -137,7 +137,7 @@ public class Club {
     public void setVisible(Boolean bool) {
         visible = bool;
     }
-
+    
     public StringProperty clubnaamProperty() {
         return clubnaam;
     }

@@ -47,6 +47,8 @@ import java.util.logging.Logger;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
 
 /**
  *
@@ -147,12 +149,12 @@ public class MainPanel {
         umpires.addListener((ListChangeListener.Change<? extends Umpire> change) -> { 
             while(change.next()) {
                 if(change.wasUpdated()) {
-                    System.out.println("Clubs Update detected");
+                    System.out.println("Umpires Update detected");
                     // Write to file?
 
                 } else
                     if (change.wasPermutated()) {
-                        System.out.println("Clubs Was permutated");
+                        System.out.println("Umpires Was permutated");
                     } 
                         else 
                             for (Umpire additem: change.getAddedSubList()) {
@@ -171,12 +173,12 @@ public class MainPanel {
         teams.addListener((ListChangeListener.Change<? extends Team> change) -> { 
                 while(change.next()) {
                     if(change.wasUpdated()) {
-                        System.out.println("Update detected");
+                        System.out.println("Update teams detected");
                         // Write to file
 
                     } else
                         if (change.wasPermutated()) {
-                            System.out.println("Was permutated");
+                            System.out.println("Was permutated team");
                         } else {
                             if (change.wasAdded()) {
                                 System.out.println("Data was added to teams");
@@ -257,6 +259,8 @@ public class MainPanel {
             System.out.println("umpiresBeheren Clicked");
             Stage stage = new Stage();
             Scene scene = new Scene(UmpirePaneel(), 1000, 800);
+            //stage.initStyle(StageStyle.UNIFIED);
+            stage.setAlwaysOnTop(true);
             stage.setTitle("Umpires beheren");
             stage.setScene(scene);
             stage.show();
@@ -305,6 +309,7 @@ public class MainPanel {
             Stage stage = new Stage();
             Scene scene = new Scene(ClubPaneel(), 800, 600);
             stage.setTitle("Clubs beheren");
+            stage.setAlwaysOnTop(true);
             stage.setScene(scene);
             stage.show();
             
@@ -321,8 +326,8 @@ public class MainPanel {
                 // Import clubs in de database
                 ArrayList<Club> arrayClubs = documentHandler.getClubsFromFile(absPath);
                 for(Club cl : arrayClubs) {
-                    System.out.println(cl);
-                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getVoorzitter(), cl.getClubNummer(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getLiga(), cl.getClubWebsite());
+                    //System.out.println(cl);
+                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getVoorzitter(), cl.getClubNummer(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getLiga(), cl.getClubWebsite(), cl.getVisible());
                     for (Team t: cl.getClubTeams()) {
                         database.insertTeamsInDatabase(t.getTeamNaam(), t.getTeamAfdeling().getAfdelingsNaam(), cl.getClubNaam(), t.getTeamAfdeling().getAfdelingsCategorie());
                     }
@@ -342,6 +347,7 @@ public class MainPanel {
             Stage stage = new Stage();
             Scene scene = new Scene(newAfdelingPaneel(leftTabPane, rightTabPane, centerTabPane, afdelingenlijst));
             stage.setTitle("Afdelingen wijzigen");
+            stage.setAlwaysOnTop(true);
             stage.setScene(scene);
             stage.show();
         });
@@ -491,15 +497,15 @@ public class MainPanel {
                 System.out.println("Text changed from "+oldText+" to "+newText);
                 
                 if (newText == null || newText.isEmpty()) {
-                    System.out.println("current observableTabList: " + afdelingenlijst);
-                    System.out.println("Nothing to filter: " + afdelingenlijst);
+                    //System.out.println("current observableTabList: " + afdelingenlijst);
+                    //System.out.println("Nothing to filter: " + afdelingenlijst);
                     // Reset the tabpane to show all tabs
                     sideTabPane.getTabs().clear();
                     
                     sideTabPane.getTabs().addAll(getUmpireTabArrayList());
                 } else {
-                    System.out.println("Filter active: " + newText);
-                    System.out.println("Filtered List = " + afdelingenlijst.filtered(tab -> tab.getAfdelingsNaam().contains(newText)));
+                    //System.out.println("Filter active: " + newText);
+                    //System.out.println("Filtered List = " + afdelingenlijst.filtered(tab -> tab.getAfdelingsNaam().contains(newText)));
                     
                     sideTabPane.getTabs().clear();
                     sideTabPane.getTabs().addAll(getUmpireTabArrayList());
@@ -739,7 +745,7 @@ public class MainPanel {
                 } else {
                     System.out.println("does not exist: " + cl.getClubNaam());
                     
-                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getLiga(), cl.getClubNummer(), cl.getVoorzitter(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getClubWebsite());
+                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getLiga(), cl.getClubNummer(), cl.getVoorzitter(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getClubWebsite(), cl.getVisible());
                     
                 }
             }

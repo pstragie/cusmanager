@@ -17,7 +17,9 @@ import java.util.ArrayList;
 
 /**
  *
- * @author pieter
+ * @author Pieter Stragier
+ * @version 1.0
+ * @since 1.0
  */
 public class Database {
     public Statement stmt;
@@ -25,14 +27,15 @@ public class Database {
     public Database() {
         try {
             con = DriverManager.getConnection("jdbc:derby://localhost:1527/cusdb;create=false;user=pstragier;password=Isabelle30?");
-            
-
-            
         } catch(SQLException e) {
             System.err.println("SQL Exception: " + e);
         } 
     }
     
+    /** Haal alle afdelingen uit de database
+     * 
+     * @return Lijst van afdelingen 
+     */
     public ArrayList<Afdeling> getAllAfdelingenFromDatabase() {
         ArrayList<Afdeling> arrayAfdelingen = new ArrayList<>();
         try {
@@ -60,6 +63,9 @@ public class Database {
         return arrayAfdelingen;
     }
     
+    /** Verwijder alle afdelingen uit de database
+     * 
+     */
     public void deleteAllAfdelingenInDatabase() {
         try {
             stmt = con.createStatement();
@@ -78,6 +84,10 @@ public class Database {
         }
     }
     
+    /** Verwijder 1 afdeling uit de database
+     * 
+     * @param afdelingsnaam naam van de afdeling die verwijderd moet worden.
+     */
     public void deleteAfdelingFromDatabase(String afdelingsnaam) {
         try {
             stmt = con.createStatement();
@@ -95,6 +105,13 @@ public class Database {
             }
         }
     }
+    
+    /** Nieuwe afdeling toevoegen aan de database
+     * 
+     * @param naam Naam van de afdeling.
+     * @param discipline Naam van de discipline (baseball/softball).
+     * @param kbbsf Bool: KBBSF verantwoordelijk voor deze afdeling.
+     */
     public void insertNewAfdelingToDatabase(String naam, String discipline, Boolean kbbsf) {
         try {
             
@@ -115,6 +132,12 @@ public class Database {
         }
     }
     
+    /** Update afdeling in database
+     * 
+     * @param naam
+     * @param discipline
+     * @param kbbsf 
+     */
     public void updateAfdelingToDatabase(String naam, String discipline, Boolean kbbsf) {
         try {
             stmt = con.createStatement();
@@ -133,6 +156,13 @@ public class Database {
         }
     }
     
+    /** Controleer of een afdeling bestaat
+     * 
+     * @param tableName Tabelnaam in de database
+     * @param naam Naam van de afdeling
+     * @return Boolean
+     * @throws SQLException 
+     */
     public Boolean checkIfAfdelingExists(String tableName, String naam) throws SQLException {
         ResultSet rs = null;
         
@@ -159,9 +189,10 @@ public class Database {
         return Boolean.TRUE;
     }
     
-    /** Clubs
+    // CLUBS
+    /** Haal alle clubs op uit de database
      * 
-     * @return 
+     * @return Lijst van clubs
      */
     public ArrayList<Club> getAllClubsFromDatabase() {
         ArrayList<Club> arrayClubs = new ArrayList<>();
@@ -203,6 +234,11 @@ public class Database {
         return arrayClubs;
     }
     
+    /** Haal 1 club uit de database
+     * 
+     * @param clubnaam
+     * @return Geeft een object (Club) terug
+     */
     public Club getClubFromDatabase(String clubnaam) {
         ArrayList<Team> teamArray = new ArrayList<>();
         Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE);
@@ -243,6 +279,9 @@ public class Database {
         return cl;
     }
     
+    /** Verwijder alle clubs uit de database
+     * 
+     */
     public void deleteAllClubsInDatabase() {
         try {
             stmt = con.createStatement();
@@ -261,6 +300,10 @@ public class Database {
         }
     }
     
+    /** Verwijder 1 club uit de database
+     * 
+     * @param clubnaam 
+     */
     public void deleteClubFromDatabase(String clubnaam) {
         try {
             stmt = con.createStatement();
@@ -279,6 +322,10 @@ public class Database {
         }
     }
     
+    /** Verwijder een team uit de database
+     * 
+     * @param team 
+     */
     public void removeTeamFromDatabase(Team team) {
         try {
             stmt = con.createStatement();
@@ -297,12 +344,27 @@ public class Database {
         }
     }
     
-    public void insertNewClubToDatabase(String clubnaam, String clubvoorzitter, String clubnummer, String clubstraat, String clubhuisnummer, String clubpostcode, String clubstad, String clubemail, String clubtelefoon, String liga, String clubwebsite) {
+    /** Voeg een nieuwe club toe aan de database
+     * 
+     * @param clubnaam
+     * @param clubvoorzitter
+     * @param clubnummer
+     * @param clubstraat
+     * @param clubhuisnummer
+     * @param clubpostcode
+     * @param clubstad
+     * @param clubemail
+     * @param clubtelefoon
+     * @param liga
+     * @param clubwebsite 
+     * @param visible Boolean
+     */
+    public void insertNewClubToDatabase(String clubnaam, String clubvoorzitter, String clubnummer, String clubstraat, String clubhuisnummer, String clubpostcode, String clubstad, String clubemail, String clubtelefoon, String liga, String clubwebsite, Boolean visible) {
         
         try {
             stmt = con.createStatement();
             // Replace data if exists, insert if not exist {
-            stmt.executeUpdate("INSERT INTO APP.Clubs " + "VALUES ('" + clubnaam + "', '" + clubvoorzitter + "', '" + clubnummer + "', '" + clubstraat + "', '" + clubhuisnummer + "', '" + clubpostcode + "', '" + clubstad + "', '" + clubemail + "', '" + clubtelefoon + "', '" + liga + "', '" + clubwebsite + "', '" + Boolean.TRUE + "')");
+            stmt.executeUpdate("INSERT INTO APP.Clubs " + "VALUES ('" + clubnaam + "', '" + clubvoorzitter + "', '" + clubnummer + "', '" + clubstraat + "', '" + clubhuisnummer + "', '" + clubpostcode + "', '" + clubstad + "', '" + clubemail + "', '" + clubtelefoon + "', '" + liga + "', '" + clubwebsite + "', '" + visible + "')");
             
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting club: " + e);
@@ -317,6 +379,21 @@ public class Database {
         }
     }
     
+    /** Update club in de database
+     * 
+     * @param clubnaam
+     * @param clubvoorzitter
+     * @param clubnummer
+     * @param clubstraat
+     * @param clubhuisnummer
+     * @param clubpostcode
+     * @param clubstad
+     * @param clubemail
+     * @param clubtelefoon
+     * @param liga
+     * @param clubwebsite
+     * @param visible 
+     */
     public void updateClubToDatabase(String clubnaam, String clubvoorzitter, String clubnummer, String clubstraat, String clubhuisnummer, String clubpostcode, String clubstad, String clubemail, String clubtelefoon, String liga, String clubwebsite, Boolean visible) {
         try {
             stmt = con.createStatement();
@@ -335,6 +412,13 @@ public class Database {
         }
     }
     
+    /** Controleer of club bestaat in de database
+     * 
+     * @param tableName
+     * @param naam
+     * @return
+     * @throws SQLException 
+     */
     public Boolean checkIfClubExists(String tableName, String naam) throws SQLException {
         ResultSet rs = null;
         
@@ -361,9 +445,10 @@ public class Database {
         return Boolean.TRUE;
     }
     
-     /** Umpires
+     // UMPIRES
+    /** Haal alle umpires uit de database
      * 
-     * @return 
+     * @return Lijst van umpires. 
      */
     public ArrayList<Umpire> getAllUmpiresFromDatabase() {
         ArrayList<Umpire> arrayUmpires = new ArrayList<>();
@@ -412,6 +497,11 @@ public class Database {
         return arrayUmpires;
     }
     
+    /** Haal 1 umpire uit de database
+     * 
+     * @param umpirenaam
+     * @return Object (Umpire)
+     */
     public Umpire getUmpireFromDatabase(String umpirenaam) {
         System.out.println("Umpire requested from database!");
         ArrayList<Afdeling> afdarray = new ArrayList<>();
@@ -463,6 +553,9 @@ public class Database {
         return u;
     }
     
+    /** Verwijder alle umpires uit de database
+     * 
+     */
     public void deleteAllUmpiresInDatabase() {
         try {
             stmt = con.createStatement();
@@ -481,10 +574,14 @@ public class Database {
         }
     }
     
-    public void deleteUmpireFromDatabase(String umpirenaam) {
+    /** Verwijder 1 umpire uit de database
+     * 
+     * @param umpirenaam 
+     */
+    public void deleteUmpireFromDatabase(String licentie) {
         try {
             stmt = con.createStatement();
-            String sql = "DELETE FROM APP.Umpires WHERE umpirenaam = '" + umpirenaam + "'";
+            String sql = "DELETE FROM APP.Umpires WHERE umpirelicentie = '" + licentie + "'";
             stmt.executeUpdate(sql);
         } catch(SQLException e) {
             System.err.println(e);
@@ -499,7 +596,23 @@ public class Database {
         }
     }
     
+    /** Voeg een nieuwe umpire toe aan de database
+     * 
+     * @param umpirenaam
+     * @param umpirevoornaam
+     * @param umpirelicentie
+     * @param umpirestraat
+     * @param umpirehuisnummer
+     * @param umpirepostcode
+     * @param umpirestad
+     * @param umpiretelefoon
+     * @param umpireemail
+     * @param umpireclub
+     * @param afdeling
+     * @param actief 
+     */
     public void insertNewUmpireToDatabase(String umpirenaam, String umpirevoornaam, String umpirelicentie, String umpirestraat, String umpirehuisnummer, String umpirepostcode, String umpirestad, String umpiretelefoon, String umpireemail, String umpireclub, String afdeling, Boolean actief) {
+        System.out.println("Insert Umpire To Database...");
         try {
             stmt = con.createStatement();
             // Replace data if exists, insert if not exist {
@@ -519,11 +632,27 @@ public class Database {
         }
     }
     
+    /** Update umpire in de database
+     * 
+     * @param umpirenaam
+     * @param umpirevoornaam
+     * @param umpirelicentie
+     * @param umpirestraat
+     * @param umpirehuisnummer
+     * @param umpirepostcode
+     * @param umpirestad
+     * @param umpiretelefoon
+     * @param umpireemail
+     * @param umpireclub
+     * @param afdeling
+     * @param actief 
+     */
     public void updateUmpireToDatabase(String umpirenaam, String umpirevoornaam, String umpirelicentie, String umpirestraat, String umpirehuisnummer, String umpirepostcode, String umpirestad, String umpiretelefoon, String umpireemail, String umpireclub, String afdeling, Boolean actief) {
+        System.out.println("Update Umpire To Database...");
         try {
             stmt = con.createStatement();
             // Update row
-            stmt.executeUpdate("UPDATE APP.Umpires " + "SET umpirelicentie = '" + umpirelicentie + "', umpirestraat = '" + umpirestraat + "', umpirehuisnummer = '" + umpirehuisnummer + "', umpirepostcode = '" + umpirepostcode + "', umpirestad = '" + umpirestad + "', umpiretelefoon = '" + umpiretelefoon + "', umpireemail = '" + umpireemail + "', umpireclub = '" + umpireclub + "', afdeling = '" + afdeling + "', actief = '" + actief + "', umpirenaam = '" + umpirenaam + "', umpirevoornaam = '" + umpirevoornaam + "' " + "WHERE umpirenaam = '" + umpirenaam + "'");
+            stmt.executeUpdate("UPDATE APP.Umpires " + "SET umpirestraat = '" + umpirestraat + "', umpirehuisnummer = '" + umpirehuisnummer + "', umpirepostcode = '" + umpirepostcode + "', umpirestad = '" + umpirestad + "', umpiretelefoon = '" + umpiretelefoon + "', umpireemail = '" + umpireemail + "', umpireclub = '" + umpireclub + "', afdeling = '" + afdeling + "', actief = '" + actief + "', umpirenaam = '" + umpirenaam + "', umpirevoornaam = '" + umpirevoornaam + "' " + "WHERE umpirelicentie = '" + umpirelicentie + "'");
             //stmt.executeUpdate("UPDATE APP.Umpires " + "SET umpirenaam = '" + umpirenaam + "', umpirelicentie = '" + umpirelicentie + "', umpirehuisnummer = '" + umpirehuisnummer + "' + umpirepostcode = '" + umpirepostcode + "' + umpirestad = '" + umpirestad + "' + umpiretelefoon = '" + umpiretelefoon + "' + umpireemail = '" + umpireemail + "' + umpireclub = '" + umpireclub + "' + umpirestraat = '" + umpirestraat + "' + afdeling = '" + afdeling + "' + actief = '" + actief + "' " + "WHERE umpirenaam = '" + umpirenaam + "'");
         } catch(SQLException e) {
             System.err.println("SQL Exception while updating umpire: " + e);
@@ -538,15 +667,22 @@ public class Database {
         }
     }
     
-    public Boolean checkIfUmpireExists(String tableName, String naam) throws SQLException {
+    /** Controleer of umpire bestaat in de database
+     * 
+     * @param tableName "Umpires"
+     * @param licentienummer Licentienummer umpire
+     * @return
+     * @throws SQLException 
+     */
+    public Boolean checkIfUmpireExists(String licentienummer) throws SQLException {
         ResultSet rs = null;
         
         try {
             stmt = con.createStatement();
-            String sql = "Select 1 from " + tableName + " where umpirenaam = ?";  
+            String sql = "Select 1 from APP.Umpires" + " where umpirelicentie = ?";  
             PreparedStatement ps = con.prepareStatement(sql);
             //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
-            ps.setString(1, naam);
+            ps.setString(1, licentienummer);
             rs = ps.executeQuery();
             return rs.next();
         } catch(SQLException e) {
@@ -564,9 +700,11 @@ public class Database {
         return Boolean.TRUE;
     }
     
-    /**
-     * Teams
-     * Linked to Club
+    // TEAMS
+    /** Haal alle teams uit de database
+     * 
+     * @param club
+     * @return 
      */
     public ArrayList<Team> getTeamsFromDatabase(String club) {
         ArrayList<Team> arrayTeams = new ArrayList<>();
@@ -595,6 +733,9 @@ public class Database {
         return arrayTeams;
     }
     
+    /** Verwijder alle teams uit de database
+     * 
+     */
     public void deleteAllTeamsInDatabase() {
         try {
             stmt = con.createStatement();
@@ -613,6 +754,13 @@ public class Database {
         }
     }
     
+    /** Voeg een team toe aan de database
+     * 
+     * @param teamnaam
+     * @param teamafdeling
+     * @param club
+     * @param discipline 
+     */
     public void insertTeamsInDatabase(String teamnaam, String teamafdeling, String club, String discipline) {
         try {
             stmt = con.createStatement();
@@ -632,6 +780,13 @@ public class Database {
         }
     }
     
+    /** Update een team in de database
+     * 
+     * @param teamnaam
+     * @param teamafdeling
+     * @param club
+     * @param discipline 
+     */
     public void updateTeamToDatabase(String teamnaam, String teamafdeling, String club, String discipline) {
         try {
             stmt = con.createStatement();
@@ -650,6 +805,13 @@ public class Database {
         }
     }
     
+    /** Controleer of team bestaat in de database
+     * 
+     * @param tableName
+     * @param naam
+     * @return
+     * @throws SQLException 
+     */
     public Boolean checkIfTeamExists(String tableName, String naam) throws SQLException {
         ResultSet rs = null;
         

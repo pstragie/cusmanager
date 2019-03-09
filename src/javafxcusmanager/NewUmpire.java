@@ -11,9 +11,10 @@ package javafxcusmanager;
  * @version 1.0
  * @since 1.0
  */
+import java.util.ArrayList;
+import java.util.Comparator;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -29,7 +30,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.util.Callback;
 
 /**
  *
@@ -65,13 +65,16 @@ public class NewUmpire {
      * @param umpires All umpires
      * @return A Vertical Box with umpire details textfields and buttons.
      */
-    public VBox NewUmpire(Umpire umpire, ObservableList afdelingen, Boolean nieuw, ObservableList clubs, ObservableList umpires) {
+    public VBox NewUmpire(Umpire umpire, ObservableList<Afdeling> afdelingen, Boolean nieuw, ObservableList<Club> clubs, ObservableList<Umpire> umpires) {
 	    this.afdelingen = afdelingen;
             this.clubs = clubs;
             this.nieuw = nieuw;
             System.out.println("Umpire: " + umpire);
             database = new Database();
             umpireList = FXCollections.observableArrayList(database.getUmpireFromDatabase(umpire.getUmpireNaam()));
+            Comparator<Umpire> umpireComparator = Comparator.comparing(Umpire::getUmpireNaam);
+            
+            umpireList.sort(umpireComparator);
             umpireList.addListener(new ListChangeListener<Umpire>() {
                 @Override
                 public void onChanged(ListChangeListener.Change<? extends Umpire> change) {
@@ -93,7 +96,28 @@ public class NewUmpire {
                 }
             });
             
-            afdelingenArray = FXCollections.observableArrayList();
+            afdelingenArray = FXCollections.observableArrayList(umpire.getUmpireAfdelingen());
+            
+            afdelingenArray.addListener(new ListChangeListener<Afdeling>() {
+                @Override
+                public void onChanged(ListChangeListener.Change<? extends Afdeling> change) {
+                    while(change.next()) {
+                        if(change.wasUpdated()) {
+                            
+                        } else
+                            if (change.wasPermutated()) {
+                                
+                            }
+                            else
+                                change.getRemoved().forEach((remitem) -> {
+                                    System.out.println("afdeling umpire remitem: " + remitem);
+                                });
+                        change.getAddedSubList().forEach((additem) -> {
+                            System.out.println("afdeling umpire additem: " + additem);
+                        });
+                    }
+                }
+            });
             VBox verbox = new VBox(5);
             Label detailLabel = new Label("Details");
             detailLabel.setPadding(new Insets(0, 0, 0, 5));
@@ -117,10 +141,8 @@ public class NewUmpire {
 		familienaamtf.setAlignment(Pos.CENTER_LEFT);
                 licentietf = new TextField();
                 licentietf.setAlignment(Pos.CENTER_LEFT);
-		clubtf = new TextField ( );
-		clubtf.setAlignment(Pos.CENTER_LEFT);
-                afdelingentf = new TextField ();
-                afdelingentf.setAlignment(Pos.CENTER_LEFT);
+		
+                
 		straattf = new TextField ( );
 		straattf.setAlignment(Pos.CENTER_LEFT);
 		huisnummertf = new TextField ( );
@@ -144,16 +166,26 @@ public class NewUmpire {
                     postcodetf.setText(umpireList.get(0).getUmpirePostcode());
                     stadtf.setText(umpireList.get(0).getUmpireStad());
                     licentietf.setText(umpireList.get(0).getUmpireLicentie());
+                    licentietf.setDisable(true);
                     telefoontf.setText(umpireList.get(0).getUmpireTelefoon());
                     emailtf.setText(umpireList.get(0).getUmpireEmail());
                     actiefCheckbox.setSelected(umpireList.get(0).getActief());
-                    umpireList.get(0).getUmpireAfdelingen().forEach((a) -> {
-                        afdelingenArray.add(a);
-                });
+                    afdelingenArray.setAll(umpireList.get(0).getUmpireAfdelingen());
+                    // Combobox
+                    clubComboBox = new ComboBox();
+                        // List with afdelingen
+
+                        ObservableList<Club> data = FXCollections.observableArrayList(clubs);
+
+                        clubComboBox.getItems().addAll(data);
+                        Club clnaam = umpireList.get(0).getUmpireClub();
+                        clubComboBox.setValue(clnaam);
+
                 } else {
                     voornaamtf.setText("");
                     familienaamtf.setText("");
-                    clubtf.setText("");
+                    licentietf.setDisable(false);
+                    clubComboBox.setValue(null);
                     straattf.setText("");
                     huisnummertf.setText("");
                     postcodetf.setText("");
@@ -162,9 +194,7 @@ public class NewUmpire {
                     telefoontf.setText("");
                     emailtf.setText("");
                     actiefCheckbox.setSelected(true);
-                    umpireList.get(0).getUmpireAfdelingen().forEach((a) -> {
-                        afdelingenArray.add(a);
-                });
+                    afdelingenArray.clear();
                 }
                 
 		// Maak de labels
@@ -183,15 +213,6 @@ public class NewUmpire {
 		
                 
 		
-                // Combobox
-                clubComboBox = new ComboBox();
-                    // List with afdelingen
-                    
-                    ObservableList<Club> data = FXCollections.observableArrayList(clubs);
-                    
-                    clubComboBox.setItems(data);
-                    
-                clubComboBox.setValue(umpire.getUmpireClub());
                 
 		
 		
@@ -201,17 +222,19 @@ public class NewUmpire {
                 afdelingListview.setItems(afddata);
                 //afdelingListview.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                 
+                
                 afdelingListview.setCellFactory(CheckBoxListCell.forListView((Afdeling item) -> {
                     BooleanProperty observable = new SimpleBooleanProperty();
                     //System.out.println("umpire afdelingen: " + umpire.getUmpireAfdelingen());
-                    System.out.println("array: " + afdelingenArray);
-                    System.out.println("item: " + item);
-                    Boolean present = afdelingenArray.contains(item);
+                    
+                    ArrayList<String> tmpafd = new ArrayList<>();
+                    afdelingenArray.forEach(a -> {
+                        tmpafd.add(a.getAfdelingsNaam());
+                    });
+                    Boolean present = tmpafd.contains(item.getAfdelingsNaam());
                     if (present) {
-                        System.err.println("TRUE");
                         observable.set(Boolean.TRUE);
                     } else {
-                        System.err.println("FALSE");
                         observable.set(Boolean.FALSE);
                     }
                     
@@ -219,12 +242,17 @@ public class NewUmpire {
                     observable.addListener((obs, wasSelected, isNowSelected) -> {
                         System.out.println("Check box for "+item+" changed from "+wasSelected+" to "+isNowSelected);
                         if (wasSelected) {
-                            afdelingenArray.remove(item);
-                        } else {
-                            if (isNowSelected) {
-                                afdelingenArray.add(item);
-                            }
+                            System.out.println("wasSelected: " + afdelingenArray);
+                            System.out.println("index: " + afdelingenArray.indexOf(item));
+                            
+                            afdelingenArray.removeIf(t -> t.getAfdelingsNaam().equals(item.getAfdelingsNaam()));
+                            System.out.println("after remove: " + afdelingenArray);
+                        } 
+                        if (isNowSelected) {
+                            System.out.println("isNowSelected");
+                            afdelingenArray.add(item);
                         }
+                        
                     });
                     return observable ;
             }));
@@ -256,7 +284,7 @@ public class NewUmpire {
 		grid.add(actiefLabel, 0, 11);
                 grid.add(actiefCheckbox, 1, 11);
                 grid.add(afdelingenLabel, 2, 0 , 1, 1);
-                grid.add(afdelingListview, 2, 1 , 1, 11);
+                grid.add(afdelingListview, 2, 1 , 1, afdelingen.size());
 		
             verbox.getChildren().add(grid);
             return verbox;
@@ -282,6 +310,12 @@ public class NewUmpire {
         }
         public Club getComboBoxValue() {
             return clubComboBox.getValue();
+        }
+        public String getLicentieValue() {
+            return licentietf.getText();
+        }
+        public Umpire getCurrentUmpire() {
+            return umpireList.get(0);
         }
     }
 

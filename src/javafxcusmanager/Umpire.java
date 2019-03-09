@@ -147,7 +147,7 @@ public class Umpire {
     public ArrayList<Afdeling> getUmpireAfdelingen() {
         return umpireafdelingen;
     }
-
+    
     public void setUmpireAfdelingen(Afdeling umpireafdelingenArray) {
         umpireafdelingen.add(umpireafdelingenArray);
     }
@@ -196,7 +196,7 @@ public class Umpire {
         String string = new String();
         
         
-        string = umpirenaam.get() + ", " + umpirelicentie.get() + ", " + umpirestraat.get() + ", " + umpirehuisnummer.get() + ", " + umpirepostcode.get() + ", " + umpirestad.get() + " " + umpiretelefoon.get() + ", " + umpireemail.get() + ", " + umpireclub.get() + "\n";
+        string = umpirenaam.get() + ", " + umpirelicentie.get() + ", " + umpirestraat.get() + ", " + umpirehuisnummer.get() + ", " + umpirepostcode.get() + ", " + umpirestad.get() + " " + umpiretelefoon.get() + ", " + umpireemail.get() + ", " + umpireclub.get() + ", " + umpireafdelingen + ", " + actief + "\n";
 
         return string;
     }

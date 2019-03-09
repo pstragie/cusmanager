@@ -44,7 +44,7 @@ public class Afdeling {
     @Override
     public String toString() {
         String s = new String();
-        s = afdelingsnaam.get() + ":" + afdelingscategorie.get();
+        s = afdelingsnaam.get();
         return s;
     }
 }

@@ -5,29 +5,26 @@
  */
 package javafxcusmanager;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -41,7 +38,9 @@ import javafx.stage.Stage;
 
 /**
  *
- * @author pieter
+ * @author Pieter Stragier
+ * @version 1.0
+ * @since 1.0
  */
 public class UmpireView {
     private MainPanel mainPanel;
@@ -63,22 +62,34 @@ public class UmpireView {
     private BorderPane leftPane;
     private Pane lpane;
     private HBox hbox;
+    private ObservableList<Umpire> data;
     
-    public UmpireView(ObservableList umpires, ObservableList clubs, ObservableList teams, ObservableList afdelingen) {
+    /** Venster om umpires te beheren.
+     * 
+     * @param umpires
+     * @param clubs
+     * @param teams
+     * @param afdelingen 
+     */
+    public UmpireView(ObservableList<Umpire> umpires, ObservableList<Club> clubs, ObservableList<Team> teams, ObservableList<Afdeling> afdelingen) {
         this.umpires = umpires;
         this.clubs = clubs;
         this.teams = teams;
         this.afdelingen = afdelingen;   
         database = new Database();
         borderPane = new BorderPane();
+        
+        
     }
     
+    /** Paneel umpires
+     * 
+     * @return Pane
+     */
     public Pane umpirePane() {
         // New Window
-        
-        
-        
-        
+        Comparator<Umpire> umpireComparator = Comparator.comparing(Umpire::getUmpireNaam);
+
         if (umpires.size() > 0) {
             umpireselection = umpires.get(0);
         } else {
@@ -112,42 +123,97 @@ public class UmpireView {
         
         leftPane.setCenter(lpane);
         hbox = new HBox(5);
+        
+        // MARK: - OPSLAAN
         opslaan = new Button( "Opslaan" );
         opslaan.setOnAction((ActionEvent event) -> {
-            // Wijzigingen opslaan in database (en umpires lijst?)
-            
-            // Convert afdeling to 1BB:Baseball and convert to String (to fit database)
-            ArrayList<String> afdWithDis = new ArrayList<>();
-            /*
-            umpireselection.getUmpireAfdelingen().stream().map((a) -> a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie()).forEachOrdered((s) -> {
-                afdWithDis.add(s);
-            });
-            */
-            newUmpire.afdelingenArray.forEach((a) -> {
-                afdWithDis.add(a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie());
-            });
-            ArrayList<Afdeling> afdArray2 = new ArrayList<>();
-            newUmpire.afdelingenArray.forEach((a) -> {
-                afdArray2.add(a);
-            });
-            System.out.println("Afd array: " + afdArray2);
-            String afdelingArrayString = String.join(",", afdWithDis);
-            System.out.println("afdArrayString: " + afdelingArrayString);
-            /*
-            int umpIndex = umpires.indexOf(umpireselection);
-            umpires.remove(umpireselection);
-            Umpire changedUmpire = new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.getComboBoxValue(), afdArray2, newUmpire.getActiefCheckBoxValue());
-            umpires.add(changedUmpire);
-            */
-            //this.umpireList.add(changedUmpire);
-            //database = new Database();
-            System.out.println("nieuw huisnummer: " + newUmpire.huisnummertf.getText());
-            database.updateUmpireToDatabase(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.getComboBoxValue().getClubNaam(), afdelingArrayString, newUmpire.getActiefCheckBoxValue());
-        });
-		wijzigingenAnnuleren = new Button( "Wijzigingen annuleren" );
-                wijzigingenAnnuleren.setOnAction(event -> { 
-                    // Reset original data
+            // Wijzigingen opslaan in database
+            if (newUmpire.licentietf.getText() == null || "".equals(newUmpire.licentietf.getText())) {
+                System.out.println("Licentienummer mag niet leeg zijn!");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Waarschuwing");
+                alert.setHeaderText("Licentienummer mag niet leeg zijn!");
+                alert.setContentText("Vul een uniek licentienummer in.");
+                alert.showAndWait();
+            } else {
+                // Convert afdeling to 1BB:Baseball and convert to String (to fit database)
+                ArrayList<String> afdWithDis = new ArrayList<>();
+                newUmpire.afdelingenArray.forEach((a) -> {
+                    afdWithDis.add(a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie());
                 });
+                ArrayList<Afdeling> afdArray2 = new ArrayList<>();
+                newUmpire.afdelingenArray.forEach((a) -> {
+                    afdArray2.add(a);
+                });
+                String afdelingArrayString = String.join(",", afdWithDis);
+
+                System.out.println("nieuw bool = " + nieuwUmpire);
+                String clubstring = null;
+                if (newUmpire.clubComboBox.getValue() == null) {
+                    clubstring = "";
+                } else {
+                    clubstring = newUmpire.clubComboBox.getValue().getClubNaam();
+                }
+                Boolean Uexists = Boolean.TRUE;
+                try {
+                    // Check if umpire exists
+                    if (database.checkIfUmpireExists(newUmpire.familienaamtf.getText())) {
+                        System.out.println("Umpire already exists");
+                        Uexists = Boolean.TRUE;
+                    } else {
+                        Uexists = Boolean.FALSE;
+                    }
+                } catch (SQLException ex) {
+                    Logger.getLogger(UmpireView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                // Verifieer umpire
+                if (nieuwUmpire && !Uexists) {
+                    // Nieuwe umpire toevoegen
+                    System.out.println("Nieuwe umpire bestaat nog niet.");
+                    database.insertNewUmpireToDatabase(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), clubstring, afdelingArrayString, newUmpire.getActiefCheckBoxValue());
+                    umpires.add(new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue()));
+                    umpires.sort(umpireComparator);
+                } else 
+                    if (nieuwUmpire && Uexists) {
+                        // Waarschuwen en terug sturen
+                        System.out.println("Nieuwe umpire bestaat al!");
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Waarschuwing");
+                        alert.setHeaderText("Deze umpire is al aanwezig in de lijst.");
+                        alert.setContentText("Controleer het licentienummer. Dit moet uniek zijn.");
+                        alert.showAndWait();
+                    } else 
+                        if (!nieuwUmpire) {
+                            // Updaten van gegevens
+                            System.out.println("Bestaande umpire aanpassen.");
+                            database.updateUmpireToDatabase(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), clubstring, afdelingArrayString, newUmpire.getActiefCheckBoxValue());
+                            FilteredList filtumpire = umpires.filtered(c -> c.getUmpireLicentie().equals(newUmpire.licentietf.getText()));
+                            
+                            int uIndex = umpires.indexOf(filtumpire.get(0));
+                            System.out.println("umpire index = " + uIndex);
+                            try {
+                                umpires.set(uIndex, new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue()));
+                            } catch (Error e) {
+                                System.err.println("ArrayIndexOutOfBoundsException caught in action... Opslaan niet gelukt!");
+                                System.out.println("umpires lijst = " + umpires);
+                                
+                            }
+                            umpires.sort(umpireComparator);
+                        }
+                nieuwUmpire = Boolean.FALSE;
+            }
+            
+        });
+        wijzigingenAnnuleren = new Button( "Wijzigingen annuleren" );
+        wijzigingenAnnuleren.setOnAction(event -> { 
+            // Reset original data
+            nieuwUmpire = Boolean.FALSE;
+                // Refresh pane on the left side 
+            lpane = setDetails(umpireselection, nieuwUmpire);
+            leftPane.setCenter(lpane);
+        });
+        
         hbox.getChildren().addAll(opslaan, wijzigingenAnnuleren);
         hbox.setPadding(new Insets(5, 5, 5, 5));
         leftPane.setBottom(hbox);
@@ -156,7 +222,10 @@ public class UmpireView {
     }
     
     
-    
+    /** Maak een horizontale box met knoppen
+     * 
+     * @return HBox
+     */
     public HBox getButtonHBox() {
         // HBox with buttons
         HBox buttonHBox = new HBox(10);
@@ -164,16 +233,13 @@ public class UmpireView {
         Button addUmpireButton = new Button("Umpire toevoegen");
         addUmpireButton.setOnAction(event -> { 
             // Show Pane in borderPane Right
-            /*
+            
             System.out.println("Umpire toevoegen");
-            Stage stage = new Stage();
-            Scene scene = new Scene(newClubPaneel(), 390, 400);
-            //stage.setX(1000);
-            //stage.setY(800);
-            stage.setTitle("Club toevoegen");
-            stage.setScene(scene);
-            stage.show();
-            */
+            nieuwUmpire = Boolean.TRUE;
+            // Refresh pane on the left side
+            lpane = setDetails(umpireselection, nieuwUmpire);
+            leftPane.setCenter(lpane);
+            
         });                   
         
         
@@ -192,6 +258,12 @@ public class UmpireView {
         return buttonHBox;
     }
     
+    /** Maak de listview van umpires.
+     * 
+     * @param umpirevbox
+     * @param pane
+     * @return 
+     */
     public ListView getUmpireListView(VBox umpirevbox, Pane pane) {
         Label umpirelabel = new Label("Umpires");
         umpirelabel.setPadding(new Insets(0, 0, 0, 5));
@@ -200,18 +272,17 @@ public class UmpireView {
         umpirevbox.setPadding(new Insets(0, 0, 0, 5));
         //clubvbox.setBorder(new Border);
         
-        ObservableList<Umpire> data = FXCollections.observableArrayList(umpires);
-        FilteredList<Umpire> filteredData = new FilteredList<>(data, s -> true);
-
+        //data = FXCollections.observableArrayList(umpires);
+        FilteredList<Umpire> filteredData = new FilteredList<>(umpires, s -> true);
+        
+        
         HBox filterHBox = new HBox(5);
         filterHBox.setPadding(new Insets(2, 5, 2, 0));
         TextField filterInput = new TextField();
         filterInput.setPromptText("Umpire zoeken");
         filterInput.textProperty().addListener(obs -> {
             String filter = filterInput.getText();
-            
-            System.out.println("Text change: " + obs);
-            
+                        
             if (filter == null || filter.length() == 0) {
                 filteredData.setPredicate(s -> true);
                 
@@ -271,8 +342,13 @@ public class UmpireView {
                     MenuItem wisRij = new MenuItem("Wis umpire");
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
-                        int newIndex = clubs.indexOf(clubs.get(cell.getIndex()));
-                        clubs.remove(clubs.get(newIndex));
+                        int newIndex = umpires.indexOf(umpires.get(cell.getIndex()));
+                        database.deleteUmpireFromDatabase(umpires.get(newIndex).getUmpireLicentie());
+                        umpires.remove(umpires.get(newIndex));
+                        nieuwUmpire = Boolean.TRUE;
+                        // Refresh pane on the left side
+                        lpane = setDetails(umpireselection, nieuwUmpire);
+                        leftPane.setCenter(lpane);
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -299,7 +375,12 @@ public class UmpireView {
         return umpirelistview;
     }
     
-    
+    /** Paneel met umpire details en nieuwe umpire toevoegen
+     * 
+     * @param umpireselection
+     * @param nieuwUmpire
+     * @return 
+     */
     private Pane setDetails(Umpire umpireselection, Boolean nieuwUmpire) {
         Pane p = new Pane(newUmpire.NewUmpire(umpireselection, afdelingen, nieuwUmpire, clubs, umpires));
         return p;

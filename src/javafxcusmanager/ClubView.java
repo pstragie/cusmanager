@@ -5,7 +5,6 @@
  */
 package javafxcusmanager;
 
-import static java.lang.System.in;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
@@ -35,15 +34,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafxcusmanager.Club;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.utils.FontAwesomeIconFactory;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
-import java.util.stream.IntStream;
 import javafx.collections.FXCollections;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.text.Text;
 /**
  *
  * @author pieter

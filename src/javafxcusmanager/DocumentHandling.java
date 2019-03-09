@@ -199,7 +199,7 @@ public class DocumentHandling {
             } catch(IOException e) {
                 System.out.println("Error reading file: " + e);
             }
-            System.out.println("List: " + list);
+            //System.out.println("List: " + list);
         } else {
             // Dialog Wrong file!
             Alert alert = new Alert(AlertType.WARNING);
