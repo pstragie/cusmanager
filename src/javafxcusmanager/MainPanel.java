@@ -41,9 +41,12 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.sql.*;
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.FileChooser;
@@ -59,8 +62,9 @@ public class MainPanel {
     private TextField topPaneTextField, bottomPaneTextField;
     private static MenuBar mainMenu;
     private Pane umpirepanel;
+    public String jaartal = "2016";
     //public ObservableList<String> observableTabList;
-    public ObservableList<Afdeling> afdelingenlijst;
+    public ObservableList<Afdeling> afdelingen;
     public ObservableList<Club> clubs;
     public ObservableList<Team> teams;
     public ObservableList<Umpire> umpires;
@@ -72,6 +76,7 @@ public class MainPanel {
     private Pane centerPane = new Pane();
     public TabPane centerTabPane = new TabPane();
     private Afdelingen changeAfdelingenpane;
+    private AppSettings changeSettingspane;
     private ClubView clubview;
     private UmpireView umpireview;
     private UmpireModel umpiremodel;
@@ -79,14 +84,20 @@ public class MainPanel {
     private GameSchedule gameSchedule;
     private Database database = new Database();
     public Button resetButton;
-
-    public Pane MainPanel() {     
-        
-        
-        afdelingenlijst = FXCollections.observableArrayList();
+    private TextField clubfilterField;
+    private Preferences pref;
+    
+    /** MainPanel
+     * 
+     * @return Paneel
+     */
+    public Pane MainPanel() {    
+        pref = Preferences.userNodeForPackage(AppSettings.class);
+        jaartal = pref.get("Seizoen", Integer.toString(LocalDate.now().getYear()));
+        afdelingen = FXCollections.observableArrayList();
         // Get afdelingen from database
-        afdelingenlijst.addAll(database.getAllAfdelingenFromDatabase());
-        afdelingenlijst.addListener((ListChangeListener.Change<? extends Afdeling> change) -> { 
+        afdelingen.addAll(database.getAllAfdelingenFromDatabase());
+        afdelingen.addListener((ListChangeListener.Change<? extends Afdeling> change) -> { 
             while(change.next()) {
                 if(change.wasUpdated()) {
                     System.out.println("Update detected");
@@ -160,7 +171,8 @@ public class MainPanel {
                             for (Umpire additem: change.getAddedSubList()) {
                             System.out.println("Data " + change + " was added to umpires");
                             // Write to database: Done when addButton is pressed
-
+                            Comparator<Umpire> umpireComparator = Comparator.comparing(Umpire::getUmpireNaam);
+                            umpiremodel.umpirelijstPerafdeling.sort(umpireComparator);
                         }
                         for (Umpire remitem: change.getRemoved()) {
                             System.out.println("Umpire was removed: " + remitem);
@@ -240,7 +252,7 @@ public class MainPanel {
     
     public ArrayList<String> getAfdelingsnamenlijst() { 
         ArrayList<String> afdelingStrings = new ArrayList<>();
-        afdelingenlijst.forEach(afd -> afdelingStrings.add(afd.getAfdelingsNaam()));
+        afdelingen.forEach(afd -> afdelingStrings.add(afd.getAfdelingsNaam()));
     
         //observableTabList.addAll(tabs);
         return afdelingStrings;
@@ -260,7 +272,7 @@ public class MainPanel {
             Stage stage = new Stage();
             Scene scene = new Scene(UmpirePaneel(), 1000, 800);
             //stage.initStyle(StageStyle.UNIFIED);
-            stage.setAlwaysOnTop(true);
+            //stage.setAlwaysOnTop(true);
             stage.setTitle("Umpires beheren");
             stage.setScene(scene);
             stage.show();
@@ -309,7 +321,7 @@ public class MainPanel {
             Stage stage = new Stage();
             Scene scene = new Scene(ClubPaneel(), 800, 600);
             stage.setTitle("Clubs beheren");
-            stage.setAlwaysOnTop(true);
+            //stage.setAlwaysOnTop(true);
             stage.setScene(scene);
             stage.show();
             
@@ -345,9 +357,9 @@ public class MainPanel {
         
         afdelingenBeheren.setOnAction(e -> { 
             Stage stage = new Stage();
-            Scene scene = new Scene(newAfdelingPaneel(leftTabPane, rightTabPane, centerTabPane, afdelingenlijst));
+            Scene scene = new Scene(newAfdelingPaneel(leftTabPane, rightTabPane, centerTabPane, afdelingen));
             stage.setTitle("Afdelingen wijzigen");
-            stage.setAlwaysOnTop(true);
+            //stage.setAlwaysOnTop(true);
             stage.setScene(scene);
             stage.show();
         });
@@ -364,18 +376,39 @@ public class MainPanel {
                 for(Afdeling afd : arrayAfdelingen) {
                     database.insertNewAfdelingToDatabase(afd.getAfdelingsNaam(), afd.getAfdelingsCategorie(), Boolean.TRUE);
                 }
-                afdelingenlijst.clear();
-                afdelingenlijst.addAll(database.getAllAfdelingenFromDatabase());
+                afdelingen.clear();
+                afdelingen.addAll(database.getAllAfdelingenFromDatabase());
             }
+        });
+        
+        // Menu Settings
+        Menu menuSettings = new Menu("Settings");
+        menubar.getMenus().add(menuSettings);
+        MenuItem settingsWijzigen = new MenuItem("Aanpassen");
+        menuSettings.getItems().add(settingsWijzigen);
+        settingsWijzigen.setOnAction(setting -> {
+            Stage stage = new Stage();
+            Scene scene = new Scene(newSettingsPane());
+            stage.setTitle("Settings");
+            //stage.setAlwaysOnTop(true);
+            stage.setScene(scene);
+            stage.show();
+        
         });
         return menubar;
     }
     
+    /** Get FilePath
+     * 
+     * @param stage
+     * @param naam
+     * @return 
+     */
     public String getFilePath(Stage stage, String naam) {
         
         
             FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Bestand selecteren");
+            fileChooser.setTitle("Bestand selecteren: " + naam);
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
             fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
             File selectedFile = fileChooser.showOpenDialog(stage);
@@ -462,6 +495,10 @@ public class MainPanel {
         return vbox;
     }
     
+    /** Reset right side tabPane
+     * 
+     * @param sideTabPane 
+     */
     public void resetRightTabpaneSide(TabPane sideTabPane) {
         // Reset the tabpane to show all tabs
         ObservableList<Afdeling> tablist = getTabsList();
@@ -497,15 +534,15 @@ public class MainPanel {
                 System.out.println("Text changed from "+oldText+" to "+newText);
                 
                 if (newText == null || newText.isEmpty()) {
-                    //System.out.println("current observableTabList: " + afdelingenlijst);
-                    //System.out.println("Nothing to filter: " + afdelingenlijst);
+                    //System.out.println("current observableTabList: " + afdelingen);
+                    //System.out.println("Nothing to filter: " + afdelingen);
                     // Reset the tabpane to show all tabs
                     sideTabPane.getTabs().clear();
                     
                     sideTabPane.getTabs().addAll(getUmpireTabArrayList());
                 } else {
                     //System.out.println("Filter active: " + newText);
-                    //System.out.println("Filtered List = " + afdelingenlijst.filtered(tab -> tab.getAfdelingsNaam().contains(newText)));
+                    //System.out.println("Filtered List = " + afdelingen.filtered(tab -> tab.getAfdelingsNaam().contains(newText)));
                     
                     sideTabPane.getTabs().clear();
                     sideTabPane.getTabs().addAll(getUmpireTabArrayList());
@@ -529,16 +566,22 @@ public class MainPanel {
         return vbox;
     }
     
+    /** Reset side tabPanes
+     * 
+     */
     public void resetSideTabPanes() {
         leftTabPane.getTabs().clear();
         leftTabPane.getTabs().addAll(getUmpireTabArrayList());
         rightTabPane.getTabs().clear();
         rightTabPane.getTabs().addAll(getClubTabArrayList());
     }
+    
+    /** Creates a VBox with textfield and button for filtering tabpanes
+     * 
+     * @param sideTabPane
+     * @return 
+     */
     public VBox createHorBoxFilterClubs(TabPane sideTabPane) {
-        /** Creates a VBox with textfield and button for filtering tabpanes
-         * 
-         */
         VBox vbox = new VBox();
         Label clubLabel = new Label("Teams");
         clubLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
@@ -547,9 +590,9 @@ public class MainPanel {
         vbox.getChildren().add(clubLabel);
         
         HBox hbox = new HBox();
-            TextField filterField = new TextField();
-            filterField.setPromptText("Filter tabs");
-            filterField.textProperty().addListener((obs, oldText, newText) -> {
+            clubfilterField = new TextField();
+            clubfilterField.setPromptText("Filter tabs");
+            clubfilterField.textProperty().addListener((obs, oldText, newText) -> {
                 
                 if (newText == null || newText.isEmpty()) {
                     // Reset the tabpane to show all tabs
@@ -570,22 +613,28 @@ public class MainPanel {
             filterButton.setOnAction(event -> {
                 sideTabPane.getTabs().clear();
                 sideTabPane.getTabs().addAll(getClubTabArrayList());
-                filterField.setText("");
+                clubfilterField.setText("");
             });
             hbox.getStyleClass().add("bordered-titled-border");
-            hbox.setHgrow(filterField, Priority.ALWAYS);
-            hbox.getChildren().add(filterField);
+            hbox.setHgrow(clubfilterField, Priority.ALWAYS);
+            hbox.getChildren().add(clubfilterField);
             hbox.getChildren().add(filterButton);
             vbox.getChildren().add(hbox);
         return vbox;
     }
     
+    /** Maak een VBox om tabbladen te filteren
+     * 
+     * @param centerTabPane
+     * @return VBox
+     */
     public VBox createHorBoxFilterGames(TabPane centerTabPane) {
         /** Creates a VBox with textfield and button for filtering tabpanes
          * 
          */
         VBox vbox = new VBox();
-        Label gameLabel = new Label("Game Schedule");
+        String seizoensstring = pref.get("Seizoen", Integer.toString(LocalDate.now().getYear()));
+        Label gameLabel = new Label("Wedstrijdschema " + seizoensstring);
         gameLabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
         gameLabel.setAlignment(Pos.CENTER);
         vbox.setAlignment(Pos.CENTER);
@@ -594,7 +643,7 @@ public class MainPanel {
             TextField filterField = new TextField();
             filterField.setPromptText("Filter tabs");
             filterField.textProperty().addListener((obs, oldText, newText) -> {
-                
+                clubfilterField.setText(newText);
                 if (newText == null || newText.isEmpty()) {
                     // Reset the tabpane to show all tabs
                     centerTabPane.getTabs().clear();
@@ -626,11 +675,11 @@ public class MainPanel {
     }
     
     public ObservableList<Afdeling> getTabsList() {
-        return afdelingenlijst;
+        return afdelingen;
     }
     
      public void setTabs(ObservableList<Afdeling> tabs) {
-        this.afdelingenlijst = tabs;
+        this.afdelingen = tabs;
     }
     
      
@@ -658,11 +707,11 @@ public class MainPanel {
          */
         umpiremodel = new UmpireModel(umpires);
         System.out.println("Get Tabs from file and create umpire content\n________________");
-        ArrayList<String> listOfItems = new ArrayList<>();
-        listOfItems.addAll(getAfdelingsnamenlijst());
+        ArrayList<Afdeling> listOfItems = new ArrayList<>();
+        listOfItems.addAll(database.getAllAfdelingenFromDatabase());
         ArrayList<Tab> tabs = new ArrayList<>();
         listOfItems.forEach(a -> {
-            Tab tab = new Tab(a);
+            Tab tab = new Tab(a.getAfdelingsNaam());
             tab.setContent(umpiremodel.createUmpireContent(a)); // Set filtered content
             tabs.add(tab);
             
@@ -674,7 +723,7 @@ public class MainPanel {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
-        gameSchedule = new GameSchedule();
+        gameSchedule = new GameSchedule(teams, afdelingen, clubs, umpires, jaartal);
         System.out.println("Get Tabs from file and create club content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
         listOfItems.addAll(getAfdelingsnamenlijst());
@@ -683,6 +732,10 @@ public class MainPanel {
             Tab tab = new Tab(a);
             tab.setContent(gameSchedule.createCalendar(a)); // Set filtered content
             tabs.add(tab);
+            tab.setOnSelectionChanged(tabevent -> {
+                // Automatically filter team afdelingen based on selected tab in game schedule.
+                clubfilterField.setText(a);
+            });
             
         });        
         return tabs;
@@ -706,21 +759,40 @@ public class MainPanel {
         return border;
     }
     
+    private Pane newSettingsPane() {
+        Pane pane = new Pane();
+        changeSettingspane = new AppSettings();
+        pane.getChildren().add(changeSettingspane.settingsPane());
+        pane.setPadding(new Insets(10, 10, 10, 10));
+        return pane;
+    }
+    /** Open nieuw venster om clubs te beheren
+     * 
+     * @return Paneel
+     */
     public Pane ClubPaneel() {
         
-            clubview = new ClubView(clubs, teams, afdelingenlijst);
+            clubview = new ClubView(clubs, teams, afdelingen);
             return clubview.clubPane();
     }
     
+    /** Open nieuw venster om umpires te beheren
+     * 
+     * @return Paneel
+     */
     public Pane UmpirePaneel() {
-            umpireview = new UmpireView(umpires, clubs, teams, afdelingenlijst);
+            umpireview = new UmpireView(umpires, clubs, teams, afdelingen);
             return umpireview.umpirePane();
     }
+    
+    /** Afdeling toevoegen
+     * 
+     */
     public void addAfdeling() {
         try {
             // Check if afdeling exists before adding to database --> Error will occur
             //database.insertNewAfdelingToDatabase("8BB", "baseball", Boolean.TRUE);
-            for (Afdeling afd : afdelingenlijst) {
+            for (Afdeling afd : afdelingen) {
                 if(database.checkIfAfdelingExists("APP.Afdelingen", afd.getAfdelingsNaam())) {
                     System.out.println("exists: " + afd.getAfdelingsNaam());
                 } else {
@@ -735,6 +807,9 @@ public class MainPanel {
         }
     }
     
+    /** Club toevoegen
+     * 
+     */
     public void addClub() {
         try {
             // Check if afdeling exists before adding to database --> Error will occur

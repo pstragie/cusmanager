@@ -470,12 +470,16 @@ public class Database {
                 String j = rs.getString("afdeling");
                 Boolean k = rs.getBoolean("actief");
                 ArrayList<Afdeling> afdArray = new ArrayList<>();
-                String[] s = j.split(",");
-                for (String parts : s) {
-                    String[] p = parts.split(":");
-                    Afdeling tempafd = new Afdeling(p[0], p[1]);
-                                
-                    afdArray.add(tempafd);
+                if (j == null || j.isEmpty()) {
+                    afdArray = new ArrayList<>();
+                } else {
+                    String[] s = j.split(",");
+                    for (String parts : s) {
+                        String[] p = parts.split(":");
+                        Afdeling tempafd = new Afdeling(p[0], p[1]);
+
+                        afdArray.add(tempafd);
+                    }
                 }
                 // Get Object Club from list based on clubnaam
                 Club uclub = getClubFromDatabase(i);
@@ -526,12 +530,17 @@ public class Database {
                 String j = rs.getString("afdeling");
                 Boolean k = rs.getBoolean("actief");
                 ArrayList<Afdeling> afdArray = new ArrayList<>();
-                String[] s = j.split(",");
-                for (String parts : s) {
-                    String[] p = parts.split(":");
-                    Afdeling tempafd = new Afdeling(p[0], p[1]);
-                                
-                    afdArray.add(tempafd);
+                
+                if (j == null || j.isEmpty()) {
+                    afdArray = new ArrayList<>();
+                } else {
+                    String[] s = j.split(",");
+                    for (String parts : s) {
+                        String[] p = parts.split(":");
+                        Afdeling tempafd = new Afdeling(p[0], p[1]);
+
+                        afdArray.add(tempafd);
+                    }
                 }
                 // Get Object Club from list based on clubnaam
                 Club uclub = getClubFromDatabase(i);

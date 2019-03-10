@@ -26,8 +26,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.MonthDay;
+import java.time.temporal.IsoFields;
+import java.time.temporal.TemporalAdjusters;
+import java.util.Calendar;
 import static java.util.Calendar.*;
 import java.util.List;
 import javafx.beans.binding.Bindings;
@@ -39,18 +44,15 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TableRow;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.DataFormat;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BackgroundFill;
-import javafx.util.Callback;
 
-/**
- *
- * @author pieter
+
+/** Wedstrijdschema
+ * 
+ * @author Pieter Stragier <pstragier@gmail.be>
+ * @version 1.0
+ * @since 1.0
  */
 public class GameSchedule {
     
@@ -58,18 +60,29 @@ public class GameSchedule {
     private DocumentHandling documentHandler;
     public int startOfWeekCount = 0; // 0 = Runs with Year Calendar (January 1); 1 = Runs with competition start (date can be set);
     private final TableView<Game> table = new TableView<>();
-    private MainPanel mainPanel;
     private ObservableList<Game> gameData;
     private ObservableList<Team> teams;
+    private ObservableList<Afdeling> afdelingen;
+    private ObservableList<Club> clubs;
+    private ObservableList<Umpire> umpires;
     private ObservableList<LocalTime> uren;
     private ArrayList<Umpire> emptyArray = new ArrayList<>();
-    
+    private String colorCellFilled = "lightgreen";
+    private String colorCellWarning = "orange";
+    private String colorCellOK = "green";
+    private LocalDate desiredDate;
+    private String seizoen;
     //private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
     private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
 
     
     // Constructor
-    public GameSchedule() {
+    public GameSchedule(ObservableList<Team> teams, ObservableList<Afdeling> afdelingen, ObservableList<Club> clubs, ObservableList<Umpire> umpires, String seizoen) {
+        this.teams = teams;
+        this.afdelingen = afdelingen;
+        this.clubs = clubs;
+        this.umpires = umpires;
+        this.seizoen = seizoen;
         // Load schedule data from the specified file. The current scheduel data will be replaced
         gameData = FXCollections.observableArrayList();
         gameData.addListener((ListChangeListener.Change<? extends Game> change) -> { 
@@ -95,22 +108,37 @@ public class GameSchedule {
                 }
             });
         
-        
-        
-        
-        gameData.add(new Game("Gold", "1", MonthDay.of(APRIL, 14), LocalTime.of(2, 30), "Frogs", "Wolverines", "Isabelle Verelst", "Lilly Roos", null, null));
-        gameData.add(new Game("Gold", "1", MonthDay.of(APRIL, 14), LocalTime.of(14, 00), "Wielsbeke", "Doornik", "Pieter Stragier", "Lilly Roos", null, null));
-        gameData.add(new Game("Gold", "2", MonthDay.of(APRIL, 22), LocalTime.of(14, 00), "Ghent", "Zottegem", "Hermelien", null, null, null));
-        gameData.add(new Game("1BB", "1", MonthDay.of(APRIL, 14), LocalTime.of(14, 00), "Eagles", "Pioneers", "Utah", null, null, null));
+        afdelingen.forEach(a -> {
+            for (int calendarWeek=1; calendarWeek<4; calendarWeek++) {
+                desiredDate = getDate(calendarWeek, seizoen);
                 
-        // Add 51 empty weeks
-        for(int i=2; i<5; i++) {
-            gameData.add(new Game("Gold", Integer.toString(i), MonthDay.of(APRIL, 14), LocalTime.of(14, 00), null, null, null, null, null, null));
-        }
+                gameData.add(new Game(a.getAfdelingsNaam(), Integer.toString(calendarWeek), MonthDay.of(desiredDate.getMonth(), desiredDate.getDayOfMonth()), null, null, null, null, null, null, null));
+            }
+        });
+        
+        /*
+        gameData.add(new Game("Gold BB", "1", MonthDay.of(APRIL, 14), LocalTime.of(2, 30), "Frogs", "Wolverines", "Isabelle Verelst", "Lilly Roos", null, null));
+        gameData.add(new Game("Gold BB", "1", MonthDay.of(APRIL, 14), LocalTime.of(14, 00), "Wielsbeke", "Doornik", "Pieter Stragier", "Lilly Roos", null, null));
+        gameData.add(new Game("Gold BB", "2", MonthDay.of(APRIL, 22), LocalTime.of(14, 00), "Ghent", "Zottegem", "Hermelien", null, null, null));
+        gameData.add(new Game("1BB", "1", MonthDay.of(APRIL, 14), LocalTime.of(14, 00), "Eagles", "Pioneers", "Utah", null, null, null));
+        */        
+        
         
     }
 
-    
+    /** Get desiredDate
+     * 
+     * @param calendarWeek
+     * @param seizoen
+     * @return 
+     */
+    public LocalDate getDate(int calendarWeek, String seizoen) {
+        LocalDate desiredDate = LocalDate.ofYearDay(Integer.parseInt(seizoen.trim()), 1)
+                        .with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, calendarWeek)
+                        .with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY));
+        
+        return desiredDate;
+    }
     public ObservableList<Game> gameData() { return gameData; }
 
         public List<Game> getAccounts() {
@@ -147,7 +175,7 @@ public class GameSchedule {
         
         yearCalendar.setPadding(new Insets(5, 0, 5, 0));
         if(startOfWeekCount == 0) {
-            for(int week=1; week<10; week++) {
+            for(int week=1; week<52; week++) {
                 vbox.getChildren().add(createWeekCalendar(afdeling, week));
             }
         } else {
@@ -163,6 +191,7 @@ public class GameSchedule {
     
     public VBox createWeekCalendar(String afdeling, int week) {
         // Get data for this week and afdeling!!!
+        
         FilteredList<Game> firstFilter = gameData.filtered(a -> a.getAfdelingString().equals(afdeling));
         FilteredList<Game> secondFilter = firstFilter.filtered(w -> w.getWeekString().equals(Integer.toString(week)));
         // Setup the tableview
@@ -237,9 +266,11 @@ public class GameSchedule {
                     super.updateItem(item, empty);
                     if (item == null || empty) {
                         setText(null);
+                        setStyle("");
                         setGraphic(null);
                     } else {
                         setText(item);
+                        setStyle("-fx-background-color: '" + colorCellFilled + "'");
                         setGraphic(null);
                     }
                 }
@@ -271,18 +302,28 @@ public class GameSchedule {
                 });    
             
             
-            cell.setOnDragOver(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent event) {
+            cell.setOnDragOver((DragEvent event) -> {
                 // data is dragged over the target 
                 Dragboard db = event.getDragboard();
-                if (event.getDragboard().hasString()){
+                Class gSource = event.getGestureSource().getClass().getEnclosingClass();
+                if (event.getDragboard().hasString() && gSource.toString().contains("ClubModel")) {
+                    if (cell.getItem() != null) {
+                        cell.setStyle("-fx-background-color: '" + colorCellWarning + "'");
+                    } else {
+                        cell.setStyle("-fx-background-color: '" + colorCellOK + "'");
+                    }
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
                 event.consume();
+            });
+            cell.setOnDragExited((DragEvent event) -> {
+                // drag has exited
+                if (cell.getItem() != null) {
+                    cell.setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                } else {
+                    cell.setStyle("");
                 }
             });
-
             // HERE IS HOW TO GET THE ROW AND CELL INDEX
             cell.setOnDragDetected(eh -> {
                 // Get the row index of this cell
@@ -303,17 +344,18 @@ public class GameSchedule {
 
                 Dragboard db = event.getDragboard();
                 boolean success = false;
+                
                 if (event.getDragboard().hasString()) {            
 
                     String text = db.getString();
-                    FilteredList filt = mainPanel.teams.filtered(t -> t.getTeamNaam().equals(text));
+                    FilteredList filt = teams.filtered(t -> t.getTeamNaam().equals(text));
                     System.out.println("filter: " + filt);
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
                         int sprong = rowIndex - secondFilter.size();
                         for(int i=0; i<sprong; i++) {
-                            gameData.add(new Game(afdeling, Integer.toString(week), MonthDay.now(), LocalTime.of(14, 00), null, null, null, null, null, null));                            
+                            gameData.add(new Game(afdeling, Integer.toString(week), MonthDay.of(getDate(week, seizoen).getMonth(), getDate(week, seizoen).getDayOfMonth()), LocalTime.of(14, 00), null, null, null, null, null, null));                            
                         }
-                        gameData.add(new Game(afdeling, Integer.toString(week), MonthDay.now(), LocalTime.of(14, 00), text, null, null, null, null, null));                            
+                        gameData.add(new Game(afdeling, Integer.toString(week), MonthDay.of(getDate(week, seizoen).getMonth(), getDate(week, seizoen).getDayOfMonth()), LocalTime.of(14, 00), text, null, null, null, null, null));                            
 
                     } else {
                         System.out.println("Data inserted in week: " + Integer.toString(week));
@@ -346,9 +388,11 @@ public class GameSchedule {
                         super.updateItem(item, empty);
                         if (item == null || empty) {
                             setText(null);
+                            setStyle("");
                             setGraphic(null);
                         } else {
                             setText(item);
+                            setStyle("-fx-background-color: '" + colorCellFilled + "'");
                             setGraphic(null);
                         }
                     }
@@ -379,15 +423,26 @@ public class GameSchedule {
                 }
                 }); 
                 
-            cell.setOnDragOver(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent event) {
+            cell.setOnDragOver((DragEvent event) -> {
                 // data is dragged over the target 
                 Dragboard db = event.getDragboard();
-                if (event.getDragboard().hasString()){
+                Class gSource = event.getGestureSource().getClass().getEnclosingClass();
+                if (event.getDragboard().hasString() && gSource.toString().contains("ClubModel")) {
+                    if (cell.getItem() != null) {
+                        cell.setStyle("-fx-background-color: '" + colorCellWarning + "'");
+                    } else {
+                        cell.setStyle("-fx-background-color: '" + colorCellOK + "'");
+                    }
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
                 event.consume();
+            });
+            cell.setOnDragExited((DragEvent event) -> {
+                // drag has exited
+                if (cell.getItem() != null) {
+                    cell.setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                } else {
+                    cell.setStyle("");
                 }
             });
 
@@ -414,9 +469,9 @@ public class GameSchedule {
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
                         int sprong = rowIndex - secondFilter.size();
                         for(int i=0; i<sprong; i++) {
-                            gameData.add(new Game(afdeling, Integer.toString(week), null, null, null, null, null, null, null, null));                            
+                            gameData.add(new Game(afdeling, Integer.toString(week), MonthDay.of(getDate(week, seizoen).getMonth(), getDate(week, seizoen).getDayOfMonth()), null, null, null, null, null, null, null));                            
                         }
-                       gameData.add(new Game(afdeling, Integer.toString(week), null, null, null, text, null, null, null, null));
+                       gameData.add(new Game(afdeling, Integer.toString(week), MonthDay.of(getDate(week, seizoen).getMonth(), getDate(week, seizoen).getDayOfMonth()), null, null, text, null, null, null, null));
                     } else {
                         // get index of filteredGame in gameData
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
@@ -450,9 +505,11 @@ public class GameSchedule {
                     super.updateItem(item, empty);
                     if (item == null || empty) {
                         setText(null);
+                        setStyle("");
                         setGraphic(null);
                     } else {
                         setText(item);
+                        setStyle("-fx-background-color: '" + colorCellFilled + "'");
                         setGraphic(null);
                     }
                 }
@@ -482,15 +539,26 @@ public class GameSchedule {
                 }
                 }); 
                 
-            cell.setOnDragOver(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent event) {
+            cell.setOnDragOver((DragEvent event) -> {
                 // data is dragged over the target 
                 Dragboard db = event.getDragboard();
-                if (event.getDragboard().hasString()){
-                    event.acceptTransferModes(TransferMode.COPY);
+                Class gSource = event.getGestureSource().getClass().getEnclosingClass();
+                if (event.getDragboard().hasString() && gSource.toString().contains("UmpireModel")) {
+                    if (cell.getItem() != null) {
+                        cell.setStyle("-fx-background-color: '" + colorCellWarning + "'");
+                    } else {
+                        cell.setStyle("-fx-background-color: '" + colorCellOK + "'");
+                    }
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
                 event.consume();
+            });
+            cell.setOnDragExited((DragEvent event) -> {
+                // drag has exited
+                if (cell.getItem() != null) {
+                    cell.setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                } else {
+                    cell.setStyle("");
                 }
             });
             // HERE IS HOW TO GET THE ROW AND CELL INDEX
@@ -550,9 +618,11 @@ public class GameSchedule {
                     super.updateItem(item, empty);
                     if (item == null || empty) {
                         setText(null);
+                        setStyle("");
                         setGraphic(null);
                     } else {
                         setText(item);
+                        setStyle("-fx-background-color: '" + colorCellFilled + "'");
                         setGraphic(null);
                     }
                 }
@@ -583,15 +653,26 @@ public class GameSchedule {
                 }
                 }); 
             
-            cell.setOnDragOver(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent event) {
+            cell.setOnDragOver((DragEvent event) -> {
                 // data is dragged over the target 
                 Dragboard db = event.getDragboard();
-                if (event.getDragboard().hasString()){
-                    event.acceptTransferModes(TransferMode.COPY);
+                Class gSource = event.getGestureSource().getClass().getEnclosingClass();
+                if (event.getDragboard().hasString() && gSource.toString().contains("UmpireModel")) {
+                    if (cell.getItem() != null) {
+                        cell.setStyle("-fx-background-color: '" + colorCellWarning + "'");
+                    } else {
+                        cell.setStyle("-fx-background-color: '" + colorCellOK + "'");
+                    }
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
                 event.consume();
+            });
+            cell.setOnDragExited((DragEvent event) -> {
+                // drag has exited
+                if (cell.getItem() != null) {
+                    cell.setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                } else {
+                    cell.setStyle("");
                 }
             });
             // HERE IS HOW TO GET THE ROW AND CELL INDEX
@@ -650,9 +731,11 @@ public class GameSchedule {
                     super.updateItem(item, empty);
                     if (item == null || empty) {
                         setText(null);
+                        setStyle("");
                         setGraphic(null);
                     } else {
                         setText(item);
+                        setStyle("-fx-background-color: '" + colorCellFilled + "'");
                         setGraphic(null);
                     }
                 }
@@ -683,15 +766,26 @@ public class GameSchedule {
                 }
                 }); 
             
-            cell.setOnDragOver(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent event) {
+            cell.setOnDragOver((DragEvent event) -> {
                 // data is dragged over the target 
                 Dragboard db = event.getDragboard();
-                if (event.getDragboard().hasString()){
-                    event.acceptTransferModes(TransferMode.COPY);
+                Class gSource = event.getGestureSource().getClass().getEnclosingClass();
+                if (event.getDragboard().hasString() && gSource.toString().contains("UmpireModel")) {
+                    if (cell.getItem() != null) {
+                        cell.setStyle("-fx-background-color: '" + colorCellWarning + "'");
+                    } else {
+                        cell.setStyle("-fx-background-color: '" + colorCellOK + "'");
+                    }
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
                 event.consume();
+            });
+            cell.setOnDragExited((DragEvent event) -> {
+                // drag has exited
+                if (cell.getItem() != null) {
+                    cell.setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                } else {
+                    cell.setStyle("");
                 }
             });
             // HERE IS HOW TO GET THE ROW AND CELL INDEX
@@ -750,9 +844,11 @@ public class GameSchedule {
                     super.updateItem(item, empty);
                     if (item == null || empty) {
                         setText(null);
+                        setStyle("");
                         setGraphic(null);
                     } else {
                         setText(item);
+                        setStyle("-fx-background-color: '" + colorCellFilled + "'");
                         setGraphic(null);
                     }
                 }
@@ -783,17 +879,29 @@ public class GameSchedule {
                 }
                 }); 
             
-            cell.setOnDragOver(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent event) {
+            cell.setOnDragOver((DragEvent event) -> {
                 // data is dragged over the target 
                 Dragboard db = event.getDragboard();
-                if (event.getDragboard().hasString()){
-                    event.acceptTransferModes(TransferMode.COPY);
+                Class gSource = event.getGestureSource().getClass().getEnclosingClass();
+                if (event.getDragboard().hasString() && gSource.toString().contains("UmpireModel")) {
+                    if (cell.getItem() != null) {
+                        cell.setStyle("-fx-background-color: '" + colorCellWarning + "'");
+                    } else {
+                        cell.setStyle("-fx-background-color: '" + colorCellOK + "'");
+                    }
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
                 event.consume();
+            });
+            cell.setOnDragExited((DragEvent event) -> {
+                // drag has exited
+                if (cell.getItem() != null) {
+                    cell.setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                } else {
+                    cell.setStyle("");
                 }
             });
+            
             // HERE IS HOW TO GET THE ROW AND CELL INDEX
             cell.setOnDragDetected(new EventHandler <MouseEvent>() {
                 public void handle(MouseEvent event) {
@@ -816,11 +924,7 @@ public class GameSchedule {
                 }
             });
 
-            cell.setOnDragExited(exit -> {
-                System.out.println("drag exited");
-                
-                
-            });
+            
             cell.setOnDragDropped(new EventHandler<DragEvent>() {
                 
                 @Override

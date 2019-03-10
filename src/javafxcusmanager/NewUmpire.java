@@ -30,6 +30,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Popup;
 
 /**
  *
@@ -156,6 +157,18 @@ public class NewUmpire {
                 emailtf = new TextField();
                 emailtf.setAlignment(Pos.CENTER_LEFT);
                 actiefCheckbox = new CheckBox();
+                
+                actiefCheckbox.setOnMouseEntered(event -> {
+                    VBox popUpVBox = new VBox();
+                    popUpVBox.getChildren().add(new Label("Zet umpire actief/niet-actief"));
+                    popUpVBox.getChildren().add(new Label("Bij niet-actief zal de umpire niet zichtbaar \nzijn in de lijst naast het wedstrijdschema."));
+                    final Popup popup = new Popup();
+                    popup.setHeight(30);
+                    popup.setWidth(50);
+                    popup.setHideOnEscape(true);
+                    popup.getContent().addAll(popUpVBox);
+                });
+                
                 if (!nieuw) {
                     System.out.println("umpireList: " + umpireList);
                     System.out.println("huisnummer: " + umpireList.get(0).getUmpireHuisnummer());
@@ -198,17 +211,17 @@ public class NewUmpire {
                 }
                 
 		// Maak de labels
-		vnaamLabel = new Label( "Voornaam" );
-		fnaamLabel = new Label( "Familienaam" );
+		vnaamLabel = new Label( "Voornaam *" );
+		fnaamLabel = new Label( "Familienaam *" );
                 telefoonLabel = new Label("Telefoon");
                 emailLabel = new Label("Email");
-                afdelingenLabel = new Label( "Afdelingen" );
+                afdelingenLabel = new Label( "Afdelingen *" );
 		clubLabel = new Label( "Club" );
 		straatLabel = new Label( "Straat" );
 		huisnrLabel = new Label( "Huisnummer" );
 		pcLabel = new Label( "Postcode" );
 		stadLabel = new Label( "Stad" );
-		licentieLabel = new Label( "Licentie" );
+		licentieLabel = new Label( "Licentie *" );
                 actiefLabel = new Label("Actief");
 		
                 

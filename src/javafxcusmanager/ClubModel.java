@@ -26,12 +26,14 @@ import javafx.scene.text.Text;
 
 /**
  *
- * @author pieter
+ * @author Pieter Stragier
+ * @version 1.0
+ * @since 1.0
  */
 public class ClubModel {
     
-        private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
-        private ObservableList<String> teamlijstPerafdeling;
+        private final ObjectProperty<ListCell<Team>> dragSource = new SimpleObjectProperty<>();
+        private ObservableList<Team> teamlijstPerafdeling;
         private ObservableList<Club> clubs;
         private ObservableList<Team> teams;
         
@@ -41,11 +43,16 @@ public class ClubModel {
             this.teams = teams;
 
 	}
-
+        
+        /** Create List of teams
+         * 
+         * @param afd
+         * @return VBox with listview
+         */
 	public VBox createClubContent(String afd) {
-            ListView<String> clubListview = new ListView<>();
+            ListView<Team> clubListview = new ListView<>();
             teamlijstPerafdeling = FXCollections.observableArrayList();
-            teamlijstPerafdeling.addListener((ListChangeListener.Change<? extends String> change) -> { 
+            teamlijstPerafdeling.addListener((ListChangeListener.Change<? extends Team> change) -> { 
                 while(change.next()) {
                     if(change.wasUpdated()) {
                         System.out.println("Update detected");
@@ -73,39 +80,45 @@ public class ClubModel {
                     for(Team t : arrayteam) {
                         //System.out.println("Visible: " + c.getVisible().booleanValue());
                         if (t.getTeamAfdeling().getAfdelingsNaam().equals(afd) && c.getVisible().booleanValue() == Boolean.TRUE) {
-                            teamlijstPerafdeling.add(t.getTeamNaam());
+                            teamlijstPerafdeling.add(t);
                         }
                     }
                 });
             }
-            ObservableList<String> data = FXCollections.<String>observableArrayList(teamlijstPerafdeling);
-            clubListview.getItems().addAll(data);
+            //ObservableList<Team> data = FXCollections.observableArrayList(teamlijstPerafdeling);
+            clubListview.getItems().addAll(teamlijstPerafdeling);
             clubListview.setPrefSize(150, 800);
             clubListview.setOrientation(Orientation.VERTICAL);
             clubListview.setCellFactory(lv -> {
-                ListCell<String> cell = new ListCell<String>() {
+                ListCell<Team> cell = new ListCell<Team>() {
                     @Override
-                    public void updateItem(String item, boolean empty) {
+                    public void updateItem(Team item, boolean empty) {
                         super.updateItem(item, empty);
-                        setText(item);
+                        if (empty || item == null) {
+                            setText(null);
+                        } else {
+                            setText(item.getTeamNaam());
+                        }
                     }
                 };
                 cell.setOnDragDetected(event -> {
                    if (! cell.isEmpty()) {
                        Dragboard db = cell.startDragAndDrop(TransferMode.COPY);
                        ClipboardContent cc = new ClipboardContent();
-                       cc.putString(cell.getItem());
+                       cc.putString(cell.getItem().getTeamNaam());
                        db.setContent(cc);
                        dragSource.set(cell);
                    }
-               });
-
-               cell.setOnDragOver(event -> {
-                   Dragboard db = event.getDragboard();
-                   if (db.hasString()) {
-                       event.acceptTransferModes(TransferMode.MOVE);
-                   }
-               });
+                });
+                
+                
+                
+                cell.setOnDragOver(event -> {
+                    Dragboard db = event.getDragboard();
+                    if (db.hasString()) {
+                        event.acceptTransferModes(TransferMode.MOVE);
+                    }
+                });
 
                //cell.setOnDragDone(event -> clubListview.getItems().remove(cell.getItem()));
 
@@ -116,7 +129,7 @@ public class ClubModel {
                        // listView.getItems().add(db.getString());
                        // but more generally:
 
-                       ListCell<String> dragSourceCell = dragSource.get();
+                       ListCell<Team> dragSourceCell = dragSource.get();
                        clubListview.getItems().add(dragSourceCell.getItem());
                        event.setDropCompleted(true);
                        dragSource.set(null);

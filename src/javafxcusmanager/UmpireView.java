@@ -128,6 +128,7 @@ public class UmpireView {
         opslaan = new Button( "Opslaan" );
         opslaan.setOnAction((ActionEvent event) -> {
             // Wijzigingen opslaan in database
+            
             if (newUmpire.licentietf.getText() == null || "".equals(newUmpire.licentietf.getText())) {
                 System.out.println("Licentienummer mag niet leeg zijn!");
                 Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -135,18 +136,37 @@ public class UmpireView {
                 alert.setHeaderText("Licentienummer mag niet leeg zijn!");
                 alert.setContentText("Vul een uniek licentienummer in.");
                 alert.showAndWait();
-            } else {
+            } else if (newUmpire.afdelingenArray == null || newUmpire.afdelingenArray.isEmpty()) {
+                System.out.println("Afdeling mag niet leeg zijn!");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Waarschuwing");
+                alert.setHeaderText("Geen afdelingen gekozen.");
+                alert.setContentText("Selecteer minstens één afdeling.");
+                alert.showAndWait();
+            } else if ((newUmpire.familienaamtf.getText() == null || "".equals(newUmpire.familienaamtf.getText())) && (newUmpire.voornaamtf.getText() == null || "".equals(newUmpire.voornaamtf.getText()))) {
+                System.out.println("Naam mag niet leeg zijn!");
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Waarschuwing");
+                alert.setHeaderText("Geen naam ingevuld!");
+                alert.setContentText("Vul een voornaam en/of een familienaam in.");
+                alert.showAndWait();
+            }else {
                 // Convert afdeling to 1BB:Baseball and convert to String (to fit database)
                 ArrayList<String> afdWithDis = new ArrayList<>();
-                newUmpire.afdelingenArray.forEach((a) -> {
-                    afdWithDis.add(a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie());
-                });
                 ArrayList<Afdeling> afdArray2 = new ArrayList<>();
-                newUmpire.afdelingenArray.forEach((a) -> {
-                    afdArray2.add(a);
-                });
-                String afdelingArrayString = String.join(",", afdWithDis);
-
+                String afdelingArrayString = null;
+                if (newUmpire.afdelingenArray.isEmpty()) {
+                    afdelingArrayString = null;
+                    //afdArray2 = new ArrayList<>();
+                } else {
+                    newUmpire.afdelingenArray.forEach((a) -> {
+                        afdWithDis.add(a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie());
+                    });
+                    newUmpire.afdelingenArray.forEach((a) -> {
+                        afdArray2.add(a);
+                    });
+                    afdelingArrayString = String.join(",", afdWithDis);
+                }
                 System.out.println("nieuw bool = " + nieuwUmpire);
                 String clubstring = null;
                 if (newUmpire.clubComboBox.getValue() == null) {
@@ -330,7 +350,7 @@ public class UmpireView {
                     MenuItem verbergen = new MenuItem("Umpire actief/niet actief");
                     cm.getItems().add(verbergen);
                     verbergen.setOnAction(wiscel -> {
-                        System.out.println("Verberg teams");
+                        System.out.println("Verberg umpire");
                         int newIndex = umpires.indexOf(umpires.get(cell.getIndex()));
                         if (umpires.get(newIndex).getActief()) {
                             umpires.get(newIndex).setActief(Boolean.FALSE);
@@ -385,5 +405,6 @@ public class UmpireView {
         Pane p = new Pane(newUmpire.NewUmpire(umpireselection, afdelingen, nieuwUmpire, clubs, umpires));
         return p;
     }
+    
     
 }
