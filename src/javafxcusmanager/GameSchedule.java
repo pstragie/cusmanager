@@ -109,10 +109,11 @@ public class GameSchedule {
             });
         
         afdelingen.forEach(a -> {
-            for (int calendarWeek=1; calendarWeek<4; calendarWeek++) {
+            for (int calendarWeek=1; calendarWeek<2; calendarWeek++) {
+                String x = Integer.toString(calendarWeek);
                 desiredDate = getDate(calendarWeek, seizoen);
-                
-                gameData.add(new Game(a.getAfdelingsNaam(), Integer.toString(calendarWeek), MonthDay.of(desiredDate.getMonth(), desiredDate.getDayOfMonth()), null, null, null, null, null, null, null));
+                String gamenumber = "a" + x;
+                gameData.add(new Game(a.getAfdelingsNaam(), Integer.toString(calendarWeek), MonthDay.of(desiredDate.getMonth(), desiredDate.getDayOfMonth()), null, null, null, null, null, null, null, gamenumber));
             }
         });
         
@@ -984,8 +985,32 @@ public class GameSchedule {
            
     }
     
-    
-
+    /** Check if umpire has already a game this date
+     * 
+     * @param umpire String umpire
+     * @param datum String datum
+     * @return Boolean value
+     */
+    private Boolean umpireDouble(String umpire, String datum) {
+        Boolean bool = Boolean.FALSE;
+        
+        // Check if umpire is already present this week
+        FilteredList<Game> filteredGames = gameData.filtered(g -> g.getGameDatum().equals(datum));
+        for (Game gameToday : filteredGames) {
+            ArrayList<String> umpiresForThisDate = new ArrayList<>();
+            umpiresForThisDate.add(gameToday.getPlateUmpireName());
+            umpiresForThisDate.add(gameToday.getBase1UmpireName());
+            umpiresForThisDate.add(gameToday.getBase2UmpireName());
+            umpiresForThisDate.add(gameToday.getBase3UmpireName());
+            if (umpiresForThisDate.contains(umpire)) {
+                bool = Boolean.TRUE;
+            } else {
+                bool = Boolean.FALSE;
+            }
+        }
+        
+        return bool;
+    }
     
     
     
