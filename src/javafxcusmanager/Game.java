@@ -30,9 +30,11 @@ public class Game {
     private final SimpleStringProperty gamenumber;
     private final ObjectProperty<LocalDate> gamedatum ;
     private final ObjectProperty<LocalTime> gameuur;
+    private final SimpleStringProperty seizoen;
 
     /** Class Game
      * 
+     * @param gameindexString
      * @param afdelingString
      * @param weekString
      * @param gameDate
@@ -42,10 +44,11 @@ public class Game {
      * @param plateUmpireName
      * @param base1UmpireName
      * @param base2UmpireName
-     * @param base3UmpireName 
+     * @param base3UmpireName
      * @param gamenumberString
+     * @param seizoenString 
      */
-    public Game(String gameindexString, String afdelingString, String weekString, LocalDate gameDate, LocalTime gameUur, String homeTeamName, String visitingTeamName, String plateUmpireName, String base1UmpireName, String base2UmpireName, String base3UmpireName, String gamenumberString) {
+    public Game(String gameindexString, String afdelingString, String weekString, LocalDate gameDate, LocalTime gameUur, String homeTeamName, String visitingTeamName, String plateUmpireName, String base1UmpireName, String base2UmpireName, String base3UmpireName, String gamenumberString, String seizoenString) {
         this.gameindex = new SimpleStringProperty(gameindexString);
         this.afdeling = new SimpleStringProperty(afdelingString);
         this.week = new SimpleStringProperty(weekString);
@@ -58,12 +61,21 @@ public class Game {
         this.base2umpire = new SimpleStringProperty(base2UmpireName);
         this.base3umpire = new SimpleStringProperty(base3UmpireName);
         this.gamenumber = new SimpleStringProperty(gamenumberString);
+        this.seizoen = new SimpleStringProperty(seizoenString);
     }
 
+    /** Get Game Index number
+     * 
+     * @return 
+     */
     public String getGameindex() {
         return gameindex.get();
     }
     
+    /** Set Game Index number
+     * 
+     * @param gameindexString 
+     */
     public void setGameindex(String gameindexString) {
         gameindex.set(gameindexString);
         
@@ -224,9 +236,15 @@ public class Game {
     public String getGameNumber() {
         return gamenumber.get();
     }
-    
     public void setGameNumber(String gamenumberString) {
         this.gamenumber.set(gamenumberString);
+    }
+    
+    public String getSeizoen() {
+        return seizoen.get();
+    }
+    public void setSeizoen(String seizoenString) {
+        this.seizoen.set(seizoenString);
     }
     
     public StringProperty gameindexProperty() {
@@ -259,11 +277,14 @@ public class Game {
     public StringProperty gamenumberProperty() {
         return gamenumber;
     }
+    public StringProperty seizoenProperty() {
+        return seizoen;
+    }
     
     @Override
     public String toString() {
         String string = new String();
-        string = afdeling.get() + ", week: " + week.get() + ", " + gamedatum.get() + ", " + gameuur.get() + ", " + hometeam.get() + ", " + visitingteam.get() + ", " + plateumpire.get() + "\n";
+        string = afdeling.get() + ", week: " + week.get() + ", " + gamedatum.get() + ", " + gameuur.get() + ", " + hometeam.get() + ", " + visitingteam.get() + ", " + plateumpire.get() + ", " + gamenumber.get() + ", " + gameindex.get() + ", " + seizoen.get() + "\n";
         
         return string;
     }

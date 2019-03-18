@@ -11,16 +11,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Array;
+import java.time.LocalTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javafx.collections.FXCollections;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Dialog;
 
 /**
  *
@@ -78,10 +74,60 @@ public class DocumentHandling {
                     System.out.println("Error reading file: " + e);
 		}
 		System.out.println("List: " + list);
+        } else {
+            // Dialog Wrong file!
+            Alert alert = new Alert(AlertType.WARNING);
+            alert.setTitle("Waarschuwing");
+            alert.setHeaderText("Verkeerd bestand gekozen.");
+            alert.setContentText("Selecteer een bestand met afdelingen.");
+            alert.showAndWait();
         }
         return list;
     }
     
+    public ArrayList<Afdeling> rewindImportFromBackupFile(String filepath) {
+        System.out.println("Reading file...");
+        ArrayList<Afdeling> list = new ArrayList<>();
+        String header = null;
+        // Check if correct file
+        try {
+        BufferedReader brTest = new BufferedReader(new FileReader(filepath));
+        header = brTest .readLine();
+        System.out.println("Firstline is : " + header);
+        } catch(IOException e) {
+            System.err.println("Error reading umpire file");
+        }
+        // Read from file
+        if (header.contains("Afdelingen")) {
+        // Read from file
+		try(Stream<String> stream = Files.lines(Paths.get(filepath))) {
+                    
+                    stream.filter(f -> !f.equals("Afdelingen"))
+                            .forEach(line -> {
+                                String[] parts = line.split(";");
+                                ArrayList<String> array = new ArrayList<>();
+                                //array.add(new Afdeling(parts[0], parts[1]));
+                                System.out.println("parts 0: " + parts[0] + " 1: " + parts[1]);
+                        list.add(new Afdeling(parts[0], parts[1]));
+                    });
+                    
+                
+			
+			
+		} catch(IOException e) {
+                    System.out.println("Error reading file: " + e);
+		}
+		System.out.println("List: " + list);
+        } else {
+            // Dialog Wrong file!
+            Alert alert = new Alert(AlertType.WARNING);
+            alert.setTitle("Waarschuwing");
+            alert.setHeaderText("Verkeerd bestand gekozen.");
+            alert.setContentText("Selecteer een bestand met afdelingen.");
+            alert.showAndWait();
+        }
+        return list;
+    }
     /** Haal clubs uit bestand
      * 
      * @param filepath
@@ -125,20 +171,34 @@ public class DocumentHandling {
                     System.out.println("Error reading file: " + e);
 		}
 		System.out.println("List: " + list);
-        }   
+        } else {
+            // Dialog Wrong file!
+            Alert alert = new Alert(AlertType.WARNING);
+            alert.setTitle("Waarschuwing");
+            alert.setHeaderText("Verkeerd bestand gekozen.");
+            alert.setContentText("Selecteer een bestand met clubs.");
+            alert.showAndWait();
+        } 
         return list;
     }
     
     /** Sla afdelingen op in bestand
      * 
-     * @param afdelingen 
+     * @param afdelingen ArrayList Afdeling
+     * @param backup Boolean value backup (true) or export (false)
      */
-    public void storeAfdelingen(ArrayList<String> afdelingen) {
+    public void storeAfdelingen(ArrayList<Afdeling> afdelingen, Boolean backup) {
         // Write to file
-        try (FileWriter fileWriter = new FileWriter("afdelingen.txt")) {
+        String bestandsnaam = null;
+        if (backup) {
+            bestandsnaam = "afdelingen_backup.txt";
+        } else {
+            bestandsnaam = "afdelingen"+LocalDate.now()+".txt";
+        }
+        try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
             fileWriter.write("Afdelingen");
             afdelingen.forEach((k) ->  {
-                String fileContent = "\n" + k;
+                String fileContent = "\n" + k.getAfdelingsNaam() + ";" + k.getAfdelingsCategorie() + ";True";
                 try {
                     fileWriter.write(fileContent);
                 } catch(IOException e) {
@@ -215,12 +275,18 @@ public class DocumentHandling {
      * 
      * @param wedstrijdschema 
      */
-    public void storeGameSchedule(ArrayList<String> wedstrijdschema) {
+    public void storeGameSchedule(ArrayList<Game> wedstrijdschema, Boolean backup) {
         // Write to file
-        try (FileWriter fileWriter = new FileWriter("wedstrijdschema.txt")) {
-            fileWriter.write("Wedstrijdschema");
+        String bestandsnaam = null;
+        if (backup) {
+            bestandsnaam = "games_backup.txt";
+        } else {
+            bestandsnaam = "games"+LocalDate.now()+".txt";
+        }
+        try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
+            fileWriter.write("Games");
             wedstrijdschema.forEach((k) ->  {
-                String fileContent = "\n" + k;
+                String fileContent = "\n" + k.getWeekString() + ";"+k.getAfdelingString() + ";" + k.getGameDatum() + ";" + k.getGameUur() + ";" + k.getHomeTeamName() + ";" + k.getVisitingTeamName() + ";" + k.getPlateUmpireName() + ";" + k.getBase1UmpireName() + ";" + k.getBase2UmpireName() + ";" + k.getBase3UmpireName() + ";" + k.getGameNumber() + ";" + k.getGameindex() + ";" + k.getSeizoen();
                 try {
                     fileWriter.write(fileContent);
                 } catch(IOException e) {
@@ -231,5 +297,63 @@ public class DocumentHandling {
             System.out.println("Error writing wedstrijdschema: " + e);
         }
         
+    }
+    
+    public ArrayList<Game> getGamesFromFile(String filepath) {
+        System.out.println("Reading game file...");
+        ArrayList<Game> list = new ArrayList<>();
+        String header = null;
+        // Check if correct file
+        try {
+            BufferedReader brTest = new BufferedReader(new FileReader(filepath));
+            header = brTest .readLine();
+            System.out.println("Firstline is : " + header);
+        } catch(IOException e) {
+            System.err.println("Error reading umpire file");
+        }
+        // Read from file
+        if (header.contains("Games")) {
+        // Read from file
+		try(Stream<String> stream = Files.lines(Paths.get(filepath))) {
+                    
+                    stream.filter(f -> !f.equals("Games"))
+                            .forEach(line -> {
+                                String[] parts = line.split(";");
+                                ArrayList<String> array = new ArrayList<>();
+                                //array.add(new Afdeling(parts[0], parts[1]));
+                                String w = parts[0];
+                                String afd = parts[1];
+                                String gd = parts[2];
+                                String gt = parts[3];
+                                String ht = parts[4];
+                                String vt = parts[5];
+                                String pu = parts[6];
+                                String b1 = parts[7];
+                                String b2 = parts[8];
+                                String b3 = parts[9];
+                                String gn = parts[10];
+                                String gi = parts[11];
+                                String se = parts[12];
+                                LocalDate datum = mainPanel.stringToLocalDate(gd);
+                                LocalTime tijd = mainPanel.stringToLocalTime(gt);
+                        list.add(new Game(gi, afd, w, datum, tijd, ht, vt, pu, b1, b2, b3, gn, se));
+                    });
+                    
+                
+			
+			
+		} catch(IOException e) {
+                    System.out.println("Error reading file: " + e);
+		}
+		System.out.println("List: " + list);
+        } else {
+            // Dialog Wrong file!
+            Alert alert = new Alert(AlertType.WARNING);
+            alert.setTitle("Waarschuwing");
+            alert.setHeaderText("Verkeerd bestand gekozen.");
+            alert.setContentText("Selecteer een bestand met afdelingen.");
+            alert.showAndWait();
+        }
+        return list;
     }
 }

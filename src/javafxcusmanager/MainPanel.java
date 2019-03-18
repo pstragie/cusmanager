@@ -6,6 +6,9 @@
 package javafxcusmanager;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -41,17 +44,20 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 
 /**
  *
@@ -68,6 +74,7 @@ public class MainPanel {
     public ObservableList<Club> clubs;
     public ObservableList<Team> teams;
     public ObservableList<Umpire> umpires;
+    public ObservableList<Game> gameData;
     private DocumentHandling documentHandler;
     private Pane leftPane = new Pane();
     private Pane rightPane = new Pane();
@@ -114,7 +121,7 @@ public class MainPanel {
                                 rightTabPane.getTabs().removeIf(tab -> tab.getText().equals(remitem.getAfdelingsNaam()));
                                 centerTabPane.getTabs().removeIf(tab -> tab.getText().equals(remitem.getAfdelingsNaam()));
 
-                                // TO DO: Store in Database
+                                // TO DO: Delete from Database
                                 database.deleteAfdelingFromDatabase(remitem.getAfdelingsNaam());
 
                             }
@@ -124,9 +131,11 @@ public class MainPanel {
                                 leftTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
                                 rightTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
                                 centerTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
-
-                                // TO DO: Store in database, Done when button is pressed
-
+                                leftTabPane.getTabs().addAll(getClubTabArrayList());
+                                rightTabPane.getTabs().addAll(getUmpireTabArrayList());
+                                centerTabPane.getTabs().addAll(getGameTabArrayList());
+                                // TO DO: Store in database
+                                database.insertNewAfdelingToDatabase(additem.getAfdelingsNaam(), additem.getAfdelingsCategorie(), Boolean.TRUE);
                             }
             }
         });
@@ -205,6 +214,46 @@ public class MainPanel {
             }
         });
             
+        // Games
+        gameData = FXCollections.observableArrayList();
+        gameData.addAll(database.getAllGamesFromDatabase());
+        System.out.println("gamedata = " + gameData);
+        gameData.addListener((ListChangeListener.Change<? extends Game> change) -> { 
+            while(change.next()) {
+                if(change.wasUpdated()) {
+                    System.out.println("Umpires Update detected");
+                    // Write to file?
+
+                } else
+                    if (change.wasPermutated()) {
+                        System.out.println("Umpires Was permutated");
+                    } 
+                        else 
+                            for (Game remitem: change.getRemoved()) {
+                                System.out.println("Game was removed: " + remitem);
+                                // Remove from database
+                                database.deleteGameFromDatabase(remitem.getGameindex());
+                             }
+                
+                            for (Game additem: change.getAddedSubList()) {
+                            System.out.println("Data " + change + " was added to games");
+                            try {
+                                // Write to database
+                                if (database.checkIfGameExists(additem.getGameindex())) {
+                                    System.out.println("Game bestaat al!!! Update existing game: " + additem.getGameindex());
+                                    database.updateGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), localTimeToString(additem.getGameUur()), additem.getHomeTeamName(), additem.getVisitingTeamName(), additem.getPlateUmpireName(), additem.getBase1UmpireName(), additem.getBase2UmpireName(), additem.getBase3UmpireName(), additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen());
+                                } else {
+                                    database.insertNewGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), localTimeToString(additem.getGameUur()), additem.getHomeTeamName(), additem.getVisitingTeamName(), additem.getPlateUmpireName(), additem.getBase1UmpireName(), additem.getBase2UmpireName(), additem.getBase3UmpireName(), additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen());
+                                }
+                            } catch (SQLException ex) {
+                                Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        
+
+            }
+        });
+        
         // Add Test data
         
         ArrayList<Afdeling> afdArray = new ArrayList<>();
@@ -304,10 +353,10 @@ public class MainPanel {
                 umpires.addAll(database.getAllUmpiresFromDatabase());
             }
         });
-        Button button = new Button("Exporteren");
+        Button button = new Button("Exporteren (backup)");
         CustomMenuItem customMenuItem = new CustomMenuItem();
         customMenuItem.setContent(button);
-        customMenuItem.setHideOnClick(false);
+        customMenuItem.setHideOnClick(true);
         menuUmpires.getItems().add(customMenuItem);
         // Menu Clubs
         Menu clubsAndTeams = new Menu("Clubs & Teams");
@@ -354,6 +403,8 @@ public class MainPanel {
         menubar.getMenus().add(menuAfdelingen);
         MenuItem afdelingenBeheren = new MenuItem("Afdelingen beheren...");
         menuAfdelingen.getItems().add(afdelingenBeheren);
+        MenuItem afdelingenImporteren = new MenuItem("Afdelingen importeren...");
+        menuAfdelingen.getItems().add(afdelingenImporteren);
         
         afdelingenBeheren.setOnAction(e -> { 
             Stage stage = new Stage();
@@ -363,24 +414,162 @@ public class MainPanel {
             stage.setScene(scene);
             stage.show();
         });
-        MenuItem afdelingenImporteren = new MenuItem("Import Afdelingen...");
-        menuAfdelingen.getItems().add(afdelingenImporteren);
+
+        // Afdelingen importeren menu item action
         afdelingenImporteren.setOnAction(e -> {
             Stage stage = new Stage();
             String absPath = getFilePath(stage, "Afdelingen");
             if (absPath != "") {
-                // Wis de huidige afdelingen
-                database.deleteAllAfdelingenInDatabase();
+                // Make backup to rewind import
+                ArrayList<Afdeling> af = new ArrayList<>(afdelingen);
+                documentHandler.storeAfdelingen(af, Boolean.TRUE);
                 // Import afdelingen in de database
                 ArrayList<Afdeling> arrayAfdelingen = documentHandler.getAfdelingenFromFile(absPath);
+                System.out.println("Insert afdelingen to Database...");
+                /*
                 for(Afdeling afd : arrayAfdelingen) {
                     database.insertNewAfdelingToDatabase(afd.getAfdelingsNaam(), afd.getAfdelingsCategorie(), Boolean.TRUE);
                 }
+                */
+                System.out.println("Afdelingen lijst wissen...");
                 afdelingen.clear();
-                afdelingen.addAll(database.getAllAfdelingenFromDatabase());
+                System.out.println("Afdelingen toevoegen aan afdelingenlijst...");
+                afdelingen.addAll(arrayAfdelingen);
+            }
+        });
+        MenuItem rewindImportAfdelingen = new MenuItem("Import terugdraaien");
+        menuAfdelingen.getItems().add(rewindImportAfdelingen);
+        File tmpDir = new File("afdelingen_backup.txt");
+        boolean exists = tmpDir.exists();
+        rewindImportAfdelingen.setVisible(exists);
+  
+        rewindImportAfdelingen.setOnAction(rewind -> {
+            // Import afdelingen in de database
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Import van afdelingen terugdraaien.");
+            try {
+                BasicFileAttributes attr = Files.readAttributes(tmpDir.toPath(), BasicFileAttributes.class);
+                final String headerText = "creationTime: " + attr.lastModifiedTime();
+                alert.setHeaderText("Backup bestand laatst gewijzigd op: " + headerText);
+            } catch (IOException e) {
+                System.err.println("Error obtaining file creationTime: " + e);
+                alert.setHeaderText("Datum van backup bestand ongekend.");
+            }
+            
+            alert.setContentText("Doorgaan?");
+            alert.showAndWait();
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK){
+            // ... user chose OK
+            ArrayList<Afdeling> arrayAfdelingen = documentHandler.getAfdelingenFromFile("afdelingen_backup.txt");
+            afdelingen.clear();
+            afdelingen.addAll(arrayAfdelingen);
+        } else {
+            // ... user chose CANCEL or closed the dialog
+        }
+                
+        });
+        // Custom menu exporteren
+        Button expAfdButton = new Button("Exporteren (backup)");
+        CustomMenuItem customExportAfdeling = new CustomMenuItem();
+        customExportAfdeling.setContent(expAfdButton);
+        customExportAfdeling.setHideOnClick(true);
+        menuAfdelingen.getItems().add(customExportAfdeling);
+        expAfdButton.setOnAction(clicked -> {
+            ArrayList<Afdeling> af = new ArrayList<>(afdelingen);
+            documentHandler.storeAfdelingen(af, Boolean.FALSE);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Afdelingen exporteren.");
+            alert.setHeaderText("Exporteren klaar.");
+            alert.setContentText("OK om verder te gaan.");
+            alert.showAndWait();
+        });
+        
+        // Games menu
+        Menu menuGames = new Menu("Wedstrijden");
+        menubar.getMenus().add(menuGames);
+        MenuItem gamesImporteren = new MenuItem("Wedstrijden importeren...");
+        menuGames.getItems().add(gamesImporteren);
+        // Afdelingen importeren menu item action
+        gamesImporteren.setOnAction(e -> {
+            Stage stage = new Stage();
+            String absPath = getFilePath(stage, "Games");
+            if (absPath != "") {
+                // Make backup to rewind import
+                ArrayList<Game> gam = new ArrayList<>(gameData);
+                documentHandler.storeGameSchedule(gam, Boolean.TRUE);
+                // Import games in de database
+                ArrayList<Game> arrayGames = documentHandler.getGamesFromFile(absPath);
+                System.out.println("Insert games to Database...");
+                /* ObservableList Games changed -> handler will store in the database
+                for(Afdeling afd : arrayAfdelingen) {
+                    database.insertNewAfdelingToDatabase(afd.getAfdelingsNaam(), afd.getAfdelingsCategorie(), Boolean.TRUE);
+                }
+                */
+                System.out.println("Games lijst wissen...");
+                gameData.clear();
+                database.deleteAllGamesInDatabase();
+                System.out.println("Game toevoegen aan gamelijst...");
+                gameData.addAll(arrayGames);
+                // Store in database
+                arrayGames.forEach((g) -> {
+                    System.out.println("datum en tijd: " + g.getGameDatum() + " en " + g.getGameUur());
+                    String date = localDateToString(g.getGameDatum());
+                    System.out.println("Date string = " + date);
+                    String time = localTimeToString(g.getGameUur());
+                    System.out.println("Time string = " + time);
+                    database.insertNewGameToDatabase(Integer.parseInt(g.getWeekString()), g.getAfdelingString(), date, time, g.getHomeTeamName(), g.getVisitingTeamName(), g.getPlateUmpireName(), g.getBase1UmpireName(), g.getBase2UmpireName(), g.getBase3UmpireName(), g.getGameNumber(), g.getGameindex(), g.getSeizoen());
+                });
             }
         });
         
+        MenuItem rewindImportGames = new MenuItem("Import terugdraaien");
+        menuGames.getItems().add(rewindImportGames);
+        File gtmpDir = new File("games_backup.txt");
+        boolean gexists = gtmpDir.exists();
+        rewindImportGames.setVisible(gexists);
+  
+        rewindImportGames.setOnAction(rewind -> {
+            // Import afdelingen in de database
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Import van wedstrijden terugdraaien.");
+            try {
+                BasicFileAttributes attr = Files.readAttributes(tmpDir.toPath(), BasicFileAttributes.class);
+                final String headerText = "creationTime: " + attr.lastModifiedTime();
+                alert.setHeaderText("Backup bestand laatst gewijzigd op: " + headerText);
+            } catch (IOException e) {
+                System.err.println("Error obtaining file creationTime: " + e);
+                alert.setHeaderText("Datum van backup bestand ongekend.");
+            }
+            
+            alert.setContentText("Doorgaan?");
+            alert.showAndWait();
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK){
+            // ... user chose OK
+            ArrayList<Game> arrayGames = documentHandler.getGamesFromFile("games_backup.txt");
+            gameData.clear();
+            gameData.addAll(arrayGames);
+        } else {
+            // ... user chose CANCEL or closed the dialog
+        }
+        });
+        
+        // Custom menu exporteren
+        Button expGameButton = new Button("Exporteren (backup)");
+        CustomMenuItem customExportGames = new CustomMenuItem();
+        customExportGames.setContent(expGameButton);
+        customExportGames.setHideOnClick(true);
+        menuGames.getItems().add(customExportGames);
+        expGameButton.setOnAction(clicked -> {
+            ArrayList<Game> gam = new ArrayList<>(gameData);
+            documentHandler.storeGameSchedule(gam, Boolean.FALSE);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Wedstrijdschema exporteren.");
+            alert.setHeaderText("Exporteren klaar.");
+            alert.setContentText("OK om verder te gaan.");
+            alert.showAndWait();
+        });
         // Menu Settings
         Menu menuSettings = new Menu("Settings");
         menubar.getMenus().add(menuSettings);
@@ -723,7 +912,7 @@ public class MainPanel {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
-        gameSchedule = new GameSchedule(teams, afdelingen, clubs, umpires, jaartal);
+        gameSchedule = new GameSchedule(gameData, teams, afdelingen, clubs, umpires, jaartal);
         System.out.println("Get Tabs from file and create club content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
         listOfItems.addAll(getAfdelingsnamenlijst());
@@ -733,7 +922,7 @@ public class MainPanel {
             tab.setContent(gameSchedule.createCalendar(a)); // Set filtered content
             tabs.add(tab);
             tab.setOnSelectionChanged(tabevent -> {
-                // Automatically filter team afdelingen based on selected tab in game schedule.
+                // Automatically filter team afdelingen based on selected tab in gameData schedule.
                 clubfilterField.setText(a);
             });
             
@@ -829,5 +1018,27 @@ public class MainPanel {
             Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    public String localDateToString (LocalDate localdate) {
+        String date = localdate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        return date;
+    }
+    
+    public LocalDate stringToLocalDate (String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate datum = LocalDate.parse(date, formatter);
+        return datum;
+    }
+    
+    public String localTimeToString (LocalTime localtime) {
+        String time = localtime.format(DateTimeFormatter.ofPattern("HH:mm"));
+        return time;
+    }
+    
+    public LocalTime stringToLocalTime (String time) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        LocalTime tijd = LocalTime.parse(time, formatter);
+        return tijd;
+    }    
 }
 

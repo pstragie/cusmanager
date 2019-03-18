@@ -7,7 +7,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.time.LocalTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -22,6 +26,7 @@ import java.util.ArrayList;
  * @since 1.0
  */
 public class Database {
+    private MainPanel mainpanel;
     public Statement stmt;
     public Connection con;
     public Database() {
@@ -830,6 +835,246 @@ public class Database {
             PreparedStatement ps = con.prepareStatement(sql);
             //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
             ps.setString(1, naam);
+            rs = ps.executeQuery();
+            return rs.next();
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            rs.close();
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return Boolean.TRUE;
+    }
+    
+    // CLUBS
+    /** Haal alle games op uit de database
+     * 
+     * @return Lijst van games
+     */
+    public ArrayList<Game> getAllGamesFromDatabase() {
+        System.out.println("Get all games from database................");
+        ArrayList<Game> arrayGames = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.Games";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                String w = rs.getString("week");
+                String a = rs.getString("afdeling");
+                String gd = rs.getString("gamedate");
+                String gt = rs.getString("gametime");
+                String ht = rs.getString("hometeam");
+                String vt = rs.getString("visitingteam");
+                String pu = rs.getString("plateumpire");
+                String b1 = rs.getString("base1umpire");
+                String b2 = rs.getString("base2umpire");
+                String b3 = rs.getString("base3umpire");
+                String gn = rs.getString("gamenumber");
+                String gi = rs.getString("gameindex");
+                String se = rs.getString("seizoen");
+                mainpanel = new MainPanel();
+                LocalDate gdatum = mainpanel.stringToLocalDate(gd);
+                LocalTime gtime = mainpanel.stringToLocalTime(gt);
+                System.out.println("DB -> games: " + w + ", " + a + ", " + gd + ", " + gt + ", " + ht + ", " + vt + ", " + pu + ", " + b1 + ", " + b2 + ", " + b3 + ", " + gn + ", " + gi + ", " + se + ".");
+                Game g = new Game(gi, a, w, gdatum, gtime, ht, vt, pu, b1, b2, b3, gn, se);
+                
+                arrayGames.add(g);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Get games: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return arrayGames;
+    }
+    
+    /** Haal 1 club uit de database
+     * 
+     * @param gameindex
+     * @return Geeft een object (Game) terug
+     */
+    public Game getGameFromDatabase(String gameindex) {
+        Game g = new Game("", "", "", LocalDate.now(), LocalTime.now(), "", "", "", "", "", "", "", "");
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.Games WHERE gameindex = '" + gameindex + "'";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                String w = rs.getString("week");
+                String a = rs.getString("afdeling");
+                String gd = rs.getString("gamedate");
+                String gt = rs.getString("gametime");
+                String ht = rs.getString("hometeam");
+                String vt = rs.getString("visitingteam");
+                String pu = rs.getString("plateumpire");
+                String b1 = rs.getString("base1umpire");
+                String b2 = rs.getString("base2umpire");
+                String b3 = rs.getString("base3umpire");
+                String gn = rs.getString("gamenumber");
+                String gi = rs.getString("gameindex");
+                String se = rs.getString("seizoen");
+                mainpanel = new MainPanel();
+                LocalDate gdatum = mainpanel.stringToLocalDate(gd);
+                LocalTime gtime = mainpanel.stringToLocalTime(gt);
+                System.out.println("DB -> games: " + w + ", " + a + ", " + gd + ", " + gt + ", " + ht + ", " + vt + ", " + pu + ", " + b1 + ", " + b2 + ", " + b3 + ", " + gn + ", " + gi + ", " + se + ".");
+                g = new Game(gi, w, a, gdatum, gtime, ht, vt, pu, b1, b2, b3, gn, se);                
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Get clubs: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return g;
+    }
+    
+    /** Verwijder alle games uit de database
+     * 
+     */
+    public void deleteAllGamesInDatabase() {
+        try {
+            stmt = con.createStatement();
+            String sql2 = "DELETE FROM APP.Games WHERE 1=1";
+            stmt.executeUpdate(sql2);
+        } catch(SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    /** Verwijder 1 game uit de database
+     * 
+     * @param gameindex 
+     */
+    public void deleteGameFromDatabase(String gameindex) {
+        try {
+            stmt = con.createStatement();
+            String sql = "DELETE FROM APP.Games WHERE gameindex = '"+gameindex+"'";
+            stmt.executeUpdate(sql);
+        } catch(SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    /** Insert a new game to the database
+     * 
+     * @param week
+     * @param afdeling
+     * @param gamedate
+     * @param gametime
+     * @param hometeam
+     * @param visitingteam
+     * @param plateumpire
+     * @param base1umpire
+     * @param base2umpire
+     * @param base3umpire
+     * @param gamenumber
+     * @param gameindex
+     * @param seizoen 
+     */
+    public void insertNewGameToDatabase(Integer week, String afdeling, String gamedate, String gametime, String hometeam, String visitingteam, String plateumpire, String base1umpire, String base2umpire, String base3umpire, String gamenumber, String gameindex, String seizoen) {
+        System.out.println("Insert Game To Database...");
+        try {
+            stmt = con.createStatement();
+            stmt.executeUpdate("INSERT INTO APP.Games " + "VALUES ('" + afdeling + "', '" + hometeam + "', '" + visitingteam + "', '" + plateumpire + "', '" + base1umpire + "', '" + base2umpire + "', '" + base3umpire + "', '" + gamenumber + "', '" + gameindex + "', '" + week + "', '" + seizoen + "', '" + gamedate + "', '" + gametime + "')");
+            
+        } catch(SQLException e) {
+            System.err.println("SQL Exception while inserting umpire: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    /** Update game in the database
+     * 
+     * @param week
+     * @param afdeling
+     * @param gamedate
+     * @param gametime
+     * @param hometeam
+     * @param visitingteam
+     * @param plateumpire
+     * @param base1umpire
+     * @param base2umpire
+     * @param base3umpire
+     * @param gamenumber
+     * @param gameindex
+     * @param seizoen 
+     */
+    public void updateGameToDatabase(Integer week, String afdeling, String gamedate, String gametime, String hometeam, String visitingteam, String plateumpire, String base1umpire, String base2umpire, String base3umpire, String gamenumber, String gameindex, String seizoen) {
+        System.out.println("Update Game in Database...");
+        try {
+            stmt = con.createStatement();
+            // Update row
+            stmt.executeUpdate("UPDATE APP.Games " + "SET week = '" + Integer.toString(week) + "', afdeling = '" + afdeling + "', gamedate = '" + gamedate + "', gametime = '" + gametime + "', hometeam = '" + hometeam + "', visitingteam = '" + visitingteam + "', plateumpire = '" + plateumpire + "', base1umpire = '" + base1umpire + "', base2umpire = '" + base2umpire + "', base3umpire = '" + base3umpire + "', gamenumber = '" + gamenumber + "' + seizoen = '" + seizoen + "' " + "WHERE gameindex = '" + gameindex + "'");
+        } catch(SQLException e) {
+            System.err.println("SQL Exception while updating umpire: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    /** Controleer of game bestaat in de database
+     * 
+     * @param gameindex
+     * @return
+     * @throws SQLException 
+     */
+    public Boolean checkIfGameExists(String gameindex) throws SQLException {
+        ResultSet rs = null;
+        
+        try {
+            stmt = con.createStatement();
+            String sql = "Select 1 from APP.Games" + " where gameindex = ?";  
+            PreparedStatement ps = con.prepareStatement(sql);
+            //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
+            ps.setString(1, gameindex);
             rs = ps.executeQuery();
             return rs.next();
         } catch(SQLException e) {

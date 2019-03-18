@@ -30,8 +30,11 @@ public class AppSettings {
     
     public Preferences pref;
     private Label seizoenLabel, startOfYear;
-    private TextField seizoentf;
-    
+    private TextField seizoentf, startOfYeartf;
+    /* TO DO:
+    Eerste dag van de week kiezen, default zaterdag (6)
+    */
+    private int first_day_of_weekend; // Fri = 5, Sat = 6, Sun = 7
     
     
     public AppSettings() {
@@ -57,6 +60,7 @@ public class AppSettings {
         saveButton.setOnAction(save -> {
             pref = Preferences.userNodeForPackage(AppSettings.class);
             pref.put("Seizoen", seizoentf.getText());
+            pref.put("StartOfYear", startOfYeartf.getText());
             
         });
         sluitButton.setOnAction(sluit -> {
@@ -74,18 +78,20 @@ public class AppSettings {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
-        
+        pref = Preferences.userNodeForPackage(AppSettings.class);
         seizoenLabel = new Label("Seizoen (Jaartal)");
-        seizoentf = new TextField();
+        seizoentf = new TextField(pref.get("seizoen", "2018"));
         seizoentf.setAlignment(Pos.CENTER_LEFT);
+        // TO DO: Automatisch seizoen aanpassen
         Label warningSeizoen = new Label("Opnieuw opstarten vereist.");
-        startOfYear = new Label("Kalender start op:");
+        startOfYear = new Label("Kalender start op week:");
+        startOfYeartf = new TextField(pref.get("StartOfYear", "15"));
         
         grid.add(seizoenLabel, 0, 1);
         grid.add(seizoentf, 1, 1);
         grid.add(warningSeizoen, 2, 1);
         grid.add(startOfYear, 0, 2);
-        
+        grid.add(startOfYeartf, 1, 2);
         
         return grid;
     }

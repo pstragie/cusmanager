@@ -6,7 +6,7 @@
 package javafxcusmanager;
 
 import java.time.LocalDate;
-import java.time.MonthDay;
+import java.time.LocalDate;
 import java.time.DayOfWeek;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
@@ -32,7 +32,7 @@ import jfxtras.scene.control.CalendarPicker;
  *
  * @author pieter
  */
-public class GamedateCell extends TableCell<Game, MonthDay> {
+public class GamedateCell extends TableCell<Game, LocalDate> {
         
         private final DateTimeFormatter formatter ;
         private final DatePicker datePicker ;
@@ -54,7 +54,7 @@ public class GamedateCell extends TableCell<Game, MonthDay> {
             datePicker.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
                 if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.TAB) {
                     datePicker.setValue(datePicker.getConverter().fromString(datePicker.getEditor().getText()));
-                    commitEdit(MonthDay.from(datePicker.getValue()));
+                    commitEdit(LocalDate.from(datePicker.getValue()));
                     
                 }
                 if (event.getCode() == KeyCode.ESCAPE) {
@@ -80,13 +80,13 @@ public class GamedateCell extends TableCell<Game, MonthDay> {
                     datePicker.setValue(cell.getItem());
                     if (event.getClickCount() == 2) {
                         datePicker.hide();
-                        commitEdit(MonthDay.from(cell.getItem()));
+                        commitEdit(LocalDate.from(cell.getItem()));
                     }
                     event.consume();
                 });
                 cell.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
                     if (event.getCode() == KeyCode.ENTER) {
-                        commitEdit(MonthDay.from(datePicker.getValue()));
+                        commitEdit(LocalDate.from(datePicker.getValue()));
                     }
                 });
                 return cell ;
@@ -99,7 +99,7 @@ public class GamedateCell extends TableCell<Game, MonthDay> {
         }
         
         @Override
-        public void updateItem(MonthDay gameday, boolean empty) {
+        public void updateItem(LocalDate gameday, boolean empty) {
             super.updateItem(gameday, empty);
             if (empty || gameday == null) {
                 setText(null);
@@ -115,7 +115,7 @@ public class GamedateCell extends TableCell<Game, MonthDay> {
         public void startEdit() {
             super.startEdit();
             if (!isEmpty()) {
-                datePicker.setValue(getItem().atYear(LocalDate.now().getYear()));
+                datePicker.setValue(getItem());
             }
         }
         

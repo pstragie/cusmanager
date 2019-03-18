@@ -5,7 +5,7 @@
  */
 package javafxcusmanager;
 
-import java.time.MonthDay;
+import java.time.LocalDate;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
