@@ -76,7 +76,7 @@ public class GameSchedule {
     private String colorCellFilled = "lightgreen";
     private String colorCellWarning = "orange";
     private String colorCellOK = "green";
-    private String colorCellNone = null;
+    private String colorCellNone = "transparent";
     private LocalDate desiredDate;
     private String seizoen;
     private String startOfYear;
@@ -89,8 +89,10 @@ public class GameSchedule {
     // Constructor
     public GameSchedule(ObservableList<Game> gameData, ObservableList<Team> teams, ObservableList<Afdeling> afdelingen, ObservableList<Club> clubs, ObservableList<Umpire> umpires, String seizoen) {
         apidistance = new GoogleDistance();
+        Umpire ump = umpires.get(0);
+        ArrayList<Club> clubkes = new ArrayList<>(clubs);
         try {
-            String x = apidistance.calculateDistance();
+            String x = apidistance.calculateDistance(ump, clubkes);
         } catch (IOException ex) {
             Logger.getLogger(GameSchedule.class.getName()).log(Level.SEVERE, null, ex);
         }

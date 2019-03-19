@@ -5,22 +5,16 @@
  */
 package javafxcusmanager;
 
-import insidefx.undecorator.Undecorator;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javafx.application.Application;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 /**
  *
@@ -73,7 +67,7 @@ public class JavaFxCusManager extends Application {
                 System.out.println(s);
             }
         } catch(SQLException e) {
-            System.err.println("SQL Exception: " + e);
+            System.err.println("SQL Exception startup: " + e);
         }
         
         

@@ -65,7 +65,7 @@ public class UmpireModel {
                             System.out.println("Was permutated: umpire");
                         } else {
                             if (change.wasAdded()) {
-                                System.out.println("Data " + change + " was added to umpires");
+                                //System.out.println("Data " + change + " was added to umpires");
                                 // Write to database
 
                             }

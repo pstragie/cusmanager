@@ -12,6 +12,7 @@ import java.time.LocalTime;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
+import javafx.util.Pair;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -29,11 +30,18 @@ public class Database {
     private MainPanel mainpanel;
     public Statement stmt;
     public Connection con;
+    
+
+
     public Database() {
         try {
-            con = DriverManager.getConnection("jdbc:derby://localhost:1527/cusdb;create=false;user=pstragier;password=Isabelle30?");
+            String host = "jdbc:derby://localhost:1527/cusdb;create=false";
+            String unm = "pstragier";
+            String pswrd = "Isabelle30?";
+            con = DriverManager.getConnection(host, unm, pswrd);
+            //con = DriverManager.getConnection("jdbc:derby://localhost:1527/cusdb;create=false;user=pstragier;password=Isabelle30?");
         } catch(SQLException e) {
-            System.err.println("SQL Exception: " + e);
+            System.err.println("SQL Exception database: " + e);
         } 
     }
     
@@ -417,6 +425,96 @@ public class Database {
         }
     }
     
+    /** Update umpire location (latitude and longitude
+     * 
+     * @param clubnummer
+     * @param latitude
+     * @param longitude 
+     */
+    public void updateClubLocationInDatabase(String clubnummer, String latitude, String longitude) {
+        System.out.println("Update Umpire To Database...");
+        try {
+            stmt = con.createStatement();
+            // Update row
+            stmt.executeUpdate("UPDATE APP.Clubs " + "SET latitude = '" + latitude + "', longitude = '" + longitude + "'" + "WHERE clubnummer = '" + clubnummer + "'");
+        } catch(SQLException e) {
+            System.err.println("SQL Exception while updating umpire: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    /** Get longitude from club database
+     * 
+     * @param clubnummer
+     * @return 
+     */
+    public String getLongitudeFromClubDatabase(String clubnummer) {
+        String longi = "";
+        ResultSet rs = null;
+        System.out.println("Get longitude from Club in Database...");
+        try {
+            stmt = con.createStatement();
+            String sql = "Select longitude from APP.Clubs" + " where clubnummer = '" + clubnummer + "'";  
+            //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
+            
+            rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                longi = rs.getString("longitude");
+            }
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            //rs.close();
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return longi;
+    }
+    
+    /** Get Latitude from Club database
+     * 
+     * @param umpirelicentie
+     * @return 
+     */
+    public String getLatitudeFromClubDatabase(String clubnummer) {
+        String longi = "";
+        ResultSet rs = null;
+        System.out.println("Get lat from Club in Database...");
+        try {
+            stmt = con.createStatement();
+            String sql = "Select latitude from APP.Clubs" + " where clubnummer = '" + clubnummer + "'";  
+            //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
+            rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                longi = rs.getString("latitude");
+            }
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            //rs.close();
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return longi;
+    }
+    
     /** Controleer of club bestaat in de database
      * 
      * @param tableName
@@ -681,6 +779,95 @@ public class Database {
         }
     }
     
+    /** Update umpire location (latitude and longitude
+     * 
+     * @param umpirelicentie
+     * @param latitude
+     * @param longitude 
+     */
+    public void updateUmpireLocationInDatabase(String umpirelicentie, String latitude, String longitude) {
+        System.out.println("Update Umpire To Database...");
+        try {
+            stmt = con.createStatement();
+            // Update row
+            stmt.executeUpdate("UPDATE APP.Umpires " + "SET latitude = '" + latitude + "', longitude = '" + longitude + "'" + "WHERE umpirelicentie = '" + umpirelicentie + "'");
+        } catch(SQLException e) {
+            System.err.println("SQL Exception while updating umpire: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    /** Get longitude from umpire database
+     * 
+     * @param umpirelicentie
+     * @return 
+     */
+    public String getLongitudeFromUmpireDatabase(String umpirelicentie) {
+        String longi = "";
+        ResultSet rs = null;
+        System.out.println("Get longitude from Umpire in Database...");
+        try {
+            stmt = con.createStatement();
+            String sql = "Select longitude from APP.Umpires" + " where umpirelicentie = '" + umpirelicentie + "'";  
+            //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
+            
+            rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                longi = rs.getString("longitude");
+            }
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            //rs.close();
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return longi;
+    }
+    
+    /** Get Latitude from Umpire database
+     * 
+     * @param umpirelicentie
+     * @return 
+     */
+    public String getLatitudeFromUmpireDatabase(String umpirelicentie) {
+        String longi = "";
+        ResultSet rs = null;
+        System.out.println("Get lat from Umpire in Database...");
+        try {
+            stmt = con.createStatement();
+            String sql = "Select latitude from APP.Umpires" + " where umpirelicentie = '" + umpirelicentie + "'";  
+            //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
+            rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                longi = rs.getString("latitude");
+            }
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            //rs.close();
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return longi;
+    }
     /** Controleer of umpire bestaat in de database
      * 
      * @param tableName "Umpires"
@@ -1091,4 +1278,5 @@ public class Database {
         }
         return Boolean.TRUE;
     }
+    
 }

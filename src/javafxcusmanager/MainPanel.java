@@ -178,7 +178,7 @@ public class MainPanel {
                     } 
                         else 
                             for (Umpire additem: change.getAddedSubList()) {
-                            System.out.println("Data " + change + " was added to umpires");
+                            //System.out.println("Data " + change + " was added to umpires");
                             // Write to database: Done when addButton is pressed
                             Comparator<Umpire> umpireComparator = Comparator.comparing(Umpire::getUmpireNaam);
                             umpiremodel.umpirelijstPerafdeling.sort(umpireComparator);
