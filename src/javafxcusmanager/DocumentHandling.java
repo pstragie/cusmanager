@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -164,7 +165,7 @@ public class DocumentHandling {
                                     array.add(new Team(team, afd));
                                 }
                                 
-                                list.add(new Club(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10], array, Boolean.TRUE));
+                                list.add(new Club(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10], array, Boolean.TRUE, parts[12], parts[13]));
                     });
 
 		} catch(IOException e) {
@@ -211,7 +212,35 @@ public class DocumentHandling {
         
     }
     
-    
+    public void storeClubs(ArrayList<Club> clubs, Boolean backup) {
+        // Write to file
+        String bestandsnaam = null;
+        if (backup) {
+            bestandsnaam = "clubs_backup.txt";
+        } else {
+            bestandsnaam = "clubs"+LocalDate.now()+".txt";
+        }
+        try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
+            fileWriter.write("Clubs");
+            clubs.forEach((k) ->  {
+                List<String> tmpT = new ArrayList<>();
+                for (Team t : k.getClubTeams()) {
+                    String tmpString = t.getTeamNaam() + ":" + t.getTeamAfdeling();
+                    tmpT.add(tmpString);
+                }
+                String teams = String.join(",", tmpT);
+                String fileContent = "\n" + k.getClubNaam() + ";" + k.getLiga() + ";" + k.getClubNummer() + ";" + k.getVoorzitter() + ";" + k.getClubStraat() + ";" + k.getClubStraatNummer() + ";" + k.getClubPostcode() + ";" + k.getClubStad() + ";" + k.getClubEmail() + ";" + k.getClubTelefoon() + ";" + k.getClubWebsite() + ";" + teams + ";" + k.getVisible();
+                try {
+                    fileWriter.write(fileContent);
+                } catch(IOException e) {
+                    System.out.println(e);
+                }
+            });
+        } catch (IOException e) {
+            System.out.println("Error writing afdelingen: " + e);
+        }
+        
+    }
     /** Haal umpires uit bestand
      * 
      * @param filepath
@@ -252,7 +281,7 @@ public class DocumentHandling {
                             }
                             database = new Database();
                             Club yclub = database.getClubFromDatabase(parts[9]);
-                            list.add(new Umpire(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], yclub, arraylist, Boolean.getBoolean(parts[11])));
+                            list.add(new Umpire(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], yclub, arraylist, Boolean.getBoolean(parts[13]), parts[11], parts[12]));
                 });
                 
 

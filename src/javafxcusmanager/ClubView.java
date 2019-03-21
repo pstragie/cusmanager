@@ -43,6 +43,7 @@ public class ClubView {
     
     private MainPanel mainPanel;
     private NewClub newClubWindow;
+    private ExistingClubDetails existingClubDetails;
     private ObservableList<Afdeling> afdelingen;
     private ObservableList<Club> clubs;
     private ObservableList<Team> teams;
@@ -95,8 +96,21 @@ public class ClubView {
         return borderPane;
     }
     
-    private Pane newClubPaneel() {
-        
+    /** Show club details window
+     * 
+     * @param club
+     * @return 
+     */
+    public Pane existingClubPaneel(Club club) {
+        existingClubDetails = new ExistingClubDetails(clubs);
+        return existingClubDetails.clubPanel(club);
+    }
+    
+    /** Show new club window
+     * 
+     * @return 
+     */
+    private Pane newClubPaneel() { 
             newClubWindow = new NewClub(clubs, afdelingen);
             return newClubWindow.clubPanel();
     }
@@ -111,7 +125,7 @@ public class ClubView {
             
             System.out.println("Club toevoegen");
             Stage stage = new Stage();
-            Scene scene = new Scene(newClubPaneel(), 390, 400);
+            Scene scene = new Scene(newClubPaneel(), 420, 460);
             //stage.setX(1000);
             //stage.setY(800);
             stage.setTitle("Club toevoegen");
@@ -216,6 +230,21 @@ public class ClubView {
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = clubs.indexOf(clubs.get(cell.getIndex()));
                         clubs.remove(clubs.get(newIndex));
+                    });
+                    MenuItem editClub = new MenuItem("Details bekijken");
+                    cm.getItems().add(editClub);
+                    editClub.setOnAction(edit -> {
+                        // Show Pane in borderPane Right
+
+                        System.out.println("Club details");
+                        Stage stage = new Stage();
+                        int newIndex = clubs.indexOf(clubs.get(cell.getIndex()));
+                        Scene scene = new Scene(existingClubPaneel(clubs.get(newIndex)), 420, 520);
+                        //stage.setX(1000);
+                        //stage.setY(800);
+                        stage.setTitle("Club details");
+                        stage.setScene(scene);
+                        stage.show();
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)

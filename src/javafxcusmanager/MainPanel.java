@@ -93,7 +93,8 @@ public class MainPanel {
     public Button resetButton;
     private TextField clubfilterField;
     private Preferences pref;
-    
+    private ApiLocationDistance apidistance;
+
     /** MainPanel
      * 
      * @return Paneel
@@ -347,7 +348,7 @@ public class MainPanel {
                         s += a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie() + ",";
                     }
                     System.out.print("String s = " + s);
-                    database.insertNewUmpireToDatabase(ump.getUmpireNaam(), ump.getUmpireVoornaam(), ump.getUmpireLicentie(), ump.getUmpireStraat(), ump.getUmpireHuisnummer(), ump.getUmpirePostcode(), ump.getUmpireStad(), ump.getUmpireTelefoon(), ump.getUmpireEmail(), ump.getUmpireClub().toString(), s, ump.getActief());
+                    database.insertNewUmpireToDatabase(ump.getUmpireNaam(), ump.getUmpireVoornaam(), ump.getUmpireLicentie(), ump.getUmpireStraat(), ump.getUmpireHuisnummer(), ump.getUmpirePostcode(), ump.getUmpireStad(), ump.getUmpireTelefoon(), ump.getUmpireEmail(), ump.getUmpireClub().toString(), s, ump.getActief(), ump.getLatitude(), ump.getLongitude());
                 }
                 umpires.clear();
                 umpires.addAll(database.getAllUmpiresFromDatabase());
@@ -388,7 +389,7 @@ public class MainPanel {
                 ArrayList<Club> arrayClubs = documentHandler.getClubsFromFile(absPath);
                 for(Club cl : arrayClubs) {
                     //System.out.println(cl);
-                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getVoorzitter(), cl.getClubNummer(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getLiga(), cl.getClubWebsite(), cl.getVisible());
+                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getVoorzitter(), cl.getClubNummer(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getLiga(), cl.getClubWebsite(), cl.getVisible(), cl.getLatitude(), cl.getLongitude());
                     for (Team t: cl.getClubTeams()) {
                         database.insertTeamsInDatabase(t.getTeamNaam(), t.getTeamAfdeling().getAfdelingsNaam(), cl.getClubNaam(), t.getTeamAfdeling().getAfdelingsCategorie());
                     }
@@ -397,7 +398,20 @@ public class MainPanel {
                 clubs.addAll(database.getAllClubsFromDatabase());
             }
         });
-        
+        Button clubexportbutton = new Button("Exporteren (backup)");
+        CustomMenuItem customClubMenuItem = new CustomMenuItem();
+        customClubMenuItem.setContent(clubexportbutton);
+        customClubMenuItem.setHideOnClick(true);
+        clubsAndTeams.getItems().add(customClubMenuItem);
+        clubexportbutton.setOnAction(clicked -> {
+            ArrayList<Club> cl = new ArrayList<>(clubs);
+            documentHandler.storeClubs(cl, Boolean.FALSE);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Clubs exporteren.");
+            alert.setHeaderText("Exporteren klaar.");
+            alert.setContentText("OK om verder te gaan.");
+            alert.showAndWait();
+        });
         // Menu Afdelingen
         Menu menuAfdelingen = new Menu("Afdelingen");
         menubar.getMenus().add(menuAfdelingen);
@@ -582,8 +596,20 @@ public class MainPanel {
             //stage.setAlwaysOnTop(true);
             stage.setScene(scene);
             stage.show();
-        
         });
+        MenuItem berekenAfstanden = new MenuItem("Afstanden berekenen");
+        menuSettings.getItems().add(berekenAfstanden);
+        berekenAfstanden.setOnAction(bereken -> {
+            apidistance = new ApiLocationDistance();
+            Umpire ump = umpires.get(0); // Test version!!!!!!
+            ArrayList<Club> clubkes = new ArrayList<>(clubs);
+            try {
+                String x = apidistance.calculateDistance(ump, clubkes);
+            } catch (IOException ex) {
+                Logger.getLogger(GameSchedule.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+        });
+        
         return menubar;
     }
     
@@ -1009,7 +1035,7 @@ public class MainPanel {
                 } else {
                     System.out.println("does not exist: " + cl.getClubNaam());
                     
-                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getLiga(), cl.getClubNummer(), cl.getVoorzitter(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getClubWebsite(), cl.getVisible());
+                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getLiga(), cl.getClubNummer(), cl.getVoorzitter(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getClubWebsite(), cl.getVisible(), cl.getLatitude(), cl.getLongitude());
                     
                 }
             }

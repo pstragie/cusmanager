@@ -32,23 +32,26 @@ public class Umpire {
     private final ObjectProperty<Club> umpireclub;
     private Boolean actief;
     private final ArrayList<Afdeling> umpireafdelingen;
-    
+    private final SimpleStringProperty latitude;
+    private final SimpleStringProperty longitude;
     /** Represents the umpires details
      * 
-     * @param umpirenaamString umpire familienaam
-     * @param umpirevoornaamString umpire voornaam
-     * @param umpirelicentieString umpire licentie
-     * @param umpirestraatString umpire straat
-     * @param umpirehuisnummerString umpire huisnummer
-     * @param umpirepostcodeString umpire postcode
-     * @param umpirestadString umpire stad
-     * @param umpiretelefoonString umpire telefoon
-     * @param umpireemailString umpire email
-     * @param umpireclubString umpire club
-     * @param umpireafdelingenArray umpire afdelingen
-     * @param bool umpire actief/niet-actief
+     * @param umpirenaamString
+     * @param umpirevoornaamString
+     * @param umpirelicentieString
+     * @param umpirestraatString
+     * @param umpirehuisnummerString
+     * @param umpirepostcodeString
+     * @param umpirestadString
+     * @param umpiretelefoonString
+     * @param umpireemailString
+     * @param umpireclubString
+     * @param umpireafdelingenArray
+     * @param bool
+     * @param latitudeString
+     * @param longitudeString 
      */
-    public Umpire(String umpirenaamString, String umpirevoornaamString, String umpirelicentieString, String umpirestraatString, String umpirehuisnummerString, String umpirepostcodeString, String umpirestadString, String umpiretelefoonString, String umpireemailString, Club umpireclubString, ArrayList umpireafdelingenArray, Boolean bool) {
+    public Umpire(String umpirenaamString, String umpirevoornaamString, String umpirelicentieString, String umpirestraatString, String umpirehuisnummerString, String umpirepostcodeString, String umpirestadString, String umpiretelefoonString, String umpireemailString, Club umpireclubString, ArrayList umpireafdelingenArray, Boolean bool, String latitudeString, String longitudeString) {
         this.umpirenaam = new SimpleStringProperty(umpirenaamString);
         this.umpirevoornaam = new SimpleStringProperty(umpirevoornaamString);
         this.umpirelicentie = new SimpleStringProperty(umpirelicentieString);
@@ -61,6 +64,8 @@ public class Umpire {
         this.umpireclub = new SimpleObjectProperty(umpireclubString);
         this.umpireafdelingen = new ArrayList<Afdeling>(umpireafdelingenArray);
         this.actief = new Boolean(bool);
+        this.latitude = new SimpleStringProperty(latitudeString);
+        this.longitude = new SimpleStringProperty(longitudeString);
     }
     
     /** Gets the umpire's last name.
@@ -159,6 +164,19 @@ public class Umpire {
         actief = bool;
     }
 
+    public String getLatitude() {
+        return latitude.get();
+    }
+    public void setLatitude(String latitudeString) {
+        latitude.set(latitudeString);
+    }
+    public String getLongitude() {
+        return longitude.get();
+    }
+    public void setLongitude(String longitudeString) {
+        longitude.set(longitudeString);
+    }
+    
     public StringProperty umpirenaamProperty() {
         return umpirenaam;
     }
@@ -190,7 +208,12 @@ public class Umpire {
     public ArrayList<Afdeling> umpireafdelingenProperty() {
         return umpireafdelingen;
     }
-    
+    public StringProperty latitudeProperty() {
+        return latitude;
+    }
+    public StringProperty longitudeProperty() {
+        return longitude;
+    }
     @Override
     public String toString() {
         String string = new String();

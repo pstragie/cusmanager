@@ -1,11 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Restricted License.
+ * No dispersal allowed.
  */
 package javafxcusmanager;
 
 import java.util.ArrayList;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -19,10 +19,11 @@ import javafx.stage.Stage;
 
 /**
  *
- * @author pieter
+ * @author Pieter Stragier <pstragier@gmail.be>
  */
-public class NewClub {
-    /**
+public class ExistingClubDetails {
+    
+        /**
 	 * @param args
 	 */
 	
@@ -35,20 +36,19 @@ public class NewClub {
 	private boolean confirmed = false;
         private ObservableList<String> afdelingen;
         private ObservableList<Club> clubs;
-	public TextField clubnaamtf, ligatf, websitetf, clubnummertf, clubemailtf, clubtelefoontf, voorzittertf, straattf, huisnummertf, postcodetf, stadtf;
-	private Label clubLabel,  ligaLabel, websiteLabel, clubnummerLabel, clubemailLabel, clubtelefoonLabel, voorzitterLabel, straatLabel, huisnrLabel, pcLabel, stadLabel;
-	private Button toevoegen, annuleren;
-
+	public TextField clubnaamtf, ligatf, websitetf, clubnummertf, clubemailtf, clubtelefoontf, voorzittertf, straattf, huisnummertf, postcodetf, stadtf, lattf, lontf;
+	private Label clubLabel,  ligaLabel, websiteLabel, clubnummerLabel, clubemailLabel, clubtelefoonLabel, voorzitterLabel, straatLabel, huisnrLabel, pcLabel, stadLabel, latLabel, lonLabel;
+	private Button opslaan, annuleren;
+        private Database database;
         // Constructor
-        public NewClub(ObservableList clubs, ObservableList afdelingen) {
-            this.afdelingen = afdelingen;
+        public ExistingClubDetails(ObservableList clubs) {
             this.clubs = clubs;
-                 
         }
 
 	// Constructor
-	public Pane clubPanel() {
-             
+	public Pane clubPanel(Club club) {
+                database = new Database();
+
 		// Schakel lay-outmanager uit
 		GridPane grid = new GridPane();
                 grid.setAlignment(Pos.CENTER_LEFT);
@@ -58,33 +58,39 @@ public class NewClub {
 
 		// Maak de tekstvakken
                 
-		clubnaamtf = new TextField( );
+		clubnaamtf = new TextField(club.getClubNaam());
                 clubnaamtf.setAlignment(Pos.CENTER_LEFT);
                 clubnaamtf.setMinWidth(250.0);
-                clubnummertf = new TextField();
+                clubnummertf = new TextField(club.getClubNummer());
                 clubnummertf.setAlignment(Pos.CENTER_LEFT);
-		voorzittertf = new TextField ( );
+                clubnummertf.setEditable(false);
+                clubnummertf.setDisable(true);
+		voorzittertf = new TextField (club.getVoorzitter());
 		voorzittertf.setAlignment(Pos.CENTER_LEFT);
-                clubemailtf = new TextField();
+                clubemailtf = new TextField(club.getClubEmail());
                 clubemailtf.setAlignment(Pos.CENTER_LEFT);
-                clubtelefoontf = new TextField();
+                clubtelefoontf = new TextField(club.getClubTelefoon());
                 clubtelefoontf.setAlignment(Pos.CENTER_LEFT);
-		straattf = new TextField ( );
+		straattf = new TextField (club.getClubStraat());
 		straattf.setAlignment(Pos.CENTER_LEFT);
-		huisnummertf = new TextField ( );
+		huisnummertf = new TextField (club.getClubStraatNummer());
 		huisnummertf.setAlignment(Pos.CENTER_LEFT);
-		postcodetf = new TextField ( );
+		postcodetf = new TextField (club.getClubPostcode());
 		postcodetf.setAlignment(Pos.CENTER_LEFT);
-		stadtf = new TextField ( );
+		stadtf = new TextField (club.getClubStad());
 		stadtf.setAlignment(Pos.CENTER_LEFT);
-		ligatf = new TextField ( );
+		ligatf = new TextField (club.getLiga());
                 ligatf.setAlignment(Pos.CENTER_LEFT);
-                websitetf = new TextField ( );
+                websitetf = new TextField (club.getClubWebsite());
                 websitetf.setAlignment(Pos.CENTER_LEFT);
+                lattf = new TextField (database.getLatitudeFromClubDatabase(club.getClubNummer()));
+                lattf.setDisable(Boolean.TRUE);
+                lontf = new TextField (database.getLongitudeFromClubDatabase(club.getClubNummer()));
+                lontf.setDisable(true);
 		// Maak de labels
-		clubLabel = new Label( "Clubnaam *" );
+		clubLabel = new Label( "Clubnaam" );
                 clubLabel.setMinWidth(100);
-		clubnummerLabel = new Label( "Club nummer *" );
+		clubnummerLabel = new Label( "Club nummer" );
 		voorzitterLabel = new Label( "Voorzitter" );
                 clubemailLabel = new Label( "Email" );
                 clubtelefoonLabel = new Label( "Telefoon" );
@@ -94,17 +100,32 @@ public class NewClub {
 		stadLabel = new Label( "Stad" );
 		ligaLabel = new Label ("Liga");
                 websiteLabel = new Label ("Website");
-		toevoegen = new Button( "Toevoegen" );
-                toevoegen.setPrefWidth(100);
+                latLabel = new Label ("Latitude");
+                lonLabel = new Label ("Longitude");
+		opslaan = new Button( "Opslaan" );
+                opslaan.setPrefWidth(100);
 		annuleren = new Button( "Annuleren" );
                 annuleren.setPrefWidth(100);
 		
-		toevoegen.setOnAction((ActionEvent event) -> {
+		opslaan.setOnAction((ActionEvent event) -> {
                     confirmed = true;
                     ArrayList<Team> emptyArray = new ArrayList<>();
-                    clubs.add(new Club(clubnaamtf.getText(), ligatf.getText(), clubnummertf.getText(), voorzittertf.getText(), straattf.getText(), huisnummertf.getText(), postcodetf.getText(), stadtf.getText(), clubemailtf.getText(), clubtelefoontf.getText(), websitetf.getText(), emptyArray, Boolean.TRUE, "", ""));
+                    System.out.println(club);
+                    int clindex = clubs.indexOf(club);
+                    clubs.get(clindex).setClubNaam(clubnaamtf.getText());
+                    clubs.get(clindex).setLiga(ligatf.getText());
+                    clubs.get(clindex).setVoorzitter(voorzittertf.getText());
+                    clubs.get(clindex).setClubStraat(straattf.getText());
+                    clubs.get(clindex).setClubStraatNummer(huisnummertf.getText());
+                    clubs.get(clindex).setClubPostcode(postcodetf.getText());
+                    clubs.get(clindex).setClubStad(stadtf.getText());
+                    clubs.get(clindex).setClubEmail(clubemailtf.getText());
+                    clubs.get(clindex).setClubTelefoon(clubtelefoontf.getText());
+                    clubs.get(clindex).setClubWebsite(websitetf.getText());
+                    Club c = clubs.get(clindex);
+                    database.updateClubToDatabase(c.getClubNaam(), c.getVoorzitter(), c.getClubNummer(), c.getClubStraat(), c.getClubStraatNummer(), c.getClubPostcode(), c.getClubStad(), c.getClubEmail(), c.getClubTelefoon(), c.getLiga(), c.getClubWebsite(), c.getVisible());
                     // Close window
-                    Stage stage = (Stage) toevoegen.getScene().getWindow();
+                    Stage stage = (Stage) opslaan.getScene().getWindow();
                     stage.close();
                     
                 });
@@ -138,8 +159,12 @@ public class NewClub {
                 grid.add(ligatf, 1, 10);
                 grid.add(websiteLabel, 0, 11);
                 grid.add(websitetf, 1, 11);
-		grid.add(toevoegen, 0, 12 );
-		grid.add(annuleren, 1, 12 );
+                grid.add(latLabel, 0, 12);
+                grid.add(lattf, 1, 12);
+                grid.add(lonLabel, 0, 13);
+                grid.add(lontf, 1, 13);
+		grid.add(opslaan, 0, 15 );
+		grid.add(annuleren, 1, 15 );
 		
 		return grid;
 	}
@@ -155,5 +180,4 @@ public class NewClub {
 	public String getInputFieldText() {
 	    return clubnaamtf.getText();
 	}
-    }
-
+}

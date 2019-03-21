@@ -31,9 +31,28 @@ public class Club {
     private final SimpleStringProperty clubwebsite;
     private Boolean visible;
     private final ArrayList<Team> clubteams;
+    private final SimpleStringProperty latitude;
+    private final SimpleStringProperty longitude;
     
-
-    public Club(String clubnaamString, String ligaString, String clubnummerString, String clubvoorzitterString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, String clubemailString, String clubtelefoonString, String clubwebsiteString, ArrayList clubteamsArray, Boolean bool) {
+    /** Model for Club
+     * 
+     * @param clubnaamString
+     * @param ligaString
+     * @param clubnummerString
+     * @param clubvoorzitterString
+     * @param clubstraatString
+     * @param clubstraatnummerString
+     * @param clubpostcodeString
+     * @param clubstadString
+     * @param clubemailString
+     * @param clubtelefoonString
+     * @param clubwebsiteString
+     * @param clubteamsArray
+     * @param bool
+     * @param latitudeString
+     * @param longitudeString 
+     */
+    public Club(String clubnaamString, String ligaString, String clubnummerString, String clubvoorzitterString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, String clubemailString, String clubtelefoonString, String clubwebsiteString, ArrayList clubteamsArray, Boolean bool, String latitudeString, String longitudeString) {
         this.clubnaam = new SimpleStringProperty(clubnaamString);
         this.liga = new SimpleStringProperty(ligaString);
         this.clubnummer = new SimpleStringProperty(clubnummerString);
@@ -47,6 +66,8 @@ public class Club {
         this.clubwebsite = new SimpleStringProperty(clubwebsiteString);
         this.clubteams = new ArrayList<Team>(clubteamsArray);
         this.visible = new Boolean(bool);
+        this.latitude = new SimpleStringProperty(latitudeString);
+        this.longitude = new SimpleStringProperty(longitudeString);
     }
 
     public String getClubNaam() {
@@ -54,6 +75,18 @@ public class Club {
     }
     public void setClubNaam(String clubnaamString) {
         clubnaam.set(clubnaamString);
+    }
+    public String getLatitude() {
+        return latitude.get();
+    }
+    public void setLatitude(String latitudeString) {
+        latitude.set(latitudeString);
+    }
+    public String getLongitude() {
+        return longitude.get();
+    }
+    public void setLongitude(String longitudeString) {
+        longitude.set(longitudeString);
     }
     public String getLiga() {
         return liga.get();
@@ -168,7 +201,12 @@ public class Club {
     public StringProperty clubwebsiteProperty() {
         return clubwebsite;
     }
-    
+    public StringProperty latitudeProperty() {
+        return latitude;
+    }
+    public StringProperty longitudeProperty() {
+        return longitude;
+    }
     @Override
     public String toString() {
         String string = new String();

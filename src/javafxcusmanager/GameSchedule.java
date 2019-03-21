@@ -81,21 +81,14 @@ public class GameSchedule {
     private String seizoen;
     private String startOfYear;
     private Preferences pref;
-    private GoogleDistance apidistance;
+    private ApiLocationDistance apidistance;
     //private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
     private final ObjectProperty<ListCell<String>> dragSource = new SimpleObjectProperty<>();
 
     
     // Constructor
     public GameSchedule(ObservableList<Game> gameData, ObservableList<Team> teams, ObservableList<Afdeling> afdelingen, ObservableList<Club> clubs, ObservableList<Umpire> umpires, String seizoen) {
-        apidistance = new GoogleDistance();
-        Umpire ump = umpires.get(0);
-        ArrayList<Club> clubkes = new ArrayList<>(clubs);
-        try {
-            String x = apidistance.calculateDistance(ump, clubkes);
-        } catch (IOException ex) {
-            Logger.getLogger(GameSchedule.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
         
         this.teams = teams;
         this.afdelingen = afdelingen;

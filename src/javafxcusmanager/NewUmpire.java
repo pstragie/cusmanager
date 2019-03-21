@@ -45,8 +45,8 @@ public class NewUmpire {
     }
     // Attributen
     private boolean confirmed = false;
-    public TextField voornaamtf, familienaamtf, licentietf, clubtf, straattf, huisnummertf, postcodetf, stadtf, afdelingentf, telefoontf, emailtf;
-    private Label vnaamLabel, fnaamLabel, licentieLabel, clubLabel, straatLabel, huisnrLabel, pcLabel, stadLabel, afdelingenLabel, telefoonLabel, emailLabel, actiefLabel;
+    public TextField voornaamtf, familienaamtf, licentietf, clubtf, straattf, huisnummertf, postcodetf, stadtf, afdelingentf, telefoontf, emailtf, lattf, lontf;
+    private Label vnaamLabel, fnaamLabel, licentieLabel, clubLabel, straatLabel, huisnrLabel, pcLabel, stadLabel, afdelingenLabel, telefoonLabel, emailLabel, actiefLabel, latLabel, lonLabel;
     
     public CheckBox actiefCheckbox;
     private final ListView afdelingListview = new ListView();
@@ -184,15 +184,17 @@ public class NewUmpire {
                     emailtf.setText(umpireList.get(0).getUmpireEmail());
                     actiefCheckbox.setSelected(umpireList.get(0).getActief());
                     afdelingenArray.setAll(umpireList.get(0).getUmpireAfdelingen());
+                    lattf.setText(umpireList.get(0).getLatitude());
+                    lontf.setText(umpireList.get(0).getLongitude());
                     // Combobox
                     clubComboBox = new ComboBox();
-                        // List with afdelingen
+                    // List with afdelingen
 
-                        ObservableList<Club> data = FXCollections.observableArrayList(clubs);
+                    ObservableList<Club> data = FXCollections.observableArrayList(clubs);
 
-                        clubComboBox.getItems().addAll(data);
-                        Club clnaam = umpireList.get(0).getUmpireClub();
-                        clubComboBox.setValue(clnaam);
+                    clubComboBox.getItems().addAll(data);
+                    Club clnaam = umpireList.get(0).getUmpireClub();
+                    clubComboBox.setValue(clnaam);
 
                 } else {
                     voornaamtf.setText("");
@@ -314,7 +316,12 @@ public class NewUmpire {
 	public String getInputFieldText() {
 	    return voornaamtf.getText();
 	}
-        
+        public String getLatitude() {
+            return lattf.getText();
+        }
+        public String getLongitude() {
+            return lontf.getText();
+        }
         public String getVoornaam() {
             return voornaamtf.getText();
         }

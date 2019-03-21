@@ -94,8 +94,8 @@ public class UmpireView {
             umpireselection = umpires.get(0);
         } else {
             ArrayList<Afdeling> emptyArray = new ArrayList<>();
-            Club emptyClub = new Club("", "", "", "", "", "", "", "", "", "", "", emptyArray, Boolean.FALSE);
-            umpireselection = new Umpire("", "", "", "", "", "", "", "", "", emptyClub, emptyArray, Boolean.FALSE);
+            Club emptyClub = new Club("", "", "", "", "", "", "", "", "", "", "", emptyArray, Boolean.FALSE, "", "");
+            umpireselection = new Umpire("", "", "", "", "", "", "", "", "", emptyClub, emptyArray, Boolean.FALSE, "", "");
         }
         
         // Left Side: List of all Clubs in TabPane, Alphabetically
@@ -191,8 +191,8 @@ public class UmpireView {
                 if (nieuwUmpire && !Uexists) {
                     // Nieuwe umpire toevoegen
                     System.out.println("Nieuwe umpire bestaat nog niet.");
-                    database.insertNewUmpireToDatabase(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), clubstring, afdelingArrayString, newUmpire.getActiefCheckBoxValue());
-                    umpires.add(new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue()));
+                    database.insertNewUmpireToDatabase(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), clubstring, afdelingArrayString, newUmpire.getActiefCheckBoxValue(), "", "");
+                    umpires.add(new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue(), "", ""));
                     umpires.sort(umpireComparator);
                 } else 
                     if (nieuwUmpire && Uexists) {
@@ -213,7 +213,7 @@ public class UmpireView {
                             int uIndex = umpires.indexOf(filtumpire.get(0));
                             System.out.println("umpire index = " + uIndex);
                             try {
-                                umpires.set(uIndex, new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue()));
+                                umpires.set(uIndex, new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue(), newUmpire.getLatitude(), newUmpire.getLongitude()));
                             } catch (Error e) {
                                 System.err.println("ArrayIndexOutOfBoundsException caught in action... Opslaan niet gelukt!");
                                 System.out.println("umpires lijst = " + umpires);
