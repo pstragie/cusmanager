@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.sql.Array;
 import java.sql.SQLException;
@@ -21,6 +22,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.util.Pair;
 import org.json.*;
 /**
@@ -55,12 +59,12 @@ public class ApiLocationDistance {
             umpLatLong = getLocationUmpire(ump);
             database.updateUmpireLocationInDatabase(ump.getUmpireLicentie(), Double.toString((Double) umpLatLong.getKey()), Double.toString((Double) umpLatLong.getValue()));
         } else {
-            umpLatLong = new Pair(lon, lat);
+            umpLatLong = new Pair(lat, lon);
         }
         for (Club c : clubs) {
             String clat = database.getLatitudeFromClubDatabase(c.getClubNummer());
             String clon = database.getLongitudeFromClubDatabase(c.getClubNummer());
-            Boolean force = Boolean.TRUE;
+            Boolean force = Boolean.FALSE;
             if (clat == null || clon == null || clat.equals(Double.toString(0.0)) || clon.equals(Double.toString(0.0)) || Objects.equals(force, Boolean.TRUE)) {
                 System.out.println(c.getClubNaam() + ": lat or lon club unknown or forced to recalculate location!");
                 clubLatLong = getLocationClub(c);
@@ -84,8 +88,8 @@ public class ApiLocationDistance {
             
         ArrayList<String> destinationsArray = new ArrayList<>();
         for (Pair p : clubLatLongArray) {
-            String clat = Double.toString((Double) p.getKey());
-            String clon = Double.toString((Double) p.getValue());
+            String clat = (String) p.getKey();
+            String clon = (String) p.getValue();
             destinationsString = String.join(",", clat, clon);
             destinationsArray.add(destinationsString);
         }
@@ -96,7 +100,7 @@ public class ApiLocationDistance {
         try {
             //URL url = new URL("http://dev.virtualearth.net/REST/v1/Routes?wayPoint.1={wayPpoint1}&viaWaypoint.2={viaWaypoint2}&waypoint.3={waypoint3}&wayPoint.n={waypointN}&heading={heading}&optimize={optimize}&avoid={avoid}&distanceBeforeFirstTurn={distanceBeforeFirstTurn}&routeAttributes={routeAttributes}&timeType={timeType}&dateTime={dateTime}&maxSolutions={maxSolutions}&tolerances={tolerances}&distanceUnit={distanceUnit}&key={'" + BingMapsKey + "'}");
             //URL url = new URL("https://dev.virtualearth.net/REST/v1/Routes/DistanceMatrix?origins={lat0,long0;lat1,lon1;latM,lonM}&destinations={lat0,lon0;lat1,lon1;latN,longN}&travelMode={travelMode}&startTime={startTime}&timeUnit={timeUnit}&key={'"+BingMapsAPIKey+"'}");
-            URL url = new URL("https://dev.virtualearth.net/REST/v1/Routes/DistanceMatrix?origins=47.6044,-122.3345&destinations=45.5347,-122.6231;47.4747,-122.2057&travelMode=driving&key=LwvKKpyMS0B0X3uTAp0Y~q47SlJVuQ98QE6zlT_3gUA~AknQEc5Uo1JkymduJ8gUGcWDwPb5ZBifrtZM_R4-Q4ieHb__2JdktKpc6npU0WhZ");
+            URL url = new URL("https://dev.virtualearth.net/REST/v1/Routes/DistanceMatrix?origins="+originString+"&destinations="+destinationsLatLon+"&travelMode=driving&key=LwvKKpyMS0B0X3uTAp0Y~q47SlJVuQ98QE6zlT_3gUA~AknQEc5Uo1JkymduJ8gUGcWDwPb5ZBifrtZM_R4-Q4ieHb__2JdktKpc6npU0WhZ");
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -131,8 +135,10 @@ public class ApiLocationDistance {
                         //String latitude = destinations.getJSONObject(k).getString("latitude");
                         String latitude = Float.toString(destinations.getJSONObject(k).getFloat("latitude"));
                         String longitude = Float.toString(destinations.getJSONObject(k).getFloat("longitude"));
-                        System.out.println("Ump: " + ump.getUmpireNaam() + ", club: " + clubs.get(i) + ", Latitude = " + latitude + ", Longitude = " + longitude + ", Distance: " + distance);
-                        storeDistance(ump, clubs.get(i), distance);
+                        System.out.println("club to look for: " + clubs.get(k));
+                        System.out.println("Ump: " + ump.getUmpireLicentie()+ ", club: " + clubs.get(i).getClubNummer() + ", Latitude = " + latitude + ", Longitude = " + longitude + ", Distance: " + distance);
+
+                        storeDistance(ump, clubs.get(k), distance);
                     }
                 }
             }
@@ -146,12 +152,14 @@ public class ApiLocationDistance {
         return totalDistance;
     }
     
-    private Pair getLocationUmpire(Umpire ump) throws IOException {
+    public Pair getLocationUmpire(Umpire ump) throws IOException {
         Pair umpPair = new Pair<>(0.0, 0.0);
         String straat = ump.getUmpireStraat();
+        straat = straat.replace(" ", "_");
         String huisnummer = ump.getUmpireHuisnummer();
         String postcode = ump.getUmpirePostcode();
         String stad = ump.getUmpireStad();
+        stad = stad.replace(" ", "_");
         String land = "Belgium";
         
         try {
@@ -201,10 +209,11 @@ public class ApiLocationDistance {
         return umpPair;
     }
         
-    private Pair getLocationClub(Club club) throws IOException {
+    public Pair getLocationClub(Club club) throws IOException {
         System.out.println("Getting location for club {}.".format(club.getClubNaam()));
         Pair clubPair = new Pair<>(0.0, 0.0);
         String straat = club.getClubStraat();
+        straat = straat.replace(" ", "_");
         String huisnummer = club.getClubStraatNummer();
         String postcode = club.getClubPostcode();
         String stad = club.getClubStad();
@@ -261,8 +270,10 @@ public class ApiLocationDistance {
     private void storeDistance(Umpire ump, Club club, String distance) {
         try {
             if (database.checkIfDistanceExists(ump, club)) {
+                System.out.println("Distance for club/ump exists... update");
                 database.updateDistanceToDatabase(ump, club, distance);
             } else {
+                System.out.println("Distance for club/ump does not exist... insert");
                 database.insertDistanceToDatabase(ump, club, distance);
             }
         } catch (SQLException ex) {
@@ -270,4 +281,30 @@ public class ApiLocationDistance {
         }
     }
     
+    public VBox showMap(Umpire ump, Club club, Double w, Double h) throws IOException {
+        VBox mapBox = new VBox();
+        ArrayList<String> pushpinArray = new ArrayList<>();
+        String centerMap = "50.8503,4.3517";
+        String umpPushpin = ump.getLatitude() + "," + ump.getLongitude();
+        String clubPushpin = club.getLatitude() + "," + club.getLongitude();
+        System.out.println("Width & Height = " + w + ", " + h);
+        try {
+            URL url = new URL("https://dev.virtualearth.net/REST/V1/Imagery/Map/Road/"+centerMap+"/8?mapSize=600,400&format=png&pushpin="+umpPushpin+";50;1&pushpin="+clubPushpin+";64;2&pushpin=51.73732,3.8573;64;3&key=LwvKKpyMS0B0X3uTAp0Y~q47SlJVuQ98QE6zlT_3gUA~AknQEc5Uo1JkymduJ8gUGcWDwPb5ZBifrtZM_R4-Q4ieHb__2JdktKpc6npU0WhZ");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            boolean backgroundLoading = true;
+            // The image is being loaded in the background
+            String urls = "https://dev.virtualearth.net/REST/V1/Imagery/Map/Road/"+centerMap+"/8?mapSize=600,400&format=png&pushpin="+umpPushpin+";50;1&pushpin="+clubPushpin+";64;2&pushpin=51.73732,3.8573;64;3&key=LwvKKpyMS0B0X3uTAp0Y~q47SlJVuQ98QE6zlT_3gUA~AknQEc5Uo1JkymduJ8gUGcWDwPb5ZBifrtZM_R4-Q4ieHb__2JdktKpc6npU0WhZ";
+            Image image = new Image(urls, backgroundLoading);
+            
+            final ImageView imageview = new ImageView();
+            imageview.setImage(image);
+            
+            mapBox.getChildren().add(imageview);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(ApiLocationDistance.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return mapBox;
+    }
 }

@@ -72,7 +72,7 @@ public class NewUmpire {
             this.nieuw = nieuw;
             System.out.println("Umpire: " + umpire);
             database = new Database();
-            umpireList = FXCollections.observableArrayList(database.getUmpireFromDatabase(umpire.getUmpireNaam()));
+            umpireList = FXCollections.observableArrayList(database.getUmpireFromDatabase(umpire.getUmpireLicentie()));
             Comparator<Umpire> umpireComparator = Comparator.comparing(Umpire::getUmpireNaam);
             
             umpireList.sort(umpireComparator);
@@ -142,7 +142,12 @@ public class NewUmpire {
 		familienaamtf.setAlignment(Pos.CENTER_LEFT);
                 licentietf = new TextField();
                 licentietf.setAlignment(Pos.CENTER_LEFT);
-		
+		lattf = new TextField();
+                lattf.setAlignment(Pos.CENTER_LEFT);
+                lattf.setDisable(true);
+                lontf = new TextField();
+                lontf.setAlignment(Pos.CENTER_LEFT);
+                lontf.setDisable(true);
                 
 		straattf = new TextField ( );
 		straattf.setAlignment(Pos.CENTER_LEFT);
@@ -157,7 +162,8 @@ public class NewUmpire {
                 emailtf = new TextField();
                 emailtf.setAlignment(Pos.CENTER_LEFT);
                 actiefCheckbox = new CheckBox();
-                
+                lattf = new TextField();
+                lontf = new TextField();
                 actiefCheckbox.setOnMouseEntered(event -> {
                     VBox popUpVBox = new VBox();
                     popUpVBox.getChildren().add(new Label("Zet umpire actief/niet-actief"));
@@ -185,6 +191,8 @@ public class NewUmpire {
                     actiefCheckbox.setSelected(umpireList.get(0).getActief());
                     afdelingenArray.setAll(umpireList.get(0).getUmpireAfdelingen());
                     lattf.setText(umpireList.get(0).getLatitude());
+                    lattf.setDisable(true);
+                    lontf.setDisable(true);
                     lontf.setText(umpireList.get(0).getLongitude());
                     // Combobox
                     clubComboBox = new ComboBox();
@@ -225,7 +233,8 @@ public class NewUmpire {
 		stadLabel = new Label( "Stad" );
 		licentieLabel = new Label( "Licentie *" );
                 actiefLabel = new Label("Actief");
-		
+		latLabel = new Label("Latitude");
+                lonLabel = new Label("Longitude");
                 
 		
                 
@@ -296,8 +305,12 @@ public class NewUmpire {
                 grid.add(telefoontf, 1, 9);
                 grid.add(emailLabel, 0, 10);
                 grid.add(emailtf, 1, 10);
-		grid.add(actiefLabel, 0, 11);
-                grid.add(actiefCheckbox, 1, 11);
+                grid.add(latLabel, 0, 11);
+                grid.add(lattf, 1, 11);
+                grid.add(lonLabel, 0, 12);
+                grid.add(lontf, 1, 12);
+		grid.add(actiefLabel, 0, 13);
+                grid.add(actiefCheckbox, 1, 13);
                 grid.add(afdelingenLabel, 2, 0 , 1, 1);
                 grid.add(afdelingListview, 2, 1 , 1, afdelingen.size());
 		

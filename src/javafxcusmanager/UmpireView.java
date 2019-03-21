@@ -5,6 +5,7 @@
  */
 package javafxcusmanager;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -51,6 +52,7 @@ public class UmpireView {
     private ObservableList<Umpire> umpires;
     private NewUmpire newUmpire;
     private Umpire umpireselection;
+    private ApiLocationDistance apiLocationDistance;
     private Database database;
     //private ListView clubList;
     private ListView umpirelistview = new ListView();
@@ -78,7 +80,7 @@ public class UmpireView {
         this.afdelingen = afdelingen;   
         database = new Database();
         borderPane = new BorderPane();
-        
+        apiLocationDistance = new ApiLocationDistance();
         
     }
     
@@ -187,12 +189,24 @@ public class UmpireView {
                     Logger.getLogger(UmpireView.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
+                // Update lat lon after opslaan
+                String lat = "";
+                String lon = "";
+                Umpire umpire = database.getUmpireFromDatabase(newUmpire.licentietf.getText());
+                try {
+                    lat = (String) Double.toString((Double) apiLocationDistance.getLocationUmpire(umpire).getKey());
+                    lon = (String) Double.toString((Double) apiLocationDistance.getLocationUmpire(umpire).getValue());
+                } catch (IOException ex) {
+                    Logger.getLogger(UmpireView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                database.updateUmpireLocationInDatabase(umpire.getUmpireLicentie(), lat, lon);
+                
                 // Verifieer umpire
                 if (nieuwUmpire && !Uexists) {
                     // Nieuwe umpire toevoegen
                     System.out.println("Nieuwe umpire bestaat nog niet.");
-                    database.insertNewUmpireToDatabase(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), clubstring, afdelingArrayString, newUmpire.getActiefCheckBoxValue(), "", "");
-                    umpires.add(new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue(), "", ""));
+                    database.insertNewUmpireToDatabase(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), clubstring, afdelingArrayString, newUmpire.getActiefCheckBoxValue(), lat, lon);
+                    umpires.add(new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue(), lat, lon));
                     umpires.sort(umpireComparator);
                 } else 
                     if (nieuwUmpire && Uexists) {
@@ -213,7 +227,7 @@ public class UmpireView {
                             int uIndex = umpires.indexOf(filtumpire.get(0));
                             System.out.println("umpire index = " + uIndex);
                             try {
-                                umpires.set(uIndex, new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue(), newUmpire.getLatitude(), newUmpire.getLongitude()));
+                                umpires.set(uIndex, new Umpire(newUmpire.familienaamtf.getText(), newUmpire.voornaamtf.getText(), newUmpire.licentietf.getText(), newUmpire.straattf.getText(), newUmpire.huisnummertf.getText(), newUmpire.postcodetf.getText(), newUmpire.stadtf.getText(), newUmpire.telefoontf.getText(), newUmpire.emailtf.getText(), newUmpire.clubComboBox.getValue(), afdArray2, newUmpire.getActiefCheckBoxValue(), lat, lon));
                             } catch (Error e) {
                                 System.err.println("ArrayIndexOutOfBoundsException caught in action... Opslaan niet gelukt!");
                                 System.out.println("umpires lijst = " + umpires);
@@ -284,7 +298,7 @@ public class UmpireView {
      * @param pane
      * @return 
      */
-    public ListView getUmpireListView(VBox umpirevbox, Pane pane) {
+    private ListView getUmpireListView(VBox umpirevbox, Pane pane) {
         Label umpirelabel = new Label("Umpires");
         umpirelabel.setPadding(new Insets(0, 0, 0, 5));
         umpirelabel.setFont(Font.font( null, FontWeight.BOLD, 20 ));
@@ -359,9 +373,9 @@ public class UmpireView {
                         }
                         
                     });
-                    MenuItem wisRij = new MenuItem("Wis umpire");
-                    cm.getItems().add(wisRij);
-                    wisRij.setOnAction(wisrij -> {
+                    MenuItem wisUmp = new MenuItem("Wis umpire");
+                    cm.getItems().add(wisUmp);
+                    wisUmp.setOnAction(wisrij -> {
                         int newIndex = umpires.indexOf(umpires.get(cell.getIndex()));
                         database.deleteUmpireFromDatabase(umpires.get(newIndex).getUmpireLicentie());
                         umpires.remove(umpires.get(newIndex));
@@ -369,6 +383,17 @@ public class UmpireView {
                         // Refresh pane on the left side
                         lpane = setDetails(umpireselection, nieuwUmpire);
                         leftPane.setCenter(lpane);
+                    });
+                    MenuItem calcDist = new MenuItem("Afstanden berekenen");
+                    cm.getItems().add(calcDist);
+                    calcDist.setOnAction((calc) -> {
+                        apiLocationDistance = new ApiLocationDistance();
+                        ArrayList<Club> clubarray = new ArrayList<>(clubs);
+                        try {
+                            apiLocationDistance.calculateDistance(umpireselection, clubarray);
+                        } catch (IOException ex) {
+                            Logger.getLogger(UmpireView.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)

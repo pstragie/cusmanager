@@ -236,7 +236,7 @@ public class Database {
             }
             
         } catch (SQLException e) {
-            System.err.println("Get clubs: " + e);
+            System.err.println("Get all clubs: " + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -283,7 +283,7 @@ public class Database {
             }
             
         } catch (SQLException e) {
-            System.err.println("Get clubs: " + e);
+            System.err.println("Get club: " + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -615,7 +615,7 @@ public class Database {
      * @param umpirenaam
      * @return Object (Umpire)
      */
-    public Umpire getUmpireFromDatabase(String umpirenaam) {
+    public Umpire getUmpireFromDatabase(String umpirelicentie) {
         System.out.println("Umpire requested from database!");
         ArrayList<Afdeling> afdarray = new ArrayList<>();
         ArrayList<Team> teamArray = new ArrayList<>();
@@ -623,7 +623,7 @@ public class Database {
         Umpire u = new Umpire("", "", "", "", "", "", "", "", "", cl, afdarray, Boolean.TRUE, "", "");
         try {
             stmt = con.createStatement();
-            String sql = "SELECT * from APP.Umpires WHERE umpirenaam = '" + umpirenaam + "'";
+            String sql = "SELECT * from APP.Umpires WHERE umpirelicentie = '" + umpirelicentie + "'";
             ResultSet rs = stmt.executeQuery(sql);
             while(rs.next()) {
                 String a = rs.getString("umpirenaam");
@@ -1129,7 +1129,7 @@ public class Database {
             }
             
         } catch (SQLException e) {
-            System.err.println("Get clubs: " + e);
+            System.err.println("Get game: " + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -1343,7 +1343,7 @@ public class Database {
         
         try {
             stmt = con.createStatement();
-            String sql = "Select 1 from APP.Distances" + " where umpire = ? AND club = ?";  
+            String sql = "Select 1 from APP.Distances where umpire = ? AND club = ?";  
             PreparedStatement ps = con.prepareStatement(sql);
             //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
             ps.setString(1, ump.getUmpireLicentie());
@@ -1364,4 +1364,63 @@ public class Database {
         }
         return Boolean.TRUE;
     }
+    
+    public String getClubFromDatabaseLatLon(String latitude, String longitude) {
+        String clubnaam = "";
+        ArrayList<Team> teamArray = new ArrayList<>();
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.CLUBS WHERE latitude = '" + latitude + "' AND longitude = '" + longitude + "'";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                clubnaam = rs.getString("clubnaam");
+                System.out.println("Club from latlon = " + clubnaam);
+                
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Get club Lat Lon: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+
+        return clubnaam;
+    }
+
+    public String getDistFromUmpireClub(String umpirelicentie, String clubnummer) {
+        String distance = "";
+        ArrayList<Team> teamArray = new ArrayList<>();
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.DISTANCES WHERE umpire = '" + umpirelicentie + "' AND club = '" + clubnummer + "'";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                distance = rs.getString("distance");
+                System.out.println("Distance = " + distance);
+                
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Get club Lat Lon: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+
+        return distance;
+    }
+
 }

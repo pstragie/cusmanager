@@ -4,7 +4,10 @@
  */
 package javafxcusmanager;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -14,8 +17,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 /**
  *
@@ -36,19 +41,20 @@ public class ExistingClubDetails {
 	private boolean confirmed = false;
         private ObservableList<String> afdelingen;
         private ObservableList<Club> clubs;
+        private ApiLocationDistance apiLocationdistance;
 	public TextField clubnaamtf, ligatf, websitetf, clubnummertf, clubemailtf, clubtelefoontf, voorzittertf, straattf, huisnummertf, postcodetf, stadtf, lattf, lontf;
 	private Label clubLabel,  ligaLabel, websiteLabel, clubnummerLabel, clubemailLabel, clubtelefoonLabel, voorzitterLabel, straatLabel, huisnrLabel, pcLabel, stadLabel, latLabel, lonLabel;
-	private Button opslaan, annuleren;
+	private Button opslaan, annuleren, locatieBepalen;
         private Database database;
         // Constructor
         public ExistingClubDetails(ObservableList clubs) {
             this.clubs = clubs;
+            database = new Database();
+            apiLocationdistance = new ApiLocationDistance();
         }
 
 	// Constructor
 	public Pane clubPanel(Club club) {
-                database = new Database();
-
 		// Schakel lay-outmanager uit
 		GridPane grid = new GridPane();
                 grid.setAlignment(Pos.CENTER_LEFT);
@@ -102,11 +108,15 @@ public class ExistingClubDetails {
                 websiteLabel = new Label ("Website");
                 latLabel = new Label ("Latitude");
                 lonLabel = new Label ("Longitude");
+                
 		opslaan = new Button( "Opslaan" );
                 opslaan.setPrefWidth(100);
 		annuleren = new Button( "Annuleren" );
                 annuleren.setPrefWidth(100);
-		
+                locatieBepalen = new Button("Locatie bepalen");
+		locatieBepalen.setPrefWidth(150);
+                HBox horButtonBox = new HBox(5);
+                horButtonBox.getChildren().addAll(locatieBepalen, opslaan, annuleren);
 		opslaan.setOnAction((ActionEvent event) -> {
                     confirmed = true;
                     ArrayList<Team> emptyArray = new ArrayList<>();
@@ -135,6 +145,23 @@ public class ExistingClubDetails {
                     stage.close();
 		});
 	
+                locatieBepalen.setOnAction((loc) -> {
+                    Pair p = new Pair(0.0, 0.0);
+                    try {
+                        p = apiLocationdistance.getLocationClub(club);
+                    } catch (IOException ex) {
+                        Logger.getLogger(ExistingClubDetails.class.getName()).log(Level.SEVERE, null, ex);
+                    } finally {
+                        String latitude = Double.toString((Double) p.getKey());
+                        String longitude = Double.toString((Double) p.getValue());
+                        database.updateClubLocationInDatabase(club.getClubNummer(), latitude, longitude);
+                        int cindex = clubs.indexOf(club);
+                        clubs.get(cindex).setLatitude(latitude);
+                        clubs.get(cindex).setLongitude(longitude);
+                        lattf.setText(latitude);
+                        lontf.setText(longitude);
+                    }
+                });
 		// Bepaal van alle componenten de plaats en afmeting
                 
 		grid.add(clubLabel, 0, 1 );
@@ -163,8 +190,10 @@ public class ExistingClubDetails {
                 grid.add(lattf, 1, 12);
                 grid.add(lonLabel, 0, 13);
                 grid.add(lontf, 1, 13);
-		grid.add(opslaan, 0, 15 );
-		grid.add(annuleren, 1, 15 );
+                grid.add(horButtonBox, 0, 15, 2, 1);
+                //grid.add(locatieBepalen, 0, 15);
+		//grid.add(opslaan, 1, 15 );
+		//grid.add(annuleren, 2, 15 );
 		
 		return grid;
 	}

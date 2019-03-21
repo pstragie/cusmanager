@@ -44,11 +44,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Optional;
@@ -94,6 +91,7 @@ public class MainPanel {
     private TextField clubfilterField;
     private Preferences pref;
     private ApiLocationDistance apidistance;
+    private ShowDistances showdistances;
 
     /** MainPanel
      * 
@@ -149,8 +147,8 @@ public class MainPanel {
         clubs.addListener((ListChangeListener.Change<? extends Club> change) -> { 
             while(change.next()) {
                 if(change.wasUpdated()) {
-                            System.out.println("Update detected");
-                            // Write to file
+                    System.out.println("Update detected");
+                    // Write to file
 
                 } else
                     if (change.wasPermutated()) {
@@ -354,6 +352,16 @@ public class MainPanel {
                 umpires.addAll(database.getAllUmpiresFromDatabase());
             }
         });
+        
+        MenuItem umpAfstanden = new MenuItem("Afstanden...");
+        menuUmpires.getItems().add(umpAfstanden);
+        umpAfstanden.setOnAction(afstanden -> {
+            Stage stageD = new Stage();
+            Scene scene = new Scene(showDistances(), 1400, 1000);
+            stageD.setTitle("Afstanden tussen umpire en clubs");
+            stageD.setScene(scene);
+            stageD.show();
+        });
         Button button = new Button("Exporteren (backup)");
         CustomMenuItem customMenuItem = new CustomMenuItem();
         customMenuItem.setContent(button);
@@ -373,7 +381,7 @@ public class MainPanel {
             stage.setTitle("Clubs beheren");
             //stage.setAlwaysOnTop(true);
             stage.setScene(scene);
-            stage.show();
+            stage.showAndWait();
             
         });
         MenuItem clubsImporteren = new MenuItem("Clubs & Teams importeren...");
@@ -601,13 +609,14 @@ public class MainPanel {
         menuSettings.getItems().add(berekenAfstanden);
         berekenAfstanden.setOnAction(bereken -> {
             apidistance = new ApiLocationDistance();
-            Umpire ump = umpires.get(0); // Test version!!!!!!
             ArrayList<Club> clubkes = new ArrayList<>(clubs);
-            try {
-                String x = apidistance.calculateDistance(ump, clubkes);
-            } catch (IOException ex) {
-                Logger.getLogger(GameSchedule.class.getName()).log(Level.SEVERE, null, ex);
-            } 
+            for (Umpire umpi : umpires) {
+                try {
+                    String x = apidistance.calculateDistance(umpi, clubkes);
+                } catch (IOException ex) {
+                    Logger.getLogger(GameSchedule.class.getName()).log(Level.SEVERE, null, ex);
+                } 
+            }
         });
         
         return menubar;
@@ -1000,6 +1009,14 @@ public class MainPanel {
             return umpireview.umpirePane();
     }
     
+    /** Open nieuw venster om afstanden te tonen
+     * 
+     * @return 
+     */
+    private Pane showDistances() {
+        showdistances = new ShowDistances(umpires, clubs, teams, afdelingen);
+        return showdistances.distancePane();
+    }
     /** Afdeling toevoegen
      * 
      */
@@ -1066,5 +1083,7 @@ public class MainPanel {
         LocalTime tijd = LocalTime.parse(time, formatter);
         return tijd;
     }    
+    
+    
 }
 
