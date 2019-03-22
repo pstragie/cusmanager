@@ -364,8 +364,7 @@ public class DocumentHandling {
                                 String gi = parts[11];
                                 String se = parts[12];
                                 LocalDate datum = mainPanel.stringToLocalDate(gd);
-                                LocalTime tijd = mainPanel.stringToLocalTime(gt);
-                        list.add(new Game(gi, afd, w, datum, tijd, ht, vt, pu, b1, b2, b3, gn, se));
+                        list.add(new Game(gi, afd, w, datum, gt, ht, vt, pu, b1, b2, b3, gn, se));
                     });
                     
                 

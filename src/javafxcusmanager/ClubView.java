@@ -235,10 +235,10 @@ public class ClubView {
                     cm.getItems().add(editClub);
                     editClub.setOnAction(edit -> {
                         // Show Pane in borderPane Right
-
+                        System.out.println("club context menu: " + edit);
                         System.out.println("Club details");
                         Stage stage = new Stage();
-                        int newIndex = clubs.indexOf(clubs.get(cell.getIndex()));
+                        int newIndex = clubs.indexOf(filteredData.get(cell.getIndex()));
                         Scene scene = new Scene(existingClubPaneel(clubs.get(newIndex)), 420, 520);
                         //stage.setX(1000);
                         //stage.setY(800);

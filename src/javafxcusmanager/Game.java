@@ -29,7 +29,7 @@ public class Game {
     private final SimpleStringProperty base3umpire;
     private final SimpleStringProperty gamenumber;
     private final ObjectProperty<LocalDate> gamedatum ;
-    private final ObjectProperty<LocalTime> gameuur;
+    private final SimpleStringProperty gameuur;
     private final SimpleStringProperty seizoen;
 
     /** Class Game
@@ -48,12 +48,12 @@ public class Game {
      * @param gamenumberString
      * @param seizoenString 
      */
-    public Game(String gameindexString, String afdelingString, String weekString, LocalDate gameDate, LocalTime gameUur, String homeTeamName, String visitingTeamName, String plateUmpireName, String base1UmpireName, String base2UmpireName, String base3UmpireName, String gamenumberString, String seizoenString) {
+    public Game(String gameindexString, String afdelingString, String weekString, LocalDate gameDate, String gameUur, String homeTeamName, String visitingTeamName, String plateUmpireName, String base1UmpireName, String base2UmpireName, String base3UmpireName, String gamenumberString, String seizoenString) {
         this.gameindex = new SimpleStringProperty(gameindexString);
         this.afdeling = new SimpleStringProperty(afdelingString);
         this.week = new SimpleStringProperty(weekString);
         this.gamedatum = new SimpleObjectProperty<>(this, "gamedatum", gameDate);
-        this.gameuur = new SimpleObjectProperty<>(this, "gameuur", gameUur);
+        this.gameuur = new SimpleStringProperty(gameUur);
         this.hometeam = new SimpleStringProperty(homeTeamName);
         this.visitingteam = new SimpleStringProperty(visitingTeamName);
         this.plateumpire = new SimpleStringProperty(plateUmpireName);
@@ -219,17 +219,17 @@ public class Game {
      * 
      * @return LocalTime class
      */
-    public LocalTime getGameUur() {
+    public String getGameUur() {
         return gameuur.get();
     }
     /** Set LocalTime Game time uur:minuten
      * 
      * @param gameUur LocalTime class
      */
-    public void setGameUur(LocalTime gameUur) {
+    public void setGameUur(String gameUur) {
         this.gameuur.set(gameUur);
     }
-    public ObjectProperty<LocalTime> gameuurProperty() {
+    public StringProperty gameuurProperty() {
         return gameuur;
     }
     

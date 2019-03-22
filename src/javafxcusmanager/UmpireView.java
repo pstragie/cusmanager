@@ -361,6 +361,7 @@ public class UmpireView {
                 public void handle(ContextMenuEvent menuEvent) {
                     System.out.println("Context menu requested.");
                     final ContextMenu cm = new ContextMenu();
+                    /*
                     MenuItem verbergen = new MenuItem("Umpire actief/niet actief");
                     cm.getItems().add(verbergen);
                     verbergen.setOnAction(wiscel -> {
@@ -373,6 +374,7 @@ public class UmpireView {
                         }
                         
                     });
+                    */
                     MenuItem wisUmp = new MenuItem("Wis umpire");
                     cm.getItems().add(wisUmp);
                     wisUmp.setOnAction(wisrij -> {

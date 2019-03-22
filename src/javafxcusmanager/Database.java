@@ -7,12 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Time;
 import java.time.LocalTime;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
-import javafx.util.Pair;
+import java.util.prefs.Preferences;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -30,7 +28,7 @@ public class Database {
     private MainPanel mainpanel;
     public Statement stmt;
     public Connection con;
-    
+    public Preferences pref;
 
 
     public Database() {
@@ -43,6 +41,8 @@ public class Database {
         } catch(SQLException e) {
             System.err.println("SQL Exception database: " + e);
         } 
+        pref = Preferences.userNodeForPackage(AppSettings.class);
+
     }
     
     /** Haal alle afdelingen uit de database
@@ -1075,9 +1075,8 @@ public class Database {
                 String se = rs.getString("seizoen");
                 mainpanel = new MainPanel();
                 LocalDate gdatum = mainpanel.stringToLocalDate(gd);
-                LocalTime gtime = mainpanel.stringToLocalTime(gt);
                 System.out.println("DB -> games: " + w + ", " + a + ", " + gd + ", " + gt + ", " + ht + ", " + vt + ", " + pu + ", " + b1 + ", " + b2 + ", " + b3 + ", " + gn + ", " + gi + ", " + se + ".");
-                Game g = new Game(gi, a, w, gdatum, gtime, ht, vt, pu, b1, b2, b3, gn, se);
+                Game g = new Game(gi, a, w, gdatum, gt, ht, vt, pu, b1, b2, b3, gn, se);
                 
                 arrayGames.add(g);
             }
@@ -1102,7 +1101,8 @@ public class Database {
      * @return Geeft een object (Game) terug
      */
     public Game getGameFromDatabase(String gameindex) {
-        Game g = new Game("", "", "", LocalDate.now(), LocalTime.now(), "", "", "", "", "", "", "", "");
+        String defaultGamehour = pref.get("DefaultGameTime", "14:00");
+        Game g = new Game("", "", "", LocalDate.now(), defaultGamehour, "", "", "", "", "", "", "", "");
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.Games WHERE gameindex = '" + gameindex + "'";
@@ -1123,9 +1123,8 @@ public class Database {
                 String se = rs.getString("seizoen");
                 mainpanel = new MainPanel();
                 LocalDate gdatum = mainpanel.stringToLocalDate(gd);
-                LocalTime gtime = mainpanel.stringToLocalTime(gt);
                 System.out.println("DB -> games: " + w + ", " + a + ", " + gd + ", " + gt + ", " + ht + ", " + vt + ", " + pu + ", " + b1 + ", " + b2 + ", " + b3 + ", " + gn + ", " + gi + ", " + se + ".");
-                g = new Game(gi, w, a, gdatum, gtime, ht, vt, pu, b1, b2, b3, gn, se);                
+                g = new Game(gi, w, a, gdatum, gt, ht, vt, pu, b1, b2, b3, gn, se);                
             }
             
         } catch (SQLException e) {
@@ -1244,6 +1243,31 @@ public class Database {
             stmt.executeUpdate("UPDATE APP.Games " + "SET week = '" + Integer.toString(week) + "', afdeling = '" + afdeling + "', gamedate = '" + gamedate + "', gametime = '" + gametime + "', hometeam = '" + hometeam + "', visitingteam = '" + visitingteam + "', plateumpire = '" + plateumpire + "', base1umpire = '" + base1umpire + "', base2umpire = '" + base2umpire + "', base3umpire = '" + base3umpire + "', gamenumber = '" + gamenumber + "' + seizoen = '" + seizoen + "' " + "WHERE gameindex = '" + gameindex + "'");
         } catch(SQLException e) {
             System.err.println("SQL Exception while updating umpire: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    /** Update a single item in a game
+     * 
+     * @param item
+     * @param waarde
+     * @param gameindex 
+     */
+    public void updateSingleItemInGameInDatabase(String item, String waarde, String gameindex) {
+        System.out.println("Update Game in Database...");
+        try {
+            stmt = con.createStatement();
+            // Update row
+            stmt.executeUpdate("UPDATE APP.Games " + "SET "+item+" = '" + waarde + "' " + "WHERE gameindex = '" + gameindex + "'");
+        } catch(SQLException e) {
+            System.err.println("SQL Exception while updating single item in games: " + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -1422,5 +1446,151 @@ public class Database {
 
         return distance;
     }
-
+    
+    /** Get vergoeding euro string from database
+     * 
+     * @param afdeling afdeling of "km"
+     * @return 
+     */
+    public String getVergoedingFromDatabase(String afdeling) {
+        String s = "0,000";
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.Vergoedingen where afdeling = '"+afdeling+"'";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                String a = rs.getString("afdeling");
+                String e = rs.getString("euro");
+                s = e;
+            }
+        } catch (SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return s;
+    }
+    
+    public ArrayList<Vergoeding> getAllVergoedingenFromDatabase() {
+        ArrayList<Vergoeding> arrayVergoedingen = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.Vergoedingen";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                String a = rs.getString("afdeling");
+                String e = rs.getString("euro");
+                Vergoeding verg = new Vergoeding(a, e);
+                arrayVergoedingen.add(verg);
+            }
+        } catch (SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return arrayVergoedingen;
+    }
+    /** Insert onkostenvergoedingen into database
+     * 
+     * @param afdeling
+     * @param euro 
+     */
+    public void insertVergoedingToDatabase(String afdeling, String euro) {
+        System.out.println("Insert Vergoeding To Database...");
+        try {
+            stmt = con.createStatement();
+            stmt.executeUpdate("INSERT INTO APP.Vergoedingen " + "VALUES ('" + afdeling + "', '" + euro + "')");
+            
+        } catch(SQLException e) {
+            System.err.println("SQL Exception while inserting vergoeding: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    /** Update vergoeding in the database
+     * 
+     * @param afdeling
+     * @param euro 
+     */
+    public void updateVergoedingToDatabase(String afdeling, String euro) {
+        System.out.println("Update Vergoeding in Database...");
+        try {
+            stmt = con.createStatement();
+            // Update row
+            stmt.executeUpdate("UPDATE APP.Vergoedingen " + "SET euro = '" + euro + "'" + "where afdeling = '"+afdeling+"'");
+        } catch(SQLException e) {
+            System.err.println("SQL Exception while updating vergoeding: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    } 
+    
+    public Boolean checkIfVergoedingExists(String afdeling) throws SQLException {
+        ResultSet rs = null;
+        
+        try {
+            stmt = con.createStatement();
+            String sql = "Select 1 from APP.Vergoedingen where afdeling = ?";  
+            PreparedStatement ps = con.prepareStatement(sql);
+            //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
+            ps.setString(1, afdeling);
+            rs = ps.executeQuery();
+            return rs.next();
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            //rs.close();
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return Boolean.TRUE;
+    }
+    
+    public void deleteAfdelingFromVergoedingDatabase(String afdeling) {
+        try {
+            stmt = con.createStatement();
+            String sql = "DELETE FROM APP.Vergoedingen WHERE afdeling = '"+afdeling+"'";
+            stmt.executeUpdate(sql);
+        } catch(SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
 }

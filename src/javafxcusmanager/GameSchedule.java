@@ -5,7 +5,6 @@
  */
 package javafxcusmanager;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -29,11 +28,8 @@ import javafx.scene.text.Font;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.LocalDate;
-import java.time.Month;
-import java.time.MonthDay;
 import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
@@ -43,13 +39,13 @@ import java.util.prefs.Preferences;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
-import javafx.event.EventType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableColumn.CellEditEvent;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 
@@ -63,6 +59,7 @@ public class GameSchedule {
     
     private static final int MAX_ITEMS = 3;
     private DocumentHandling documentHandler;
+    private MainPanel mainpanel;
     private Database database;
     public int startOfWeekCount = 0; // 0 = Runs with Year Calendar (January 1); 1 = Runs with competition start (date can be set);
     private final TableView<Game> table = new TableView<>();
@@ -80,6 +77,7 @@ public class GameSchedule {
     private LocalDate desiredDate;
     private String seizoen;
     private String startOfYear;
+    private String defaultGamehour;
     private Preferences pref;
     private ApiLocationDistance apidistance;
     //private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
@@ -88,7 +86,7 @@ public class GameSchedule {
     
     // Constructor
     public GameSchedule(ObservableList<Game> gameData, ObservableList<Team> teams, ObservableList<Afdeling> afdelingen, ObservableList<Club> clubs, ObservableList<Umpire> umpires, String seizoen) {
-        
+        mainpanel = new MainPanel();
         
         this.teams = teams;
         this.afdelingen = afdelingen;
@@ -100,6 +98,7 @@ public class GameSchedule {
         gameData = FXCollections.observableArrayList();
         pref = Preferences.userNodeForPackage(AppSettings.class);
         startOfYear = pref.get("StartOfYear", "12");
+        defaultGamehour = pref.get("DefaultGameTime", "14:00");
         database = new Database();
     }
 
@@ -191,7 +190,7 @@ public class GameSchedule {
             String gi = afdeling+seizoen+w+g;
             try {
                 if (!database.checkIfGameExists(gi)) {
-                    gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", "", "", "", "", seizoen));
+                    gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", "", "", "", "", seizoen));
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(GameSchedule.class.getName()).log(Level.SEVERE, null, ex);
@@ -229,15 +228,21 @@ public class GameSchedule {
         });
         */
         
-       // TableColumn with gamenumber
-       TableColumn<Game, String> gamenumberCol = new TableColumn<>("Game #");
-       gamenumberCol.setMinWidth(5);
-       gamenumberCol.prefWidthProperty().bind(table.widthProperty().divide(9));
-       gamenumberCol.setEditable(true);
-       gamenumberCol.setCellValueFactory(new PropertyValueFactory<>("gameindex"));
-       // gamenumberCol.setCellFactory(col -> new GamenumberCell());
-       gamenumberCol.setOnEditCommit(event -> event.getRowValue().setGameNumber(event.getNewValue()));
-       
+        // TableColumn with gamenumber
+        TableColumn<Game, String> gamenumberCol = new TableColumn<>("Game #");
+        gamenumberCol.setMinWidth(5);
+        gamenumberCol.prefWidthProperty().bind(table.widthProperty().divide(9));
+        gamenumberCol.setEditable(true);
+        gamenumberCol.setCellValueFactory(new PropertyValueFactory<>("gameindex"));
+        // gamenumberCol.setCellFactory(col -> new GamenumberCell());
+        gamenumberCol.setOnEditCommit(event -> event.getRowValue().setGameNumber(event.getNewValue()));
+        gamenumberCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        gamenumberCol.setOnEditCommit((CellEditEvent<Game, String> t) -> {
+            ((Game) t.getTableView().getItems().get(
+                t.getTablePosition().getRow())
+                ).setGameNumber(t.getNewValue());
+            database.updateSingleItemInGameInDatabase("gamenumber", t.getTableView().getItems().get(t.getTablePosition().getRow()).getGameindex(), t.getNewValue());
+        });
         // TableColumn with datePicker
         
         TableColumn<Game, LocalDate> gamedatumCol = new TableColumn<>("Datum");
@@ -247,12 +252,27 @@ public class GameSchedule {
         gamedatumCol.setEditable(true);
         gamedatumCol.setOnEditCommit(event -> event.getRowValue().setGameDatum(event.getNewValue()));
         
-        TableColumn<Game, LocalDate> gameTimeCol = new TableColumn<>("Uur");
+        TableColumn<Game, String> gameTimeCol = new TableColumn<>("Uur");
         gameTimeCol.setMinWidth(5);
         gameTimeCol.setCellValueFactory(new PropertyValueFactory<>("gameuur"));
         //gameTimeCol.setCellFactory(col -> new GameuurCell());
         gameTimeCol.setEditable(true);
-        gameTimeCol.setOnEditCommit(event -> event.getRowValue().setGameDatum(event.getNewValue()));
+        gameTimeCol.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d{0,2}([\\:]\\d{0,2})?")) {
+                    gameTimeCol.setText(oldValue);
+                }
+            }
+        });
+        //gameTimeCol.setOnEditCommit(event -> event.getRowValue().setGameUur(event.getNewValue()));
+        gameTimeCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        gameTimeCol.setOnEditCommit((CellEditEvent<Game, String> t) -> {
+            ((Game) t.getTableView().getItems().get(
+                t.getTablePosition().getRow())
+                ).setGameUur(t.getNewValue());
+            database.updateSingleItemInGameInDatabase("gametime", t.getTableView().getItems().get(t.getTablePosition().getRow()).getGameindex(), t.getNewValue());
+        });
         
         
         TableColumn homeTeamCol = new TableColumn("Home team");
@@ -361,9 +381,9 @@ public class GameSchedule {
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
                             String gix = afdeling+seizoen+w+ga;
-                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", "", "", "", "", seizoen));                            
+                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", "", "", "", "", seizoen));                            
                         }
-                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), text, "", "", "", "", "", "", seizoen));
+                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, text, "", "", "", "", "", "", seizoen));
                         
                     } else {
                         System.out.println("Data inserted in week: " + Integer.toString(week));
@@ -481,9 +501,9 @@ public class GameSchedule {
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
                             String gix = afdeling+seizoen+w+ga;
-                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", "", "", "", "", seizoen));                            
+                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", "", "", "", "", seizoen));                            
                         }
-                       gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", text, "", "", "", "", "", seizoen));
+                       gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", text, "", "", "", "", "", seizoen));
                     } else {
                         // get index of filteredGame in gameData
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
@@ -543,7 +563,7 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), null, null, null, null, null, null, null, seizoen));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -604,9 +624,9 @@ public class GameSchedule {
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
                             String gix = afdeling+seizoen+w+ga;
-                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", "", "", "", "", seizoen));                            
+                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", "", "", "", "", seizoen));                            
                         }
-                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", text, "", "", "", "", seizoen));
+                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", text, "", "", "", "", seizoen));
                     } else {
                         // get index of filteredGame in gameData
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
@@ -662,7 +682,7 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), null, null, null, null, null, null, null, seizoen));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -721,9 +741,9 @@ public class GameSchedule {
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
                             String gix = afdeling+seizoen+w+ga;
-                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", "", "", "", "", seizoen));                            
+                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", "", "", "", "", seizoen));                            
                         }
-                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", text, "", "", "", seizoen));
+                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", text, "", "", "", seizoen));
                     } else {
                         
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
@@ -780,7 +800,7 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), null, null, null, null, null, null, null, seizoen));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -839,9 +859,9 @@ public class GameSchedule {
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
                             String gix = afdeling+seizoen+w+ga;
-                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", "", "", "", "", seizoen));                            
+                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", "", "", "", "", seizoen));                            
                         }
-                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", "", text, "", "", seizoen));
+                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", "", text, "", "", seizoen));
                     } else {
                         
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
@@ -898,7 +918,7 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), null, null, null, null, null, null, null, seizoen));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -975,9 +995,9 @@ public class GameSchedule {
                             for(int i=0; i<sprong; i++) {
                                 String ga = String.format("%02d", rowIndex-sprong+i+1);
                                 String gix = afdeling+seizoen+w+ga;
-                                gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", "", "", "", "", seizoen));                            
+                                gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", "", "", "", "", seizoen));                            
                             }
-                            gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), LocalTime.of(14, 00), "", "", "", "", "", text, "", seizoen));
+                            gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, "", "", "", "", "", text, "", seizoen));
                         } else {
 
                             int newIndex = gameData.indexOf(secondFilter.get(rowIndex));

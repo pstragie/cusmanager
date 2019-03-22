@@ -6,28 +6,15 @@
 package javafxcusmanager;
 
 import java.time.LocalDate;
-import java.time.LocalDate;
-import java.time.DayOfWeek;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Locale;
 import javafx.beans.binding.Bindings;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.util.Callback;
-import jfxtras.scene.control.CalendarPicker;
 /**
  *
  * @author pieter

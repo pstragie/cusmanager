@@ -71,7 +71,8 @@ public class MainPanel {
     public ObservableList<Club> clubs;
     public ObservableList<Team> teams;
     public ObservableList<Umpire> umpires;
-    public ObservableList<Game> gameData;
+    public ObservableList<Game> games;
+    public ObservableList<Vergoeding> vergoedingen;
     private DocumentHandling documentHandler;
     private Pane leftPane = new Pane();
     private Pane rightPane = new Pane();
@@ -92,7 +93,7 @@ public class MainPanel {
     private Preferences pref;
     private ApiLocationDistance apidistance;
     private ShowDistances showdistances;
-
+    private CalculateVergoedingen calculateVergoedingen;
     /** MainPanel
      * 
      * @return Paneel
@@ -122,7 +123,13 @@ public class MainPanel {
 
                                 // TO DO: Delete from Database
                                 database.deleteAfdelingFromDatabase(remitem.getAfdelingsNaam());
-
+                                try {
+                                    if (database.checkIfVergoedingExists(remitem.getAfdelingsNaam())) {
+                                        database.deleteAfdelingFromVergoedingDatabase(remitem.getAfdelingsNaam());
+                                    }
+                                } catch (SQLException ex) {
+                                    Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
                             for (Afdeling additem : change.getAddedSubList()) {
                                 System.out.println("additem");
@@ -135,6 +142,14 @@ public class MainPanel {
                                 centerTabPane.getTabs().addAll(getGameTabArrayList());
                                 // TO DO: Store in database
                                 database.insertNewAfdelingToDatabase(additem.getAfdelingsNaam(), additem.getAfdelingsCategorie(), Boolean.TRUE);
+                                try {
+                                    if (!database.checkIfVergoedingExists(additem.getAfdelingsNaam())) {
+                                        database.insertVergoedingToDatabase(additem.getAfdelingsNaam(), "0.000");
+                                    }
+                                } catch (SQLException ex) {
+                                    Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                
                             }
             }
         });
@@ -163,6 +178,28 @@ public class MainPanel {
 
             }
         });
+        // Vergoedingen
+        vergoedingen = FXCollections.observableArrayList();
+        vergoedingen.addAll(database.getAllVergoedingenFromDatabase());
+        vergoedingen.addListener((ListChangeListener.Change<? extends Vergoeding> change) -> {
+            while(change.next()) {
+                if(change.wasUpdated()) {
+                    System.out.println("Update detected");
+                    // Write to file
+
+                } else
+                    if (change.wasPermutated()) {
+                                System.out.println("Was permutated");
+                            } else {
+                                if (change.wasAdded()) {
+                                    System.out.println("Data " + change + " was added to vergoedingen");
+                                    // Write to database
+
+                        }
+                }
+            }
+        });
+        // Umpires
         umpires = FXCollections.observableArrayList();
         umpires.addAll(database.getAllUmpiresFromDatabase());
         umpires.addListener((ListChangeListener.Change<? extends Umpire> change) -> { 
@@ -206,7 +243,7 @@ public class MainPanel {
                                 //clubList.refresh();
                                 // Save to database
 
-                                //GameSchedule.write(gameData, /home/pieter/wedstrijdschema.txt);
+                                //GameSchedule.write(games, /home/pieter/wedstrijdschema.txt);
                             }
                         }
 
@@ -214,10 +251,10 @@ public class MainPanel {
         });
             
         // Games
-        gameData = FXCollections.observableArrayList();
-        gameData.addAll(database.getAllGamesFromDatabase());
-        System.out.println("gamedata = " + gameData);
-        gameData.addListener((ListChangeListener.Change<? extends Game> change) -> { 
+        games = FXCollections.observableArrayList();
+        games.addAll(database.getAllGamesFromDatabase());
+        System.out.println("gamedata = " + games);
+        games.addListener((ListChangeListener.Change<? extends Game> change) -> { 
             while(change.next()) {
                 if(change.wasUpdated()) {
                     System.out.println("Umpires Update detected");
@@ -240,9 +277,9 @@ public class MainPanel {
                                 // Write to database
                                 if (database.checkIfGameExists(additem.getGameindex())) {
                                     System.out.println("Game bestaat al!!! Update existing game: " + additem.getGameindex());
-                                    database.updateGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), localTimeToString(additem.getGameUur()), additem.getHomeTeamName(), additem.getVisitingTeamName(), additem.getPlateUmpireName(), additem.getBase1UmpireName(), additem.getBase2UmpireName(), additem.getBase3UmpireName(), additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen());
+                                    database.updateGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), additem.getGameUur(), additem.getHomeTeamName(), additem.getVisitingTeamName(), additem.getPlateUmpireName(), additem.getBase1UmpireName(), additem.getBase2UmpireName(), additem.getBase3UmpireName(), additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen());
                                 } else {
-                                    database.insertNewGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), localTimeToString(additem.getGameUur()), additem.getHomeTeamName(), additem.getVisitingTeamName(), additem.getPlateUmpireName(), additem.getBase1UmpireName(), additem.getBase2UmpireName(), additem.getBase3UmpireName(), additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen());
+                                    database.insertNewGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), additem.getGameUur(), additem.getHomeTeamName(), additem.getVisitingTeamName(), additem.getPlateUmpireName(), additem.getBase1UmpireName(), additem.getBase2UmpireName(), additem.getBase3UmpireName(), additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen());
                                 }
                             } catch (SQLException ex) {
                                 Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -430,7 +467,7 @@ public class MainPanel {
         
         afdelingenBeheren.setOnAction(e -> { 
             Stage stage = new Stage();
-            Scene scene = new Scene(newAfdelingPaneel(leftTabPane, rightTabPane, centerTabPane, afdelingen));
+            Scene scene = new Scene(newAfdelingPaneel(leftTabPane, rightTabPane, centerTabPane, afdelingen), 560, 640);
             stage.setTitle("Afdelingen wijzigen");
             //stage.setAlwaysOnTop(true);
             stage.setScene(scene);
@@ -518,7 +555,7 @@ public class MainPanel {
             String absPath = getFilePath(stage, "Games");
             if (absPath != "") {
                 // Make backup to rewind import
-                ArrayList<Game> gam = new ArrayList<>(gameData);
+                ArrayList<Game> gam = new ArrayList<>(games);
                 documentHandler.storeGameSchedule(gam, Boolean.TRUE);
                 // Import games in de database
                 ArrayList<Game> arrayGames = documentHandler.getGamesFromFile(absPath);
@@ -529,16 +566,16 @@ public class MainPanel {
                 }
                 */
                 System.out.println("Games lijst wissen...");
-                gameData.clear();
+                games.clear();
                 database.deleteAllGamesInDatabase();
                 System.out.println("Game toevoegen aan gamelijst...");
-                gameData.addAll(arrayGames);
+                games.addAll(arrayGames);
                 // Store in database
                 arrayGames.forEach((g) -> {
                     System.out.println("datum en tijd: " + g.getGameDatum() + " en " + g.getGameUur());
                     String date = localDateToString(g.getGameDatum());
                     System.out.println("Date string = " + date);
-                    String time = localTimeToString(g.getGameUur());
+                    String time = g.getGameUur();
                     System.out.println("Time string = " + time);
                     database.insertNewGameToDatabase(Integer.parseInt(g.getWeekString()), g.getAfdelingString(), date, time, g.getHomeTeamName(), g.getVisitingTeamName(), g.getPlateUmpireName(), g.getBase1UmpireName(), g.getBase2UmpireName(), g.getBase3UmpireName(), g.getGameNumber(), g.getGameindex(), g.getSeizoen());
                 });
@@ -570,8 +607,8 @@ public class MainPanel {
         if (result.get() == ButtonType.OK){
             // ... user chose OK
             ArrayList<Game> arrayGames = documentHandler.getGamesFromFile("games_backup.txt");
-            gameData.clear();
-            gameData.addAll(arrayGames);
+            games.clear();
+            games.addAll(arrayGames);
         } else {
             // ... user chose CANCEL or closed the dialog
         }
@@ -584,7 +621,7 @@ public class MainPanel {
         customExportGames.setHideOnClick(true);
         menuGames.getItems().add(customExportGames);
         expGameButton.setOnAction(clicked -> {
-            ArrayList<Game> gam = new ArrayList<>(gameData);
+            ArrayList<Game> gam = new ArrayList<>(games);
             documentHandler.storeGameSchedule(gam, Boolean.FALSE);
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Wedstrijdschema exporteren.");
@@ -599,7 +636,9 @@ public class MainPanel {
         menuSettings.getItems().add(settingsWijzigen);
         settingsWijzigen.setOnAction(setting -> {
             Stage stage = new Stage();
-            Scene scene = new Scene(newSettingsPane());
+            changeSettingspane = new AppSettings(vergoedingen);
+        
+            Scene scene = new Scene(changeSettingspane.settingsPane());
             stage.setTitle("Settings");
             //stage.setAlwaysOnTop(true);
             stage.setScene(scene);
@@ -619,6 +658,16 @@ public class MainPanel {
             }
         });
         
+        MenuItem berekenVergoedingen = new MenuItem("Vergoedingen berekenen");
+        menuSettings.getItems().add(berekenVergoedingen);
+        berekenVergoedingen.setOnAction(berekV -> {
+           Stage stage = new Stage();
+           Scene scene = new Scene(calculateVergoedingen(), 600, 600);
+           stage.setTitle("Vergoedingen berekenen");
+           stage.setScene(scene);
+           stage.show();
+           
+        });
         return menubar;
     }
     
@@ -947,7 +996,7 @@ public class MainPanel {
         /** Get tabs from the list and add content for that afdeling
          * 
          */
-        gameSchedule = new GameSchedule(gameData, teams, afdelingen, clubs, umpires, jaartal);
+        gameSchedule = new GameSchedule(games, teams, afdelingen, clubs, umpires, jaartal);
         System.out.println("Get Tabs from file and create club content\n________________");
         ArrayList<String> listOfItems = new ArrayList<>();
         listOfItems.addAll(getAfdelingsnamenlijst());
@@ -957,7 +1006,7 @@ public class MainPanel {
             tab.setContent(gameSchedule.createCalendar(a)); // Set filtered content
             tabs.add(tab);
             tab.setOnSelectionChanged(tabevent -> {
-                // Automatically filter team afdelingen based on selected tab in gameData schedule.
+                // Automatically filter team afdelingen based on selected tab in games schedule.
                 clubfilterField.setText(a);
             });
             
@@ -985,7 +1034,7 @@ public class MainPanel {
     
     private Pane newSettingsPane() {
         Pane pane = new Pane();
-        changeSettingspane = new AppSettings();
+        changeSettingspane = new AppSettings(vergoedingen);
         pane.getChildren().add(changeSettingspane.settingsPane());
         pane.setPadding(new Insets(10, 10, 10, 10));
         return pane;
@@ -1016,6 +1065,15 @@ public class MainPanel {
     private Pane showDistances() {
         showdistances = new ShowDistances(umpires, clubs, teams, afdelingen);
         return showdistances.distancePane();
+    }
+    
+    /** Calculate vergoedingen venster
+     * 
+     * @return 
+     */
+    private Pane calculateVergoedingen() {
+        calculateVergoedingen = new CalculateVergoedingen(umpires, clubs, vergoedingen, games, afdelingen);
+        return calculateVergoedingen.calculateVergoedingen();
     }
     /** Afdeling toevoegen
      * 

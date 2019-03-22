@@ -101,6 +101,8 @@ public class Afdelingen {
             // Grid with 2 items: ListView and Button
             // Variable list of textfields
                 TableView afdelingstabel = new TableView();
+                afdelingstabel.setPrefHeight(550);
+                afdelingstabel.setPrefWidth(420);
                 afdelingstabel.setRowFactory(tv -> {
                     TableRow<Afdeling> row = new TableRow<>();
 
