@@ -315,7 +315,7 @@ public class DocumentHandling {
         try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
             fileWriter.write("Games");
             wedstrijdschema.forEach((k) ->  {
-                String fileContent = "\n" + k.getWeekString() + ";"+k.getAfdelingString() + ";" + k.getGameDatum() + ";" + k.getGameUur() + ";" + k.getHomeTeamName() + ";" + k.getVisitingTeamName() + ";" + k.getPlateUmpireName() + ";" + k.getBase1UmpireName() + ";" + k.getBase2UmpireName() + ";" + k.getBase3UmpireName() + ";" + k.getGameNumber() + ";" + k.getGameindex() + ";" + k.getSeizoen();
+                String fileContent = "\n" + k.getWeekString() + ";"+k.getAfdelingString() + ";" + k.getGameDatum() + ";" + k.getGameUur() + ";" + k.getHomeTeamName() + ";" + k.getVisitingTeamName() + ";" + k.getPlateUmpireName() + ";" + k.getBase1UmpireName() + ";" + k.getBase2UmpireName() + ";" + k.getBase3UmpireName() + ";" + k.getGameNumber() + ";" + k.getGameindex() + ";" + k.getSeizoen() + ";" + k.getHomeClub().getClubNummer();
                 try {
                     fileWriter.write(fileContent);
                 } catch(IOException e) {
@@ -363,8 +363,15 @@ public class DocumentHandling {
                                 String gn = parts[10];
                                 String gi = parts[11];
                                 String se = parts[12];
+                                String atfield = parts[13];
+                                Club hc = database.getClubFromDatabase(atfield);
+                                Umpire puU = database.getUmpireFromDatabase(pu);
+                                Umpire b1U = database.getUmpireFromDatabase(b1);
+                                Umpire b2U = database.getUmpireFromDatabase(b2);
+                                Umpire b3U = database.getUmpireFromDatabase(b3);
+                                
                                 LocalDate datum = mainPanel.stringToLocalDate(gd);
-                        list.add(new Game(gi, afd, w, datum, gt, ht, vt, pu, b1, b2, b3, gn, se));
+                        list.add(new Game(gi, afd, w, datum, gt, ht, vt, puU, b1U, b2U, b3U, gn, se, hc));
                     });
                     
                 

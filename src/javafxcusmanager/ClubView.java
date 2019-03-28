@@ -375,7 +375,7 @@ public class ClubView {
             teams.add(new Team(newTeamTF.getText(), afd));
             Team nieuwTeam = new Team(newTeamTF.getText(), afd);
             clubs.get(clubIndex).getClubTeams().add(nieuwTeam);
-            database.insertTeamsInDatabase(nieuwTeam.getTeamNaam(), nieuwTeam.getTeamAfdeling().toString(), clubs.get(clubIndex).getClubNaam(), nieuwTeam.getTeamAfdeling().getAfdelingsCategorie());
+            database.insertTeamsInDatabase(nieuwTeam.getTeamNaam(), nieuwTeam.getTeamAfdeling().toString(), clubs.get(clubIndex).getClubNummer(), nieuwTeam.getTeamAfdeling().getAfdelingsCategorie());
         });
         hbox.setPadding(new Insets(5, 0, 0, 0));
         return hbox;

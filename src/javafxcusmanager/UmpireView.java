@@ -174,7 +174,7 @@ public class UmpireView {
                 if (newUmpire.clubComboBox.getValue() == null) {
                     clubstring = "";
                 } else {
-                    clubstring = newUmpire.clubComboBox.getValue().getClubNaam();
+                    clubstring = newUmpire.clubComboBox.getValue().getClubNummer();
                 }
                 Boolean Uexists = Boolean.TRUE;
                 try {

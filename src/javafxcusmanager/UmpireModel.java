@@ -107,7 +107,7 @@ public class UmpireModel {
                    if (! cell.isEmpty()) {
                        Dragboard db = cell.startDragAndDrop(TransferMode.COPY);
                        ClipboardContent cc = new ClipboardContent();
-                       cc.putString(cell.getItem().getUmpireNaam() + " " + cell.getItem().getUmpireVoornaam());
+                       cc.putString(cell.getItem().getUmpireLicentie());
                        db.setContent(cc);
                        dragSource.set(cell);
                    }

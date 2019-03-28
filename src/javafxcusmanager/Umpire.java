@@ -217,9 +217,7 @@ public class Umpire {
     @Override
     public String toString() {
         String string = new String();
-        
-        
-        string = umpirenaam.get() + ", " + umpirelicentie.get() + ", " + umpirestraat.get() + ", " + umpirehuisnummer.get() + ", " + umpirepostcode.get() + ", " + umpirestad.get() + " " + umpiretelefoon.get() + ", " + umpireemail.get() + ", " + umpireclub.get() + ", " + umpireafdelingen + ", " + actief + "\n";
+        string = umpirenaam.get() + ", " + umpirevoornaam.get();
 
         return string;
     }

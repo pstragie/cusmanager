@@ -44,6 +44,7 @@ public class Team {
     public ObjectProperty<Afdeling> teamAfdelingProperty() {
         return teamAfdeling;
     }
+    
     @Override
     public String toString() {
         String s = new String();

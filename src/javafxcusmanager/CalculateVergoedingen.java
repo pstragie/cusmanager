@@ -133,9 +133,12 @@ public class CalculateVergoedingen {
             kmOne = 0.0;
             gameVergoedingOne = 0.0;
             for (Game g : games) {
-                if (g.getPlateUmpireName().equals(u.getUmpireVoornaam() + u.getUmpireNaam())) {
-                    String clubnr = clubs.filtered(c -> c.getClubNaam().equals(g.getHomeTeamName())).get(0).getClubNummer();
+                System.out.println("Club = " + g.getHomeClub());
+                System.out.println("umpire name = " + g.getPlateUmpireName());
+                if (g.getPlateUmpireName().equals(u.getUmpireNaam() + " " + u.getUmpireVoornaam())) {
+                    String clubnr = g.getHomeClub().getClubNummer();
                     Double d = Double.parseDouble(database.getDistFromUmpireClub(u.getUmpireLicentie(), clubnr));
+                    System.out.println("clubnummer = " + clubnr + ", distance = " + d);
                     kmOne += d;
                     kmAll += d;
                     gameVergoedingOne += Double.parseDouble(afdelingsVergoeding.get(g.getAfdelingString()));

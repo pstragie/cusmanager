@@ -8,6 +8,7 @@ package javafxcusmanager;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -18,19 +19,21 @@ import javafx.beans.property.StringProperty;
  */
 public class Game {
 
+    private Database database;
     private final SimpleStringProperty gameindex;
     private final SimpleStringProperty afdeling;
     private final SimpleStringProperty week;
     private final SimpleStringProperty hometeam;
     private final SimpleStringProperty visitingteam;
-    private final SimpleStringProperty plateumpire;
-    private final SimpleStringProperty base1umpire;
-    private final SimpleStringProperty base2umpire;
-    private final SimpleStringProperty base3umpire;
+    private final ObjectProperty<Umpire> plateumpire;
+    private final ObjectProperty<Umpire> base1umpire;
+    private final ObjectProperty<Umpire> base2umpire;
+    private final ObjectProperty<Umpire> base3umpire;
     private final SimpleStringProperty gamenumber;
     private final ObjectProperty<LocalDate> gamedatum ;
     private final SimpleStringProperty gameuur;
     private final SimpleStringProperty seizoen;
+    private final ObjectProperty<Club> homeclub;
 
     /** Class Game
      * 
@@ -48,7 +51,7 @@ public class Game {
      * @param gamenumberString
      * @param seizoenString 
      */
-    public Game(String gameindexString, String afdelingString, String weekString, LocalDate gameDate, String gameUur, String homeTeamName, String visitingTeamName, String plateUmpireName, String base1UmpireName, String base2UmpireName, String base3UmpireName, String gamenumberString, String seizoenString) {
+    public Game(String gameindexString, String afdelingString, String weekString, LocalDate gameDate, String gameUur, String homeTeamName, String visitingTeamName, Umpire plateUmpireName, Umpire base1UmpireName, Umpire base2UmpireName, Umpire base3UmpireName, String gamenumberString, String seizoenString, Club homeclub) {
         this.gameindex = new SimpleStringProperty(gameindexString);
         this.afdeling = new SimpleStringProperty(afdelingString);
         this.week = new SimpleStringProperty(weekString);
@@ -56,14 +59,21 @@ public class Game {
         this.gameuur = new SimpleStringProperty(gameUur);
         this.hometeam = new SimpleStringProperty(homeTeamName);
         this.visitingteam = new SimpleStringProperty(visitingTeamName);
-        this.plateumpire = new SimpleStringProperty(plateUmpireName);
-        this.base1umpire = new SimpleStringProperty(base1UmpireName);
-        this.base2umpire = new SimpleStringProperty(base2UmpireName);
-        this.base3umpire = new SimpleStringProperty(base3UmpireName);
+        this.plateumpire = new SimpleObjectProperty<>(this, "umpirelicentie", plateUmpireName);
+        this.base1umpire = new SimpleObjectProperty<>(this, "umpirelicentie", base1UmpireName);
+        this.base2umpire = new SimpleObjectProperty<>(this, "umpirelicentie", base2UmpireName);
+        this.base3umpire = new SimpleObjectProperty<>(this, "umpirelicentie", base3UmpireName);
         this.gamenumber = new SimpleStringProperty(gamenumberString);
         this.seizoen = new SimpleStringProperty(seizoenString);
+        this.homeclub = new SimpleObjectProperty<>(this, "clubnummer", homeclub);
     }
 
+    public Club getHomeClub() {
+        return homeclub.get();
+    }
+    public void setHomeClub(Club club) {
+        this.homeclub.set(club);
+    }
     /** Get Game Index number
      * 
      * @return 
@@ -140,15 +150,15 @@ public class Game {
      * 
      * @return String plate umpire name
      */
-    public String getPlateUmpireName() {
+    public Umpire getPlateUmpireName() {
         return plateumpire.get();
     }
     /** Set plate umpire name
      * 
      * @param plateUmpireName String plate umpire
      */
-    public void setPlateUmpireName(String plateUmpireName) {
-        plateumpire.set(plateUmpireName);
+    public void setPlateUmpireName(Umpire plateUmpireName) {
+        this.plateumpire.set(plateUmpireName);
     }
     
     /*public String getBaseUmpireNameString() {
@@ -159,43 +169,43 @@ public class Game {
      * 
      * @return String First Base umpire
      */
-    public String getBase1UmpireName() {
+    public Umpire getBase1UmpireName() {
         return base1umpire.get();
     }
     /** Set First Base umpire
      * 
      * @param base1Ump 
      */
-    public void setBase1UmpireName(String base1Ump) {
-        base1umpire.set(base1Ump);
+    public void setBase1UmpireName(Umpire base1Ump) {
+        this.base1umpire.set(base1Ump);
     }
     /** Get Second Base umpire
      * 
      * @return String Second Base umpire
      */
-    public String getBase2UmpireName() {
+    public Umpire getBase2UmpireName() {
         return base2umpire.get();
     }
     /** Set Second Base umpire
      * 
      * @param base2Ump 
      */
-    public void setBase2UmpireName(String base2Ump) {
-        base2umpire.set(base2Ump);
+    public void setBase2UmpireName(Umpire base2Ump) {
+        this.base2umpire.set(base2Ump);
     }
     /** Get Third Base umpire
      * 
      * @return String Third Base umpire
      */
-     public String getBase3UmpireName() {
+     public Umpire getBase3UmpireName() {
         return base3umpire.get();
     }
     /** Set Third Base umpire
      * 
      * @param base3Ump 
      */
-    public void setBase3UmpireName(String base3Ump) {
-        base3umpire.set(base3Ump);
+    public void setBase3UmpireName(Umpire base3Ump) {
+        this.base3umpire.set(base3Ump);
     }
     /** Get Game Date
      * 
@@ -262,16 +272,16 @@ public class Game {
     public StringProperty visitingteamProperty() {
         return visitingteam;
     }
-    public StringProperty plateumpireProperty() {
+    public ObjectProperty plateumpireProperty() {
         return plateumpire;
     }
-    public StringProperty base1umpireProperty() {
+    public ObjectProperty base1umpireProperty() {
         return base1umpire;
     }
-    public StringProperty base2umpireProperty() {
+    public ObjectProperty base2umpireProperty() {
         return base2umpire;
     }
-    public StringProperty base3umpireProperty() {
+    public ObjectProperty base3umpireProperty() {
         return base3umpire;
     }
     public StringProperty gamenumberProperty() {
@@ -280,12 +290,13 @@ public class Game {
     public StringProperty seizoenProperty() {
         return seizoen;
     }
+    public ObjectProperty homeclubProperty() {
+        return homeclub;
+    }
     
     @Override
     public String toString() {
-        String string = new String();
-        string = afdeling.get() + ", week: " + week.get() + ", " + gamedatum.get() + ", " + gameuur.get() + ", " + hometeam.get() + ", " + visitingteam.get() + ", " + plateumpire.get() + ", " + gamenumber.get() + ", " + gameindex.get() + ", " + seizoen.get() + "\n";
-        
+        String string = afdeling.get() + ", week: " + week.get() + ", " + gamedatum.get() + ", " + gameuur.get() + ", " + gameindex.get() + "\n";
         return string;
     }
 
