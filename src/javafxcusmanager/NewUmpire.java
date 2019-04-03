@@ -46,8 +46,8 @@ public class NewUmpire {
     // Attributen
     private boolean confirmed = false;
     public TextField voornaamtf, familienaamtf, licentietf, clubtf, straattf, huisnummertf, postcodetf, stadtf, afdelingentf, telefoontf, emailtf, lattf, lontf;
-    private Label vnaamLabel, fnaamLabel, licentieLabel, clubLabel, straatLabel, huisnrLabel, pcLabel, stadLabel, afdelingenLabel, telefoonLabel, emailLabel, actiefLabel, latLabel, lonLabel;
-    
+    private Label vnaamLabel, fnaamLabel, licentieLabel, clubLabel, straatLabel, huisnrLabel, pcLabel, stadLabel, afdelingenLabel, telefoonLabel, emailLabel, actiefLabel, latLabel, lonLabel, landLabel;
+    public ComboBox<String> landCodeUmp;
     public CheckBox actiefCheckbox;
     private final ListView afdelingListview = new ListView();
     private ObservableList<Club> clubs;
@@ -157,6 +157,7 @@ public class NewUmpire {
 		postcodetf.setAlignment(Pos.CENTER_LEFT);
 		stadtf = new TextField ( );
 		stadtf.setAlignment(Pos.CENTER_LEFT);
+                landCodeUmp = new ComboBox<>(getLandcodes());
 		telefoontf = new TextField();
                 telefoontf.setAlignment(Pos.CENTER_LEFT);
                 emailtf = new TextField();
@@ -184,6 +185,7 @@ public class NewUmpire {
                     huisnummertf.setText(umpireList.get(0).getUmpireHuisnummer());
                     postcodetf.setText(umpireList.get(0).getUmpirePostcode());
                     stadtf.setText(umpireList.get(0).getUmpireStad());
+                    landCodeUmp.getSelectionModel().select(umpireList.get(0).getUmpireLand());
                     licentietf.setText(umpireList.get(0).getUmpireLicentie());
                     licentietf.setDisable(true);
                     telefoontf.setText(umpireList.get(0).getUmpireTelefoon());
@@ -213,11 +215,14 @@ public class NewUmpire {
                     huisnummertf.setText("");
                     postcodetf.setText("");
                     stadtf.setText("");
+                    landCodeUmp.getSelectionModel().selectFirst();
                     licentietf.setText("");
                     telefoontf.setText("");
                     emailtf.setText("");
                     actiefCheckbox.setSelected(true);
                     afdelingenArray.clear();
+                    lattf.setDisable(true);
+                    lontf.setDisable(true);
                 }
                 
 		// Maak de labels
@@ -227,6 +232,7 @@ public class NewUmpire {
                 emailLabel = new Label("Email");
                 afdelingenLabel = new Label( "Afdelingen *" );
 		clubLabel = new Label( "Club" );
+                landLabel = new Label( "Landcode" );
 		straatLabel = new Label( "Straat" );
 		huisnrLabel = new Label( "Huisnummer" );
 		pcLabel = new Label( "Postcode" );
@@ -301,16 +307,18 @@ public class NewUmpire {
 		grid.add(postcodetf, 1, 7 );
 		grid.add(stadLabel, 0, 8 );
 		grid.add(stadtf, 1, 8 );
-                grid.add(telefoonLabel, 0, 9);
-                grid.add(telefoontf, 1, 9);
-                grid.add(emailLabel, 0, 10);
-                grid.add(emailtf, 1, 10);
-                grid.add(latLabel, 0, 11);
-                grid.add(lattf, 1, 11);
-                grid.add(lonLabel, 0, 12);
-                grid.add(lontf, 1, 12);
-		grid.add(actiefLabel, 0, 13);
-                grid.add(actiefCheckbox, 1, 13);
+                grid.add(landLabel, 0, 9);
+                grid.add(landCodeUmp, 1, 9);
+                grid.add(telefoonLabel, 0, 10);
+                grid.add(telefoontf, 1, 10);
+                grid.add(emailLabel, 0, 11);
+                grid.add(emailtf, 1, 11);
+                grid.add(latLabel, 0, 12);
+                grid.add(lattf, 1, 12);
+                grid.add(lonLabel, 0, 13);
+                grid.add(lontf, 1, 13);
+		grid.add(actiefLabel, 0, 14);
+                grid.add(actiefCheckbox, 1, 14);
                 grid.add(afdelingenLabel, 2, 0 , 1, 1);
                 grid.add(afdelingListview, 2, 1 , 1, afdelingen.size());
 		
@@ -349,6 +357,13 @@ public class NewUmpire {
         }
         public Umpire getCurrentUmpire() {
             return umpireList.get(0);
+        }
+        
+        private ObservableList getLandcodes() {
+            database = new Database();
+            ObservableList landcodes = FXCollections.observableArrayList(database.getLandcodesFromDatabase());
+            
+            return landcodes;
         }
     }
 

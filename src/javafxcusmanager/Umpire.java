@@ -26,6 +26,7 @@ public class Umpire {
     private final SimpleStringProperty umpirehuisnummer;
     private final SimpleStringProperty umpirepostcode;
     private final SimpleStringProperty umpirestad;
+    private final SimpleStringProperty umpireland;
     private final SimpleStringProperty umpiretelefoon;
     private final SimpleStringProperty umpireemail;
     //private final SimpleStringProperty umpireclub;
@@ -51,7 +52,7 @@ public class Umpire {
      * @param latitudeString
      * @param longitudeString 
      */
-    public Umpire(String umpirenaamString, String umpirevoornaamString, String umpirelicentieString, String umpirestraatString, String umpirehuisnummerString, String umpirepostcodeString, String umpirestadString, String umpiretelefoonString, String umpireemailString, Club umpireclubString, ArrayList umpireafdelingenArray, Boolean bool, String latitudeString, String longitudeString) {
+    public Umpire(String umpirenaamString, String umpirevoornaamString, String umpirelicentieString, String umpirestraatString, String umpirehuisnummerString, String umpirepostcodeString, String umpirestadString, String umpirelandString, String umpiretelefoonString, String umpireemailString, Club umpireclubString, ArrayList umpireafdelingenArray, Boolean bool, String latitudeString, String longitudeString) {
         this.umpirenaam = new SimpleStringProperty(umpirenaamString);
         this.umpirevoornaam = new SimpleStringProperty(umpirevoornaamString);
         this.umpirelicentie = new SimpleStringProperty(umpirelicentieString);
@@ -59,6 +60,7 @@ public class Umpire {
         this.umpirehuisnummer = new SimpleStringProperty(umpirehuisnummerString);
         this.umpirepostcode = new SimpleStringProperty(umpirepostcodeString);
         this.umpirestad = new SimpleStringProperty(umpirestadString);
+        this.umpireland = new SimpleStringProperty(umpirelandString);
         this.umpiretelefoon = new SimpleStringProperty(umpiretelefoonString);
         this.umpireemail = new SimpleStringProperty(umpireemailString);
         this.umpireclub = new SimpleObjectProperty(umpireclubString);
@@ -129,6 +131,14 @@ public class Umpire {
     public void setUmpireStad(String umpirestadString) {
         umpirestad.set(umpirestadString);
     }
+    
+    public String getUmpireLand() {
+        return umpireland.get();
+    }
+    public void setUmpireLand(String umpirelandString) {
+        umpireland.set(umpirelandString);
+    }
+    
     public String getUmpireTelefoon() {
         return umpiretelefoon.get();
     }
@@ -197,6 +207,9 @@ public class Umpire {
     }
     public StringProperty umpirestadProperty() {
         return umpirestad;
+    }
+    public StringProperty umpirelandProperty() {
+        return umpireland;
     }
     public StringProperty umpiretelefoonProperty() {
         return umpiretelefoon;

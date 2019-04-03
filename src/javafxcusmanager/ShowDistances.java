@@ -7,24 +7,39 @@ package javafxcusmanager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -32,14 +47,20 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Callback;
+import javafx.util.Pair;
 
 /**
  *
@@ -62,6 +83,18 @@ public class ShowDistances {
     private VBox vertDistances;
     private BorderPane bpane;
     private VBox mapBox;
+    
+    Task copyWorker;
+    final Label label = new Label("Locaties berekenen:");
+    final ProgressBar progressBar = new ProgressBar(0);
+    final ProgressIndicator progressIndicator = new ProgressIndicator(0);
+
+    final Button sluitButton = new Button("Start");
+    final Button cancelButton = new Button("Cancel");
+
+    final Label statusLabel = new Label();
+    
+    
     /** Show Distances
      * 
      * @param clubs
@@ -81,14 +114,141 @@ public class ShowDistances {
             apiLocationDistance = new ApiLocationDistance();
     }
     
+    public Task createWorker() {
+        return new Task() {
+            @Override
+            protected Object call() throws Exception {
+                Pair p = new Pair(0.0, 0.0);
+
+                for (Club club : clubs) {
+                    updateMessage(club.getClubNaam());
+                    updateProgress(clubs.indexOf(club), clubs.size());
+                    try {
+                        p = apiLocationDistance.getLocationClub(club);
+
+                    } catch (IOException ex) {
+                        Logger.getLogger(ExistingClubDetails.class.getName()).log(Level.SEVERE, null, ex);
+                    } finally {
+                        String latitude = Double.toString((Double) p.getKey());
+                        String longitude = Double.toString((Double) p.getValue());
+                        database.updateClubLocationInDatabase(club.getClubNummer(), latitude, longitude);
+                        int cindex = clubs.indexOf(club);
+                        clubs.get(cindex).setLatitude(latitude);
+                        clubs.get(cindex).setLongitude(longitude);
+                        
+                    }
+                }
+              
+              
+              
+            return true;
+            }
+        };
+    }
+    
     /** Venster met afstanden tussen umpire en clubs
      * 
      * @param ump
      * @return 
      */
     public Pane distancePane() {
-        
         bpane = new BorderPane();
+        statusLabel.setMinWidth(500);
+        statusLabel.setTextFill(Color.BLUE);
+        HBox horbottom = new HBox(10);
+        Label bottomLabel = new Label("Afstanden met Bing Maps Dev");
+        horbottom.getChildren().add(bottomLabel);
+        bpane.setBottom(horbottom);
+        
+        // Menu
+        MenuBar menubar = new MenuBar();
+
+        // Menu Umpires
+        Menu menuLocaties = new Menu("Afstanden");
+        menubar.getMenus().add(menuLocaties);
+        MenuItem locatiesbepalen = new MenuItem("Club locaties bepalen");
+        
+        locatiesbepalen.setOnAction(e -> {
+            progressBar.setPrefWidth(350);
+            progressBar.setPrefHeight(30);
+            final Button sluitButton = new Button("Sluiten");
+            final Button cancelButton = new Button("Cancel");
+            final HBox hb2 = new HBox();
+            hb2.setSpacing(5);
+            hb2.setAlignment(Pos.CENTER);
+            hb2.getChildren().addAll(cancelButton, sluitButton);
+            final HBox hb = new HBox(5);
+            hb.setSpacing(5);
+            hb.setAlignment(Pos.CENTER);
+            hb.getChildren().addAll(label, progressBar);
+            hb.setBackground(Background.EMPTY);
+            final VBox vb = new VBox(20);
+            vb.setPadding(new Insets(20, 20, 20, 20));
+            vb.setBackground(Background.EMPTY);
+            vb.getChildren().addAll(hb);
+            Stage stage = new Stage();
+            Scene scene = new Scene(vb, 600, 150);
+            stage.setTitle("Locaties berekenen");
+            
+            stage.alwaysOnTopProperty();
+            stage.initStyle(StageStyle.TRANSPARENT);
+            scene.setFill(Color.TRANSPARENT);
+            stage.setScene(scene);
+            stage.show();
+            
+            cancelButton.setOnAction((ActionEvent event) -> {
+                cancelButton.setDisable(true);
+                sluitButton.setDisable(false);
+                copyWorker.cancel(true);
+                progressBar.progressProperty().unbind();
+                progressBar.setProgress(0);
+                System.out.println("cancelled.");
+            });
+            sluitButton.setOnAction(sluit -> {
+               //stage = (Stage) sluitButton.getScene().getWindow();
+               stage.close();
+            });
+            progressBar.setProgress(0);
+            copyWorker = createWorker();
+            progressBar.progressProperty().unbind();
+            progressBar.progressProperty().bind(copyWorker.progressProperty());
+            copyWorker.messageProperty().addListener(new ChangeListener<String>() {
+              public void changed(ObservableValue<? extends String> observable,
+                  String oldValue, String newValue) {
+                System.out.println(newValue);
+              }
+            });
+            copyWorker.setOnSucceeded(klaar -> {
+                System.out.println("Klaar!!!");
+                progressBar.progressProperty().unbind();
+                progressBar.setProgress(0);
+                stage.hide();
+            });
+            new Thread(copyWorker).start();
+            
+            
+        });
+        menuLocaties.getItems().add(locatiesbepalen);
+        
+        
+        MenuItem afstandenHerberekenen = new MenuItem("Afstanden (her)berekenen");
+        afstandenHerberekenen.setOnAction(bereken -> {
+            for (Umpire umpire : umpires) {
+                ArrayList<Club> clubArray = new ArrayList<>(clubs);
+                
+                try {
+                    apiLocationDistance.calculateDistance(umpire, clubArray);
+                } catch (IOException ex) {
+                    Logger.getLogger(ShowDistances.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                 
+            }
+        });
+        menuLocaties.getItems().add(afstandenHerberekenen);
+        bpane.setTop(menubar);
+        
+       
+        // Umpires
         VBox vertUmpBox = new VBox(5);
         vertUmpBox.getChildren().add(umpirePane());
         bpane.setLeft(vertUmpBox);
@@ -122,15 +282,14 @@ public class ShowDistances {
         centerVbox.getChildren().add(mapBox);
         bpane.setCenter(centerVbox);
         
-        HBox horbottom = new HBox(10);
-        Label bottomLabel = new Label("Afstanden met Bing Maps Dev");
-        horbottom.getChildren().add(bottomLabel);
-        bpane.setBottom(horbottom);
+        
         
         
         return bpane;
         
     }
+    
+    
     
     public Pane umpirePane() {
         // New Window
@@ -140,8 +299,8 @@ public class ShowDistances {
             umpireselection = umpires.get(0);
         } else {
             ArrayList<Afdeling> emptyArray = new ArrayList<>();
-            Club emptyClub = new Club("", "", "", "", "", "", "", "", "", "", "", emptyArray, Boolean.FALSE, "", "");
-            umpireselection = new Umpire("", "", "", "", "", "", "", "", "", emptyClub, emptyArray, Boolean.FALSE, "", "");
+            Club emptyClub = new Club("", "", "", "", "", "", "", "", "", "", "", "", emptyArray, Boolean.FALSE, "", "");
+            umpireselection = new Umpire("", "", "", "", "", "", "", "", "", "", emptyClub, emptyArray, Boolean.FALSE, "", "");
         }
         
         // Left Side: List of all Umpires in TabPane, Alphabetically

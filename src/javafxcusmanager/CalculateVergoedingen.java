@@ -18,6 +18,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 /**
  *
@@ -87,7 +88,8 @@ public class CalculateVergoedingen {
             toonBerekeningen((Umpire) umpCombo.getSelectionModel().getSelectedItem(), mainpanel.stringToLocalDate(periodFrom.getText()), mainpanel.stringToLocalDate(periodTo.getText()));
         });
         sluiten.setOnAction(sluit -> {
-            
+           Stage stage = (Stage) sluiten.getScene().getWindow();
+           stage.close();
         });
         exporteer.setOnAction(export -> {
             

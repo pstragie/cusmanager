@@ -9,19 +9,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
-import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
@@ -217,7 +210,7 @@ public class ApiLocationDistance {
         String huisnummer = club.getClubStraatNummer();
         String postcode = club.getClubPostcode();
         String stad = club.getClubStad();
-        String land = "BE";
+        String land = club.getLandCode();
         stad = stad.replace(" ", "_");
         try {
             URL url = new URL("http://dev.virtualearth.net/REST/v1/Locations/"+land+"/"+postcode+"/"+stad+"/"+straat+"?includeNeighborhood=1&include=ciso2&maxResults=1&key=LwvKKpyMS0B0X3uTAp0Y~q47SlJVuQ98QE6zlT_3gUA~AknQEc5Uo1JkymduJ8gUGcWDwPb5ZBifrtZM_R4-Q4ieHb__2JdktKpc6npU0WhZ");

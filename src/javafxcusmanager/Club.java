@@ -6,9 +6,6 @@
 package javafxcusmanager;
 
 import java.util.ArrayList;
-import java.util.Map;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -28,6 +25,7 @@ public class Club {
     private final SimpleStringProperty clubstraatnummer;
     private final SimpleStringProperty clubpostcode;
     private final SimpleStringProperty clubstad;
+    private final SimpleStringProperty landcode;
     private final SimpleStringProperty clubwebsite;
     private Boolean visible;
     private final ArrayList<Team> clubteams;
@@ -52,7 +50,7 @@ public class Club {
      * @param latitudeString
      * @param longitudeString 
      */
-    public Club(String clubnaamString, String ligaString, String clubnummerString, String clubvoorzitterString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, String clubemailString, String clubtelefoonString, String clubwebsiteString, ArrayList clubteamsArray, Boolean bool, String latitudeString, String longitudeString) {
+    public Club(String clubnaamString, String ligaString, String clubnummerString, String clubvoorzitterString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, String landcodeString, String clubemailString, String clubtelefoonString, String clubwebsiteString, ArrayList clubteamsArray, Boolean bool, String latitudeString, String longitudeString) {
         this.clubnaam = new SimpleStringProperty(clubnaamString);
         this.liga = new SimpleStringProperty(ligaString);
         this.clubnummer = new SimpleStringProperty(clubnummerString);
@@ -63,6 +61,7 @@ public class Club {
         this.clubstraatnummer = new SimpleStringProperty(clubstraatnummerString);
         this.clubpostcode = new SimpleStringProperty(clubpostcodeString);
         this.clubstad = new SimpleStringProperty(clubstadString);
+        this.landcode = new SimpleStringProperty(landcodeString);
         this.clubwebsite = new SimpleStringProperty(clubwebsiteString);
         this.clubteams = new ArrayList<Team>(clubteamsArray);
         this.visible = new Boolean(bool);
@@ -149,10 +148,16 @@ public class Club {
         clubstad.set(clubstadString);
     }
     
+    public String getLandCode() {
+        return landcode.get();
+    }
+    public void setLandCode(String landcodeString) {
+        landcode.set(landcodeString);
+    }
+    
     public String getClubWebsite() {
         return clubwebsite.get();
     }
-    
     public void setClubWebsite(String clubwebsiteString) {
         clubwebsite.set(clubwebsiteString);
     }
@@ -191,6 +196,9 @@ public class Club {
     }
     public StringProperty clubstadProperty() {
         return clubstad;
+    }
+    public StringProperty landcodeProperty() {
+        return landcode;
     }
     public StringProperty clubemailProperty() {
         return clubemail;

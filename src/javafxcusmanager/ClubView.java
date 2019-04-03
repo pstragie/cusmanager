@@ -125,7 +125,7 @@ public class ClubView {
             
             System.out.println("Club toevoegen");
             Stage stage = new Stage();
-            Scene scene = new Scene(newClubPaneel(), 420, 460);
+            Scene scene = new Scene(newClubPaneel(), 420, 475);
             //stage.setX(1000);
             //stage.setY(800);
             stage.setTitle("Club toevoegen");
@@ -239,7 +239,7 @@ public class ClubView {
                         System.out.println("Club details");
                         Stage stage = new Stage();
                         int newIndex = clubs.indexOf(filteredData.get(cell.getIndex()));
-                        Scene scene = new Scene(existingClubPaneel(clubs.get(newIndex)), 420, 520);
+                        Scene scene = new Scene(existingClubPaneel(clubs.get(newIndex)), 420, 560);
                         //stage.setX(1000);
                         //stage.setY(800);
                         stage.setTitle("Club details");
@@ -357,6 +357,7 @@ public class ClubView {
     
     private HBox addTeamHBox(HBox hbox) {
         TextField newTeamTF = new TextField();
+        
         newTeamTF.setPrefWidth(220);
         newTeamTF.setPromptText("Nieuw team");
         ComboBox afdCombo = new ComboBox(afdelingen);
@@ -376,6 +377,7 @@ public class ClubView {
             Team nieuwTeam = new Team(newTeamTF.getText(), afd);
             clubs.get(clubIndex).getClubTeams().add(nieuwTeam);
             database.insertTeamsInDatabase(nieuwTeam.getTeamNaam(), nieuwTeam.getTeamAfdeling().toString(), clubs.get(clubIndex).getClubNummer(), nieuwTeam.getTeamAfdeling().getAfdelingsCategorie());
+            newTeamTF.setText("");
         });
         hbox.setPadding(new Insets(5, 0, 0, 0));
         return hbox;

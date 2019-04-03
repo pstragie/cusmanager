@@ -14,6 +14,7 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -43,8 +44,9 @@ public class ExistingClubDetails {
         private ObservableList<Club> clubs;
         private ApiLocationDistance apiLocationdistance;
 	public TextField clubnaamtf, ligatf, websitetf, clubnummertf, clubemailtf, clubtelefoontf, voorzittertf, straattf, huisnummertf, postcodetf, stadtf, lattf, lontf;
-	private Label clubLabel,  ligaLabel, websiteLabel, clubnummerLabel, clubemailLabel, clubtelefoonLabel, voorzitterLabel, straatLabel, huisnrLabel, pcLabel, stadLabel, latLabel, lonLabel;
+	private Label clubLabel,  ligaLabel, websiteLabel, clubnummerLabel, clubemailLabel, clubtelefoonLabel, voorzitterLabel, straatLabel, huisnrLabel, pcLabel, stadLabel, latLabel, lonLabel, landLabel;
 	private Button opslaan, annuleren, locatieBepalen;
+        private ComboBox landcodeComboBox;
         private Database database;
         // Constructor
         public ExistingClubDetails(ObservableList clubs) {
@@ -53,6 +55,13 @@ public class ExistingClubDetails {
             apiLocationdistance = new ApiLocationDistance();
         }
 
+        private ObservableList getLandcodes() {
+            database = new Database();
+            ObservableList landcodes = FXCollections.observableArrayList(database.getLandcodesFromDatabase());
+            
+            return landcodes;
+        }
+        
 	// Constructor
 	public Pane clubPanel(Club club) {
 		// Schakel lay-outmanager uit
@@ -85,6 +94,8 @@ public class ExistingClubDetails {
 		postcodetf.setAlignment(Pos.CENTER_LEFT);
 		stadtf = new TextField (club.getClubStad());
 		stadtf.setAlignment(Pos.CENTER_LEFT);
+                landcodeComboBox = new ComboBox(getLandcodes());
+                landcodeComboBox.getSelectionModel().select(club.getLandCode());
 		ligatf = new TextField (club.getLiga());
                 ligatf.setAlignment(Pos.CENTER_LEFT);
                 websitetf = new TextField (club.getClubWebsite());
@@ -104,6 +115,7 @@ public class ExistingClubDetails {
 		huisnrLabel = new Label( "Huisnummer" );
 		pcLabel = new Label( "Postcode" );
 		stadLabel = new Label( "Stad" );
+                landLabel = new Label ("Landcode");
 		ligaLabel = new Label ("Liga");
                 websiteLabel = new Label ("Website");
                 latLabel = new Label ("Latitude");
@@ -129,11 +141,12 @@ public class ExistingClubDetails {
                     clubs.get(clindex).setClubStraatNummer(huisnummertf.getText());
                     clubs.get(clindex).setClubPostcode(postcodetf.getText());
                     clubs.get(clindex).setClubStad(stadtf.getText());
+                    clubs.get(clindex).setLandCode(landcodeComboBox.getSelectionModel().getSelectedItem().toString());
                     clubs.get(clindex).setClubEmail(clubemailtf.getText());
                     clubs.get(clindex).setClubTelefoon(clubtelefoontf.getText());
                     clubs.get(clindex).setClubWebsite(websitetf.getText());
                     Club c = clubs.get(clindex);
-                    database.updateClubToDatabase(c.getClubNaam(), c.getVoorzitter(), c.getClubNummer(), c.getClubStraat(), c.getClubStraatNummer(), c.getClubPostcode(), c.getClubStad(), c.getClubEmail(), c.getClubTelefoon(), c.getLiga(), c.getClubWebsite(), c.getVisible());
+                    database.updateClubToDatabase(c.getClubNaam(), c.getVoorzitter(), c.getClubNummer(), c.getClubStraat(), c.getClubStraatNummer(), c.getClubPostcode(), c.getClubStad(), c.getLandCode(), c.getClubEmail(), c.getClubTelefoon(), c.getLiga(), c.getClubWebsite(), c.getVisible());
                     // Close window
                     Stage stage = (Stage) opslaan.getScene().getWindow();
                     stage.close();
@@ -182,15 +195,17 @@ public class ExistingClubDetails {
 		grid.add(postcodetf, 1, 8 );
 		grid.add(stadLabel, 0, 9 );
 		grid.add(stadtf, 1, 9 );
-                grid.add(ligaLabel, 0, 10);
-                grid.add(ligatf, 1, 10);
-                grid.add(websiteLabel, 0, 11);
-                grid.add(websitetf, 1, 11);
-                grid.add(latLabel, 0, 12);
-                grid.add(lattf, 1, 12);
-                grid.add(lonLabel, 0, 13);
-                grid.add(lontf, 1, 13);
-                grid.add(horButtonBox, 0, 15, 2, 1);
+                grid.add(landLabel, 0, 10);
+                grid.add(landcodeComboBox, 1, 10);
+                grid.add(ligaLabel, 0, 11);
+                grid.add(ligatf, 1, 11);
+                grid.add(websiteLabel, 0, 12);
+                grid.add(websitetf, 1, 12);
+                grid.add(latLabel, 0, 13);
+                grid.add(lattf, 1, 13);
+                grid.add(lonLabel, 0, 14);
+                grid.add(lontf, 1, 14);
+                grid.add(horButtonBox, 0, 16, 2, 1);
                 //grid.add(locatieBepalen, 0, 15);
 		//grid.add(opslaan, 1, 15 );
 		//grid.add(annuleren, 2, 15 );

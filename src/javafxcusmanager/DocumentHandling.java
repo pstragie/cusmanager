@@ -11,7 +11,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalTime;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -156,7 +155,7 @@ public class DocumentHandling {
                                 String[] parts = line.split(";");
                                 ArrayList<Team> array = new ArrayList<>();
                                 System.out.println("parts: " + parts.length);
-                                System.out.println("parts: 0:" + parts[0] + " 1: " + parts[1] + " 2: " + parts[2] + " 3: " + parts[3] + " 4: " + parts[4] + " 5: " + parts[5] + " 6: " + parts[6] + " 7: " + parts[7] + " 8: " + parts[8] + " 9: " + parts[9] + " 10: " + parts[10]);
+                                System.out.println("parts: 0:" + parts[0] + " 1: " + parts[1] + " 2: " + parts[2] + " 3: " + parts[3] + " 4: " + parts[4] + " 5: " + parts[5] + " 6: " + parts[6] + " 7: " + parts[7] + " 8: " + parts[8] + " 9: " + parts[9] + " 10: " + parts[10] + " 11: " + parts[11]);
                                 // Extract teams from part 11
                                 String[] teamparts = parts[11].split(",");
                                 for(String s : teamparts) {
@@ -165,7 +164,7 @@ public class DocumentHandling {
                                     array.add(new Team(team, afd));
                                 }
                                 
-                                list.add(new Club(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10], array, Boolean.TRUE, parts[12], parts[13]));
+                                list.add(new Club(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10], parts[11], array, Boolean.TRUE, parts[13], parts[14]));
                     });
 
 		} catch(IOException e) {
@@ -281,7 +280,7 @@ public class DocumentHandling {
                             }
                             database = new Database();
                             Club yclub = database.getClubFromDatabase(parts[9]);
-                            list.add(new Umpire(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], yclub, arraylist, Boolean.getBoolean(parts[13]), parts[11], parts[12]));
+                            list.add(new Umpire(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], yclub, arraylist, Boolean.getBoolean(parts[14]), parts[12], parts[13]));
                 });
                 
 
@@ -315,7 +314,7 @@ public class DocumentHandling {
         try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
             fileWriter.write("Games");
             wedstrijdschema.forEach((k) ->  {
-                String fileContent = "\n" + k.getWeekString() + ";"+k.getAfdelingString() + ";" + k.getGameDatum() + ";" + k.getGameUur() + ";" + k.getHomeTeamName() + ";" + k.getVisitingTeamName() + ";" + k.getPlateUmpireName() + ";" + k.getBase1UmpireName() + ";" + k.getBase2UmpireName() + ";" + k.getBase3UmpireName() + ";" + k.getGameNumber() + ";" + k.getGameindex() + ";" + k.getSeizoen() + ";" + k.getHomeClub().getClubNummer();
+                String fileContent = "\n" + k.getWeekString() + ";"+k.getAfdelingString() + ";" + k.getGameDatum() + ";" + k.getGameUur() + ";" + k.getHomeTeam() + ";" + k.getVisitingTeam() + ";" + k.getPlateUmpireName() + ";" + k.getBase1UmpireName() + ";" + k.getBase2UmpireName() + ";" + k.getBase3UmpireName() + ";" + k.getGameNumber() + ";" + k.getGameindex() + ";" + k.getSeizoen() + ";" + k.getHomeClub().getClubNummer();
                 try {
                     fileWriter.write(fileContent);
                 } catch(IOException e) {
@@ -369,9 +368,10 @@ public class DocumentHandling {
                                 Umpire b1U = database.getUmpireFromDatabase(b1);
                                 Umpire b2U = database.getUmpireFromDatabase(b2);
                                 Umpire b3U = database.getUmpireFromDatabase(b3);
-                                
+                                Team htT = database.getTeamFromDatabase(ht, afd);
+                                Team vtT = database.getTeamFromDatabase(vt, afd);
                                 LocalDate datum = mainPanel.stringToLocalDate(gd);
-                        list.add(new Game(gi, afd, w, datum, gt, ht, vt, puU, b1U, b2U, b3U, gn, se, hc));
+                        list.add(new Game(gi, afd, w, datum, gt, htT, vtT, puU, b1U, b2U, b3U, gn, se, hc));
                     });
                     
                 

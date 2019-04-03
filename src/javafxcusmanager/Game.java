@@ -23,8 +23,8 @@ public class Game {
     private final SimpleStringProperty gameindex;
     private final SimpleStringProperty afdeling;
     private final SimpleStringProperty week;
-    private final SimpleStringProperty hometeam;
-    private final SimpleStringProperty visitingteam;
+    private final ObjectProperty<Team> hometeam;
+    private final ObjectProperty<Team> visitingteam;
     private final ObjectProperty<Umpire> plateumpire;
     private final ObjectProperty<Umpire> base1umpire;
     private final ObjectProperty<Umpire> base2umpire;
@@ -49,16 +49,17 @@ public class Game {
      * @param base2UmpireName
      * @param base3UmpireName
      * @param gamenumberString
-     * @param seizoenString 
+     * @param seizoenString
+     * @param homeclub 
      */
-    public Game(String gameindexString, String afdelingString, String weekString, LocalDate gameDate, String gameUur, String homeTeamName, String visitingTeamName, Umpire plateUmpireName, Umpire base1UmpireName, Umpire base2UmpireName, Umpire base3UmpireName, String gamenumberString, String seizoenString, Club homeclub) {
+    public Game(String gameindexString, String afdelingString, String weekString, LocalDate gameDate, String gameUur, Team homeTeamName, Team visitingTeamName, Umpire plateUmpireName, Umpire base1UmpireName, Umpire base2UmpireName, Umpire base3UmpireName, String gamenumberString, String seizoenString, Club homeclub) {
         this.gameindex = new SimpleStringProperty(gameindexString);
         this.afdeling = new SimpleStringProperty(afdelingString);
         this.week = new SimpleStringProperty(weekString);
         this.gamedatum = new SimpleObjectProperty<>(this, "gamedatum", gameDate);
         this.gameuur = new SimpleStringProperty(gameUur);
-        this.hometeam = new SimpleStringProperty(homeTeamName);
-        this.visitingteam = new SimpleStringProperty(visitingTeamName);
+        this.hometeam = new SimpleObjectProperty<>(this, "hometeam", homeTeamName);
+        this.visitingteam = new SimpleObjectProperty<>(this, "visitingteam", visitingTeamName);
         this.plateumpire = new SimpleObjectProperty<>(this, "umpirelicentie", plateUmpireName);
         this.base1umpire = new SimpleObjectProperty<>(this, "umpirelicentie", base1UmpireName);
         this.base2umpire = new SimpleObjectProperty<>(this, "umpirelicentie", base2UmpireName);
@@ -122,28 +123,28 @@ public class Game {
      * 
      * @return String home team
      */
-    public String getHomeTeamName() {
+    public Team getHomeTeam() {
         return hometeam.get();
     }
     /** Set Home team
      * 
      * @param homeTeamName String home team
      */
-    public void setHomeTeamName(String homeTeamName) {
-        hometeam.set(homeTeamName);
+    public void setHomeTeam(Team homeTeamName) {
+        this.hometeam.set(homeTeamName);
     }
     /** Get Visiting team
      * 
      * @return String visiting team
      */
-    public String getVisitingTeamName() {
+    public Team getVisitingTeam() {
         return visitingteam.get();
     }
     /** Set Visiting team
      * 
      * @param visitingTeamName String visiting team
      */
-    public void setVisitingTeamName(String visitingTeamName) {
+    public void setVisitingTeam(Team visitingTeamName) {
         visitingteam.set(visitingTeamName);
     }
     /** Get Plate umpire name and surname
@@ -266,10 +267,10 @@ public class Game {
     public StringProperty weekProperty() {
         return week;
     }
-    public StringProperty hometeamProperty() {
+    public ObjectProperty hometeamProperty() {
         return hometeam;
     }
-    public StringProperty visitingteamProperty() {
+    public ObjectProperty visitingteamProperty() {
         return visitingteam;
     }
     public ObjectProperty plateumpireProperty() {

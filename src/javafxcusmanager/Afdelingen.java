@@ -16,7 +16,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -215,9 +214,9 @@ public class Afdelingen {
             
             addButton.setOnAction((ActionEvent event) -> {
                 System.out.println("Toevoegen ---------" + nieuwnaam.getText());
-                    afdelingenlijst.add(new Afdeling(nieuwnaam.getText(), disciplineBox.getSelectionModel().getSelectedItem().toString()));
-                    database.insertNewAfdelingToDatabase(nieuwnaam.getText(), disciplineBox.getSelectionModel().getSelectedItem().toString(), Boolean.TRUE);
-                    nieuwnaam.setText("");
+                afdelingenlijst.add(new Afdeling(nieuwnaam.getText(), disciplineBox.getSelectionModel().getSelectedItem().toString()));
+                database.insertNewAfdelingToDatabase(nieuwnaam.getText(), disciplineBox.getSelectionModel().getSelectedItem().toString(), Boolean.TRUE);
+                nieuwnaam.setText("");
                 });
             
             

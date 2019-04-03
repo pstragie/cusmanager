@@ -228,10 +228,11 @@ public class Database {
                 Boolean l = rs.getBoolean("visible");
                 String lat = rs.getString("latitude");
                 String lon = rs.getString("longitude");
+                String lc = rs.getString("clublandcode");
                 ArrayList<Team> teamArray = new ArrayList<>();
-                teamArray.addAll(getTeamsFromDatabase(c));
+                teamArray.addAll(Database.this.getTeamsFromDatabase(c));
                 //System.out.println("DB -> clubs: visible = " + l);
-                Club cl = new Club(a, b, c, d, e, f, g, h, i, j, k, teamArray, l, lat, lon);
+                Club cl = new Club(a, b, c, d, e, f, g, h, lc, i, j, k, teamArray, l, lat, lon);
                 arrayClubs.add(cl);
             }
             
@@ -256,7 +257,7 @@ public class Database {
      */
     public Club getClubFromDatabase(String clubnummer) {
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.Clubs WHERE clubnummer = '" + clubnummer + "'";
@@ -269,6 +270,7 @@ public class Database {
                 String f = rs.getString("clubhuisnummer");
                 String g = rs.getString("clubpostcode");
                 String h = rs.getString("clubstad");
+                String lc = rs.getString("clublandcode");
                 String i = rs.getString("clubemail");
                 String j = rs.getString("clubtelefoon");
                 String b = rs.getString("liga");
@@ -276,9 +278,9 @@ public class Database {
                 Boolean l = rs.getBoolean("visible");
                 String lat = rs.getString("latitude");
                 String lon = rs.getString("longitude");
-                teamArray.addAll(getTeamsFromDatabase(c));
+                teamArray.addAll(Database.this.getTeamsFromDatabase(c));
                 //System.out.println("DB -> clubs: visible = " + l);
-                cl = new Club(a, b, c, d, e, f, g, h, i, j, k, teamArray, l, lat, lon);
+                cl = new Club(a, b, c, d, e, f, g, h, lc, i, j, k, teamArray, l, lat, lon);
                 
             }
             
@@ -376,12 +378,12 @@ public class Database {
      * @param clubwebsite 
      * @param visible Boolean
      */
-    public void insertNewClubToDatabase(String clubnaam, String clubvoorzitter, String clubnummer, String clubstraat, String clubhuisnummer, String clubpostcode, String clubstad, String clubemail, String clubtelefoon, String liga, String clubwebsite, Boolean visible, String lat, String lon) {
+    public void insertNewClubToDatabase(String clubnaam, String clubvoorzitter, String clubnummer, String clubstraat, String clubhuisnummer, String clubpostcode, String clubstad, String clubland, String clubemail, String clubtelefoon, String liga, String clubwebsite, Boolean visible, String lat, String lon) {
         
         try {
             stmt = con.createStatement();
             // Replace data if exists, insert if not exist {
-            stmt.executeUpdate("INSERT INTO APP.Clubs " + "VALUES ('" + clubnaam + "', '" + clubvoorzitter + "', '" + clubnummer + "', '" + clubstraat + "', '" + clubhuisnummer + "', '" + clubpostcode + "', '" + clubstad + "', '" + clubemail + "', '" + clubtelefoon + "', '" + liga + "', '" + clubwebsite + "', '" + visible + "', '" + lat + "', '" + lon + "')");
+            stmt.executeUpdate("INSERT INTO APP.Clubs " + "VALUES ('" + clubnaam + "', '" + clubvoorzitter + "', '" + clubnummer + "', '" + clubstraat + "', '" + clubhuisnummer + "', '" + clubpostcode + "', '" + clubstad + "', '" + clubemail + "', '" + clubtelefoon + "', '" + liga + "', '" + clubwebsite + "', '" + visible + "', '" + lat + "', '" + lon + "', '" + clubland + "')");
             
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting club: " + e);
@@ -411,11 +413,11 @@ public class Database {
      * @param clubwebsite
      * @param visible 
      */
-    public void updateClubToDatabase(String clubnaam, String clubvoorzitter, String clubnummer, String clubstraat, String clubhuisnummer, String clubpostcode, String clubstad, String clubemail, String clubtelefoon, String liga, String clubwebsite, Boolean visible) {
+    public void updateClubToDatabase(String clubnaam, String clubvoorzitter, String clubnummer, String clubstraat, String clubhuisnummer, String clubpostcode, String clubstad, String clubLand, String clubemail, String clubtelefoon, String liga, String clubwebsite, Boolean visible) {
         try {
             stmt = con.createStatement();
             // Update row
-            stmt.executeUpdate("UPDATE APP.Clubs " + "SET liga = '" + liga + "', clubnummer = '" + clubnummer + "', clubvoorzitter = '" + clubvoorzitter + "', clubstraat = '" + clubstraat + "', clubhuisnummer = '" + clubhuisnummer + "', clubpostcode = '" + clubpostcode + "', clubstad = '" + clubstad + "', clubemail = '" + clubemail + "', clubtelefoon = '" + clubtelefoon + "', clubwebsite = '" + clubwebsite + "', visible = '" + visible + "' " + "WHERE clubnummer = '" + clubnummer + "'");
+            stmt.executeUpdate("UPDATE APP.Clubs " + "SET liga = '" + liga + "', clubnummer = '" + clubnummer + "', clubvoorzitter = '" + clubvoorzitter + "', clubstraat = '" + clubstraat + "', clubhuisnummer = '" + clubhuisnummer + "', clubpostcode = '" + clubpostcode + "', clubstad = '" + clubstad + "', clublandcode = '" + clubLand + "', clubemail = '" + clubemail + "', clubtelefoon = '" + clubtelefoon + "', clubwebsite = '" + clubwebsite + "', visible = '" + visible + "' " + "WHERE clubnummer = '" + clubnummer + "'");
         } catch(SQLException e) {
             System.err.println("Club update SQL Exception: " + e);
         } finally {
@@ -442,7 +444,7 @@ public class Database {
             // Update row
             stmt.executeUpdate("UPDATE APP.Clubs " + "SET latitude = '" + latitude + "', longitude = '" + longitude + "'" + "WHERE clubnummer = '" + clubnummer + "'");
         } catch(SQLException e) {
-            System.err.println("SQL Exception while updating umpire: " + e);
+            System.err.println("SQL Exception while updating club location: " + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -571,6 +573,7 @@ public class Database {
                 String d = rs.getString("umpirehuisnummer");
                 String e = rs.getString("umpirepostcode");
                 String f = rs.getString("umpirestad");
+                String lc = rs.getString("umpirelandcode");
                 String g = rs.getString("umpiretelefoon");
                 String h = rs.getString("umpireemail");
                 String i = rs.getString("umpireclub");
@@ -593,7 +596,7 @@ public class Database {
                 // Get Object Club from list based on clubnaam
                 Club uclub = getClubFromDatabase(i);
                 
-                Umpire u = new Umpire(a, v, b, c, d, e, f, g, h, uclub, afdArray, k, lat, lon);
+                Umpire u = new Umpire(a, v, b, c, d, e, f, lc, g, h, uclub, afdArray, k, lat, lon);
                 arrayUmpires.add(u);
             }
         } catch (SQLException e) {
@@ -619,8 +622,8 @@ public class Database {
         System.out.println("Umpire requested from database!");
         ArrayList<Afdeling> afdarray = new ArrayList<>();
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
-        Umpire u = new Umpire("", "", "", "", "", "", "", "", "", cl, afdarray, Boolean.TRUE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Umpire u = new Umpire("", "", "", "", "", "", "", "", "", "", cl, afdarray, Boolean.TRUE, "", "");
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.Umpires WHERE umpirelicentie = '" + umpirelicentie + "'";
@@ -633,6 +636,7 @@ public class Database {
                 String d = rs.getString("umpirehuisnummer");
                 String e = rs.getString("umpirepostcode");
                 String f = rs.getString("umpirestad");
+                String lc = rs.getString("umpirelandcode");
                 String g = rs.getString("umpiretelefoon");
                 String h = rs.getString("umpireemail");
                 String i = rs.getString("umpireclub");
@@ -656,7 +660,7 @@ public class Database {
                 // Get Object Club from list based on clubnaam
                 Club uclub = getClubFromDatabase(i);
                 
-                u = new Umpire(a, v, b, c, d, e, f, g, h, uclub, afdArray, k, lat, lon);
+                u = new Umpire(a, v, b, c, d, e, f, lc, g, h, uclub, afdArray, k, lat, lon);
                 
             }
         } catch (SQLException e) {
@@ -731,13 +735,13 @@ public class Database {
      * @param afdeling
      * @param actief 
      */
-    public void insertNewUmpireToDatabase(String umpirenaam, String umpirevoornaam, String umpirelicentie, String umpirestraat, String umpirehuisnummer, String umpirepostcode, String umpirestad, String umpiretelefoon, String umpireemail, String umpireclubnummer, String afdeling, Boolean actief, String lat, String lon) {
+    public void insertNewUmpireToDatabase(String umpirenaam, String umpirevoornaam, String umpirelicentie, String umpirestraat, String umpirehuisnummer, String umpirepostcode, String umpirestad, String umpirelandcode, String umpiretelefoon, String umpireemail, String umpireclubnummer, String afdeling, Boolean actief, String lat, String lon) {
         System.out.println("Insert Umpire To Database...");
         try {
             stmt = con.createStatement();
             // Replace data if exists, insert if not exist {
             //System.out.println("Inserting into Umpires: " + umpirelicentie + ", " + umpirehuisnummer + ", " + umpirepostcode + ", " + umpirestad + ", " + umpiretelefoon + ", " + umpireemail + ", " + umpireclub + ", " + afdeling ", " + umpirenaam + ", " + actief + ", " + umpirevoornaam + ".");
-            stmt.executeUpdate("INSERT INTO APP.Umpires " + "VALUES ('" + umpirelicentie + "', '" + umpirehuisnummer + "', '" + umpirepostcode + "', '" + umpirestad + "', '" + umpiretelefoon + "', '" + umpireemail + "', '" + umpireclubnummer + "', '" + umpirestraat + "', '" + afdeling + "', '" + umpirenaam + "', '" + actief + "', '" + umpirevoornaam + "', '" + lat + "', '" + lon + "')");
+            stmt.executeUpdate("INSERT INTO APP.Umpires " + "VALUES ('" + umpirelicentie + "', '" + umpirehuisnummer + "', '" + umpirepostcode + "', '" + umpirestad + "', '" + umpiretelefoon + "', '" + umpireemail + "', '" + umpireclubnummer + "', '" + umpirestraat + "', '" + afdeling + "', '" + umpirenaam + "', '" + actief + "', '" + umpirevoornaam + "', '" + lat + "', '" + lon + "', '" + umpirelandcode + "')");
             
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting umpire: " + e);
@@ -767,12 +771,12 @@ public class Database {
      * @param afdeling
      * @param actief 
      */
-    public void updateUmpireToDatabase(String umpirenaam, String umpirevoornaam, String umpirelicentie, String umpirestraat, String umpirehuisnummer, String umpirepostcode, String umpirestad, String umpiretelefoon, String umpireemail, String umpireclub, String afdeling, Boolean actief) {
+    public void updateUmpireToDatabase(String umpirenaam, String umpirevoornaam, String umpirelicentie, String umpirestraat, String umpirehuisnummer, String umpirepostcode, String umpirestad, String umpirelandcode, String umpiretelefoon, String umpireemail, String umpireclub, String afdeling, Boolean actief) {
         System.out.println("Update Umpire To Database...");
         try {
             stmt = con.createStatement();
             // Update row
-            stmt.executeUpdate("UPDATE APP.Umpires " + "SET umpirestraat = '" + umpirestraat + "', umpirehuisnummer = '" + umpirehuisnummer + "', umpirepostcode = '" + umpirepostcode + "', umpirestad = '" + umpirestad + "', umpiretelefoon = '" + umpiretelefoon + "', umpireemail = '" + umpireemail + "', umpireclub = '" + umpireclub + "', afdeling = '" + afdeling + "', actief = '" + actief + "', umpirenaam = '" + umpirenaam + "', umpirevoornaam = '" + umpirevoornaam + "' " + "WHERE umpirelicentie = '" + umpirelicentie + "'");
+            stmt.executeUpdate("UPDATE APP.Umpires " + "SET umpirestraat = '" + umpirestraat + "', umpirehuisnummer = '" + umpirehuisnummer + "', umpirepostcode = '" + umpirepostcode + "', umpirestad = '" + umpirestad + "', umpirelandcode = '" + umpirelandcode + "', umpiretelefoon = '" + umpiretelefoon + "', umpireemail = '" + umpireemail + "', umpireclub = '" + umpireclub + "', afdeling = '" + afdeling + "', actief = '" + actief + "', umpirenaam = '" + umpirenaam + "', umpirevoornaam = '" + umpirevoornaam + "' " + "WHERE umpirelicentie = '" + umpirelicentie + "'");
             //stmt.executeUpdate("UPDATE APP.Umpires " + "SET umpirenaam = '" + umpirenaam + "', umpirelicentie = '" + umpirelicentie + "', umpirehuisnummer = '" + umpirehuisnummer + "' + umpirepostcode = '" + umpirepostcode + "' + umpirestad = '" + umpirestad + "' + umpiretelefoon = '" + umpiretelefoon + "' + umpireemail = '" + umpireemail + "' + umpireclub = '" + umpireclub + "' + umpirestraat = '" + umpirestraat + "' + afdeling = '" + afdeling + "' + actief = '" + actief + "' " + "WHERE umpirenaam = '" + umpirenaam + "'");
         } catch(SQLException e) {
             System.err.println("SQL Exception while updating umpire: " + e);
@@ -800,7 +804,7 @@ public class Database {
             // Update row
             stmt.executeUpdate("UPDATE APP.Umpires " + "SET latitude = '" + latitude + "', longitude = '" + longitude + "'" + "WHERE umpirelicentie = '" + umpirelicentie + "'");
         } catch(SQLException e) {
-            System.err.println("SQL Exception while updating umpire: " + e);
+            System.err.println("SQL Exception while updating umpire location: " + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -942,7 +946,7 @@ public class Database {
         return arrayTeams;
     }
     
-    public ArrayList<Team> getTeamFromDatabase(Club club, String afdeling) {
+    public ArrayList<Team> getTeamsFromDatabase(Club club, String afdeling) {
         ArrayList<Team> arrayTeams = new ArrayList<>();
         try {
             stmt = con.createStatement();
@@ -968,6 +972,33 @@ public class Database {
         }
         return arrayTeams;
     }
+    
+    public Team getTeamFromDatabase(String teamnaam, String teamafdeling) {
+        Team t = new Team(null, null);
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.Teams WHERE teamnaam = '" + teamnaam + "' AND teamafdeling = '" + teamafdeling + "' ";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                String a = rs.getString("teamnaam");
+                String d = rs.getString("discipline");
+                Afdeling b = new Afdeling(rs.getString("teamafdeling"), d);
+                t = new Team(a, b);
+            }
+        } catch (SQLException e) {
+            System.err.println("Get teams: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return t;
+    }
+    
     /** Verwijder alle teams uit de database
      * 
      */
@@ -1090,8 +1121,8 @@ public class Database {
                 String a = rs.getString("afdeling");
                 String gd = rs.getString("gamedate");
                 String gt = rs.getString("gametime");
-                String ht = rs.getString("hometeam");
-                String vt = rs.getString("visitingteam");
+                Team ht = getTeamFromDatabase(rs.getString("hometeam"), a);
+                Team vt = getTeamFromDatabase(rs.getString("visitingteam"), a);
                 Umpire pu = getUmpireFromDatabase(rs.getString("plateumpire"));
                 Umpire b1 = getUmpireFromDatabase(rs.getString("base1umpire"));
                 Umpire b2 = getUmpireFromDatabase(rs.getString("base2umpire"));
@@ -1124,14 +1155,14 @@ public class Database {
         return arrayGames;
     }
     
-    /** Haal 1 club uit de database
+    /** Haal 1 game uit de database
      * 
      * @param gameindex
      * @return Geeft een object (Game) terug
      */
     public Game getGameFromDatabase(String gameindex) {
         String defaultGamehour = pref.get("DefaultGameTime", "14:00");
-        Game g = new Game("", "", "", LocalDate.now(), defaultGamehour, "", "", null, null, null, null, "", "", null);
+        Game g = new Game("", "", "", LocalDate.now(), defaultGamehour, null, null, null, null, null, null, "", "", null);
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.Games WHERE gameindex = '" + gameindex + "'";
@@ -1141,8 +1172,8 @@ public class Database {
                 String a = rs.getString("afdeling");
                 String gd = rs.getString("gamedate");
                 String gt = rs.getString("gametime");
-                String ht = rs.getString("hometeam");
-                String vt = rs.getString("visitingteam");
+                Team ht = getTeamFromDatabase(rs.getString("hometeam"), a);
+                Team vt = getTeamFromDatabase(rs.getString("visitingteam"), a);
                 Umpire pu = getUmpireFromDatabase(rs.getString("plateumpire"));
                 Umpire b1 = getUmpireFromDatabase(rs.getString("base1umpire"));
                 Umpire b2 = getUmpireFromDatabase(rs.getString("base2umpire"));
@@ -1150,7 +1181,8 @@ public class Database {
                 String gn = rs.getString("gamenumber");
                 String gi = rs.getString("gameindex");
                 String se = rs.getString("seizoen");
-                Club hc = getClubFromTeam(ht);
+                String atfield = rs.getString("atfield");
+                Club hc = getClubFromDatabase(atfield);
                 mainpanel = new MainPanel();
                 LocalDate gdatum = mainpanel.stringToLocalDate(gd);
                 System.out.println("DB -> games: " + w + ", " + a + ", " + gd + ", " + gt + ", " + ht + ", " + vt + ", " + pu + ", " + b1 + ", " + b2 + ", " + b3 + ", " + gn + ", " + gi + ", " + se + ".");
@@ -1228,7 +1260,8 @@ public class Database {
      * @param base3umpire
      * @param gamenumber
      * @param gameindex
-     * @param seizoen 
+     * @param seizoen
+     * @param atfield 
      */
     public void insertNewGameToDatabase(Integer week, String afdeling, String gamedate, String gametime, String hometeam, String visitingteam, String plateumpire, String base1umpire, String base2umpire, String base3umpire, String gamenumber, String gameindex, String seizoen, String atfield) {
         System.out.println("Insert Game To Database...");
@@ -1270,9 +1303,9 @@ public class Database {
         try {
             stmt = con.createStatement();
             // Update row
-            stmt.executeUpdate("UPDATE APP.Games " + "SET week = '" + Integer.toString(week) + "', afdeling = '" + afdeling + "', gamedate = '" + gamedate + "', gametime = '" + gametime + "', hometeam = '" + hometeam + "', visitingteam = '" + visitingteam + "', plateumpire = '" + plateumpire + "', base1umpire = '" + base1umpire + "', base2umpire = '" + base2umpire + "', base3umpire = '" + base3umpire + "', gamenumber = '" + gamenumber + "' + seizoen = '" + seizoen + "' + atfield = '" + homeclubnummer + "' " + "WHERE gameindex = '" + gameindex + "'");
+            stmt.executeUpdate("UPDATE APP.Games " + "SET week = '" + Integer.toString(week) + "', afdeling = '" + afdeling + "', gamedate = '" + gamedate + "', gametime = '" + gametime + "', hometeam = '" + hometeam + "', visitingteam = '" + visitingteam + "', plateumpire = '" + plateumpire + "', base1umpire = '" + base1umpire + "', base2umpire = '" + base2umpire + "', base3umpire = '" + base3umpire + "', gamenumber = '" + gamenumber + "', seizoen = '" + seizoen + "', atfield = '" + homeclubnummer + "' " + "WHERE gameindex = '" + gameindex + "'");
         } catch(SQLException e) {
-            System.err.println("SQL Exception while updating umpire: " + e);
+            System.err.println("SQL Exception while updating game: " + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -1321,7 +1354,7 @@ public class Database {
         
         try {
             stmt = con.createStatement();
-            String sql = "Select 1 from APP.Games where gameindex = ?";  
+            String sql = "Select * from APP.Games where gameindex = ?";  
             PreparedStatement ps = con.prepareStatement(sql);
             //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
             ps.setString(1, gameindex);
@@ -1374,7 +1407,7 @@ public class Database {
             // Update row
             stmt.executeUpdate("UPDATE APP.Distances " + "SET distance = '" + distance + "' " + "WHERE umpire = '" + ump.getUmpireLicentie() + "' AND club = '" + club.getClubNummer() + "'");
         } catch(SQLException e) {
-            System.err.println("SQL Exception while updating umpire: " + e);
+            System.err.println("SQL Exception while updating distance: " + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -1423,7 +1456,7 @@ public class Database {
     public String getClubFromDatabaseLatLon(String latitude, String longitude) {
         String clubnaam = "";
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.CLUBS WHERE latitude = '" + latitude + "' AND longitude = '" + longitude + "'";
@@ -1451,10 +1484,10 @@ public class Database {
 
     public Club getClubFromTeam(String team) {
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
         try {
             stmt = con.createStatement();
-            String sql = "SELECT 1 from APP.TEAMS WHERE teamnaam = '" + team + "'";
+            String sql = "SELECT * from APP.TEAMS WHERE teamnaam = '" + team + "' ";
             ResultSet rs = stmt.executeQuery(sql);
             while(rs.next()) {
                 String clubnummer = rs.getString("club");
@@ -1484,10 +1517,10 @@ public class Database {
      */
     public Club getClubFromGameIndex(String gameindex) {
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
         try {
             stmt = con.createStatement();
-            String sql = "SELECT 1 from APP.GAMES WHERE gameindex = '" + gameindex + "'";
+            String sql = "SELECT * from APP.GAMES WHERE gameindex = '" + gameindex + "'";
             ResultSet rs = stmt.executeQuery(sql);
             while(rs.next()) {
                 String clubnummer = rs.getString("atfield");
@@ -1535,7 +1568,7 @@ public class Database {
         String umplicentie = "";
         try {
             stmt = con.createStatement();
-            String sql = "SELECT 1 from APP.GAMES where gameindex = '" + gameindex + "'";
+            String sql = "SELECT * from APP.GAMES where gameindex = '" + gameindex + "'";
             ResultSet rs = stmt.executeQuery(sql);
             while(rs.next()) {
                 umplicentie = rs.getString(umpirepos);
@@ -1547,9 +1580,9 @@ public class Database {
     }
     
     public String getDistFromUmpireClub(String umpirelicentie, String clubnummer) {
-        String distance = "";
+        String distance = "0.0";
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.DISTANCES WHERE umpire = '" + umpirelicentie + "' AND club = '" + clubnummer + "'";
@@ -1720,5 +1753,66 @@ public class Database {
                 }
             }
         }
+    }
+    
+    // Landcodes
+    /** Store landcodes in database
+     * 
+     * @param landcode 
+     */
+    public void storeLandCode(String landcode) {
+        try {
+            String land = "";
+            if (null != landcode) switch (landcode) {
+                case "BE":
+                    land = "België";
+                    break;
+                case "NL":
+                    land = "Nederland";
+                    break;
+                case "FR":
+                    land = "Frankrijk";
+                    break;
+                default:
+                    break;
+            }
+            stmt = con.createStatement();
+            stmt.executeUpdate("INSERT INTO APP.landcodes " + "VALUES ('" + landcode + "', '" + land + "')");
+        } catch(SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    public ArrayList<String> getLandcodesFromDatabase() {
+        ArrayList<String> landcodes = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.Landcodes";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                String a = rs.getString("landcode");
+                String e = rs.getString("land");
+                landcodes.add(a);
+            }
+        } catch (SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return landcodes;
     }
 }

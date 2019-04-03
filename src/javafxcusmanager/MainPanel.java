@@ -65,7 +65,7 @@ public class MainPanel {
     private TextField topPaneTextField, bottomPaneTextField;
     private static MenuBar mainMenu;
     private Pane umpirepanel;
-    public String jaartal = "2016";
+    public String jaartal = "2019";
     //public ObservableList<String> observableTabList;
     public ObservableList<Afdeling> afdelingen;
     public ObservableList<Club> clubs;
@@ -87,7 +87,7 @@ public class MainPanel {
     private UmpireModel umpiremodel;
     private ClubModel clubmodel;
     private GameSchedule gameSchedule;
-    private Database database = new Database();
+    private Database database;
     public Button resetButton;
     private TextField clubfilterField;
     private Preferences pref;
@@ -102,6 +102,7 @@ public class MainPanel {
         pref = Preferences.userNodeForPackage(AppSettings.class);
         jaartal = pref.get("Seizoen", Integer.toString(LocalDate.now().getYear()));
         afdelingen = FXCollections.observableArrayList();
+        database = new Database();
         // Get afdelingen from database
         afdelingen.addAll(database.getAllAfdelingenFromDatabase());
         afdelingen.addListener((ListChangeListener.Change<? extends Afdeling> change) -> { 
@@ -278,11 +279,63 @@ public class MainPanel {
                                 System.out.println("game index = " + additem.getGameindex());
                                 if (database.checkIfGameExists(additem.getGameindex())) {
                                     System.out.println("Game bestaat al!!! Update existing game: " + additem.getGameindex());
-                                    database.updateGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), additem.getGameUur(), additem.getHomeTeamName(), additem.getVisitingTeamName(), additem.getPlateUmpireName().getUmpireLicentie(), additem.getBase1UmpireName().getUmpireLicentie(), additem.getBase2UmpireName().getUmpireLicentie(), additem.getBase3UmpireName().getUmpireLicentie(), additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen(), additem.getHomeClub().getClubNummer());
+                                    database.updateGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), additem.getGameUur(), additem.getHomeTeam().getTeamNaam(), additem.getVisitingTeam().getTeamNaam(), additem.getPlateUmpireName().getUmpireLicentie(), additem.getBase1UmpireName().getUmpireLicentie(), additem.getBase2UmpireName().getUmpireLicentie(), additem.getBase3UmpireName().getUmpireLicentie(), additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen(), additem.getHomeClub().getClubNummer());
                                 } else {
                                     System.out.println("Game bestaat nog niet!!! Insert new game: " + additem + ": " + additem.getGameindex());
                                     
-                                    // MOVE TO GAMESCHEDULE!!! -> database.insertNewGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), additem.getGameUur(), additem.getHomeTeamName(), additem.getVisitingTeamName(), additem.getPlateUmpireName().getUmpireLicentie(), additem.getBase1UmpireName().getUmpireLicentie(), additem.getBase2UmpireName().getUmpireLicentie(), additem.getBase3UmpireName().getUmpireLicentie(), additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen(), additem.getHomeClub().getClubNummer());
+                                    // MOVE TO GAMESCHEDULE!!! -> 
+                                    //System.out.println(Integer.parseInt(additem.getWeekString()) + additem.getAfdelingString() + localDateToString(additem.getGameDatum()) + additem.getGameUur() + additem.getHomeTeam() + additem.getVisitingTeam() + additem.getPlateUmpireName().getUmpireLicentie() + additem.getBase1UmpireName().getUmpireLicentie() + additem.getBase2UmpireName().getUmpireLicentie() + additem.getBase3UmpireName().getUmpireLicentie() + additem.getGameNumber() + additem.getGameindex() + additem.getSeizoen() + additem.getHomeClub().getClubNummer());
+                                    String ht = "";
+                                    String vt = "";
+                                    String pl = "";
+                                    String b1l = "";
+                                    String b2l = "";
+                                    String b3l = "";
+                                    String hc = "";
+                                    if (additem.getHomeTeam() != null) {
+                                        ht = additem.getHomeTeam().getTeamNaam();
+                                    }
+                                    if (additem.getVisitingTeam() != null) {
+                                        vt = additem.getVisitingTeam().getTeamNaam();
+                                    }
+                                    if (additem.getPlateUmpireName() != null) {
+                                        pl = additem.getPlateUmpireName().getUmpireLicentie();
+                                    }
+                                    if (additem.getBase1UmpireName() != null) {
+                                        b1l = additem.getBase1UmpireName().getUmpireLicentie();
+                                    }
+                                    if (additem.getBase2UmpireName() != null) {
+                                        b2l = additem.getBase2UmpireName().getUmpireLicentie();
+                                    }
+                                    if (additem.getBase3UmpireName() != null) {
+                                        b3l = additem.getBase3UmpireName().getUmpireLicentie();
+                                    }
+                                    if (additem.getHomeTeam() != null) {
+                                        String ht_naam = additem.getHomeTeam().getTeamNaam();
+                                        if (database.getClubFromTeam(ht_naam) != null) {
+                                            hc = database.getClubFromTeam(ht_naam).getClubNummer();
+                                            System.out.println("Home Club number = " + hc);
+                                        } else {
+                                            hc = "";
+                                        }
+                                    } else {
+                                        hc = "";
+                                    }
+                                    System.out.println(Integer.parseInt(additem.getWeekString()));
+                                    System.out.println(additem.getAfdelingString());
+                                    System.out.println(localDateToString(additem.getGameDatum()));
+                                    System.out.println(additem.getGameUur());
+                                    System.out.println(ht);
+                                    System.out.println(vt);
+                                    System.out.println(pl); 
+                                    System.out.println(b1l); 
+                                    System.out.println(b2l);
+                                    System.out.println(b3l);
+                                    System.out.println(additem.getGameNumber());
+                                    System.out.println(additem.getGameindex());
+                                    System.out.println(additem.getSeizoen());
+                                    System.out.println(hc);
+                                    database.insertNewGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), additem.getGameUur(), ht, vt, pl, b1l, b2l, b3l, additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen(), hc);
                                 }
                             } catch (SQLException ex) {
                                 Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -386,7 +439,7 @@ public class MainPanel {
                         s += a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie() + ",";
                     }
                     System.out.print("String s = " + s);
-                    database.insertNewUmpireToDatabase(ump.getUmpireNaam(), ump.getUmpireVoornaam(), ump.getUmpireLicentie(), ump.getUmpireStraat(), ump.getUmpireHuisnummer(), ump.getUmpirePostcode(), ump.getUmpireStad(), ump.getUmpireTelefoon(), ump.getUmpireEmail(), ump.getUmpireClub().getClubNummer(), s, ump.getActief(), ump.getLatitude(), ump.getLongitude());
+                    database.insertNewUmpireToDatabase(ump.getUmpireNaam(), ump.getUmpireVoornaam(), ump.getUmpireLicentie(), ump.getUmpireStraat(), ump.getUmpireHuisnummer(), ump.getUmpirePostcode(), ump.getUmpireStad(), ump.getUmpireLand(), ump.getUmpireTelefoon(), ump.getUmpireEmail(), ump.getUmpireClub().getClubNummer(), s, ump.getActief(), ump.getLatitude(), ump.getLongitude());
                 }
                 umpires.clear();
                 umpires.addAll(database.getAllUmpiresFromDatabase());
@@ -437,7 +490,7 @@ public class MainPanel {
                 ArrayList<Club> arrayClubs = documentHandler.getClubsFromFile(absPath);
                 for(Club cl : arrayClubs) {
                     //System.out.println(cl);
-                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getVoorzitter(), cl.getClubNummer(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getLiga(), cl.getClubWebsite(), cl.getVisible(), cl.getLatitude(), cl.getLongitude());
+                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getVoorzitter(), cl.getClubNummer(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getLandCode(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getLiga(), cl.getClubWebsite(), cl.getVisible(), cl.getLatitude(), cl.getLongitude());
                     for (Team t: cl.getClubTeams()) {
                         database.insertTeamsInDatabase(t.getTeamNaam(), t.getTeamAfdeling().getAfdelingsNaam(), cl.getClubNummer(), t.getTeamAfdeling().getAfdelingsCategorie());
                     }
@@ -580,7 +633,7 @@ public class MainPanel {
                     System.out.println("Date string = " + date);
                     String time = g.getGameUur();
                     System.out.println("Time string = " + time);
-                    database.insertNewGameToDatabase(Integer.parseInt(g.getWeekString()), g.getAfdelingString(), date, time, g.getHomeTeamName(), g.getVisitingTeamName(), g.getPlateUmpireName().toString(), g.getBase1UmpireName().toString(), g.getBase2UmpireName().toString(), g.getBase3UmpireName().toString(), g.getGameNumber(), g.getGameindex(), g.getSeizoen(), g.getHomeClub().getClubNummer());
+                    database.insertNewGameToDatabase(Integer.parseInt(g.getWeekString()), g.getAfdelingString(), date, time, g.getHomeTeam().getTeamNaam(), g.getVisitingTeam().getTeamNaam(), g.getPlateUmpireName().toString(), g.getBase1UmpireName().toString(), g.getBase2UmpireName().toString(), g.getBase3UmpireName().toString(), g.getGameNumber(), g.getGameindex(), g.getSeizoen(), g.getHomeClub().getClubNummer());
                 });
             }
         });
@@ -719,7 +772,7 @@ public class MainPanel {
                     placeHolder.managedProperty().bind( bb );
         vbox.getChildren().add(placeHolder); // Show placeholder when no tabs
         vbox.getChildren().add(sideTabPane); // Show tabs if present
-        vbox.setPrefSize(300, 800);
+        vbox.setPrefSize(250, 800);
         
         return vbox;
     }
@@ -744,7 +797,7 @@ public class MainPanel {
                     placeHolder.managedProperty().bind( bb );
         vbox.getChildren().add(placeHolder); // Show placeholder when no tabs
         vbox.getChildren().add(sideTabPane); // Show tabs if present
-        vbox.setPrefSize(300, 800);
+        vbox.setPrefSize(250, 800);
         
         return vbox;
     }
@@ -1113,7 +1166,7 @@ public class MainPanel {
                 } else {
                     System.out.println("does not exist: " + cl.getClubNaam());
                     
-                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getLiga(), cl.getClubNummer(), cl.getVoorzitter(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getClubWebsite(), cl.getVisible(), cl.getLatitude(), cl.getLongitude());
+                    database.insertNewClubToDatabase(cl.getClubNaam(), cl.getLiga(), cl.getClubNummer(), cl.getVoorzitter(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getLandCode(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getClubWebsite(), cl.getVisible(), cl.getLatitude(), cl.getLongitude());
                     
                 }
             }
