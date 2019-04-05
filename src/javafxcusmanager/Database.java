@@ -1613,7 +1613,7 @@ public class Database {
      * @param afdeling afdeling of "km"
      * @return 
      */
-    public String getVergoedingFromDatabase(String afdeling) {
+    public String getVergoedingenFromDatabase(String afdeling) {
         String s = "0,000";
         try {
             stmt = con.createStatement();
@@ -1638,8 +1638,8 @@ public class Database {
         return s;
     }
     
-    public ArrayList<Vergoeding> getAllVergoedingenFromDatabase() {
-        ArrayList<Vergoeding> arrayVergoedingen = new ArrayList<>();
+    public ArrayList<Vergoedingskosten> getAllVergoedingenFromDatabase() {
+        ArrayList<Vergoedingskosten> arrayVergoedingen = new ArrayList<>();
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.Vergoedingen";
@@ -1647,7 +1647,7 @@ public class Database {
             while(rs.next()) {
                 String a = rs.getString("afdeling");
                 String e = rs.getString("euro");
-                Vergoeding verg = new Vergoeding(a, e);
+                Vergoedingskosten verg = new Vergoedingskosten(a, e);
                 arrayVergoedingen.add(verg);
             }
         } catch (SQLException e) {
@@ -1814,5 +1814,156 @@ public class Database {
             }
         }
         return landcodes;
+    }
+    
+    /** Get vergoeding euro string from database
+     * 
+     * @param umpirelicentie afdeling of "km"
+     * @return 
+     */
+    public Vergoeding getUitbetalingenFromDatabase(String umpirelicentie) {
+        Vergoeding vergoeding = new Vergoeding(null, 0.0, 0.0, 0, 0.0, 0.0, false);
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.Uitbetalingen where umpirelicentie = '"+umpirelicentie+"'";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                String ump = rs.getString("umpirelicentie");
+                Double km = rs.getDouble("kilometers");
+                Double kme = rs.getDouble("kmeuro");
+                Integer aw = rs.getInt("aantalwedstrijden");
+                Double wv = rs.getDouble("wedstrijdvergoeding");
+                Double tot = rs.getDouble("totaal");
+                Boolean u = rs.getBoolean("uitbetaald");
+                Umpire umpire = getUmpireFromDatabase(ump);
+                vergoeding = new Vergoeding(umpire, km, kme, aw, wv, tot, u);
+            }
+        } catch (SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return vergoeding;
+    }
+    
+    public ArrayList<Vergoeding> getAllUitbetalingenFromDatabase() {
+        Vergoeding vergoeding = new Vergoeding(null, 0.0, 0.0, 0, 0.0, 0.0, false);
+        ArrayList<Vergoeding> arrayVergoedingen = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.Uitbetalingen";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                String ump = rs.getString("umpirelicentie");
+                Double km = rs.getDouble("kilometers");
+                Double kme = rs.getDouble("kmeuro");
+                Integer aw = rs.getInt("aantalwedstrijden");
+                Double wv = rs.getDouble("wedstrijdvergoeding");
+                Double tot = rs.getDouble("totaal");
+                Boolean u = rs.getBoolean("uitbetaald");
+                Umpire umpire = getUmpireFromDatabase(ump);
+                vergoeding = new Vergoeding(umpire, km, kme, aw, wv, tot, u);
+                arrayVergoedingen.add(vergoeding);
+            }
+        } catch (SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return arrayVergoedingen;
+    }
+    /** Insert onkostenvergoedingen into database
+     * 
+     * @param u
+     * @param km
+     * @param kme
+     * @param aw
+     * @param wv
+     * @param tot
+     * @param uitbetaald 
+     */
+    public void insertUitbetalingToDatabase(Umpire u, Double km, Double kme, Integer aw, Double wv, Double tot, Boolean uitbetaald) {
+        System.out.println("Insert Uitbetaling To Database...");
+        try {
+            stmt = con.createStatement();
+            System.out.println("kmOne type = " + km + ": " +  km.getClass().getName());
+                    System.out.println("kmE type = " + kme + ": " + kme.getClass().getName());
+                    System.out.println("aw type = " + aw + ": " + aw.getClass().getName());
+                    System.out.println("verg type = " + wv + ": " +  wv.getClass().getName());
+                    System.out.println("tot type = " + tot + ": " +  tot.getClass().getName());
+            stmt.executeUpdate("INSERT INTO APP.Uitbetalingen " + "VALUES ('" + u.getUmpireLicentie() + "', " + km + ", " + kme + ", " + aw + ", " + wv + ", " + tot + ", '" + uitbetaald + "')");
+        } catch(SQLException e) {
+            System.err.println("SQL Exception while inserting uitbetaling: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    
+    /** Update vergoeding in the database
+     * 
+     * @param afdeling
+     * @param euro 
+     */
+    public void updateUitbetalingenToDatabase(Umpire u, Double km, Double kme, Integer aw, Double wv, Double tot, Boolean uitbetaald) {
+        System.out.println("Update Uitbetaling in Database...");
+        try {
+            stmt = con.createStatement();
+            // Update row
+            stmt.executeUpdate("UPDATE APP.Uitbetalingen " + "SET kilometers = " + km + ", kmeuro = " + kme + ", aantalwedstrijden = " + aw + ", wedstrijdvergoeding = " + wv + ", totaal = " + tot + ", uitbetaald = '" + uitbetaald + "' "+ "where umpirelicentie = '"+u.getUmpireLicentie()+"'");
+        } catch(SQLException e) {
+            System.err.println("SQL Exception while updating uitbetaling: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    } 
+    
+    public Boolean checkIfUitbetalingExists(Umpire umpire) throws SQLException {
+        ResultSet rs = null;
+        
+        try {
+            stmt = con.createStatement();
+            String sql = "Select 1 from APP.Uitbetalingen where umpirelicentie = ?";  
+            PreparedStatement ps = con.prepareStatement(sql);
+            //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
+            ps.setString(1, umpire.getUmpireLicentie());
+            rs = ps.executeQuery();
+            return rs.next();
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            //rs.close();
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return Boolean.TRUE;
     }
 }

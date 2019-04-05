@@ -38,7 +38,7 @@ public class AppSettings {
     public Preferences pref;
     private Label seizoenLabel, startOfYear, defaultGamehour, landcodeLabel;
     private TextField seizoentf, startOfYeartf, kmvergoedingtf, defaultGamehourtf, landcodes;
-    private ObservableList<Vergoeding> vergoedingen;
+    private ObservableList<Vergoedingskosten> vergoedingen;
     private Database database;
     /* TO DO:
     Eerste dag van de week kiezen, default zaterdag (6)
@@ -46,7 +46,7 @@ public class AppSettings {
     private int first_day_of_weekend; // Fri = 5, Sat = 6, Sun = 7
     
     
-    public AppSettings(ObservableList<Vergoeding> vergoedingen) {
+    public AppSettings(ObservableList<Vergoedingskosten> vergoedingen) {
         this.vergoedingen = vergoedingen;
         database = new Database();
     }
@@ -78,17 +78,17 @@ public class AppSettings {
         vergTabelAfd.setEditable(true);
         vergTabelAfd.setPrefHeight(600.0);
         vergTabelAfd.setMinWidth(200.0);
-        TableColumn<Vergoeding, String> afdCol = new TableColumn("Afdeling");
+        TableColumn<Vergoedingskosten, String> afdCol = new TableColumn("Afdeling");
         afdCol.prefWidthProperty().bind(vergTabelAfd.widthProperty().divide(2));
-        TableColumn<Vergoeding, String> euroCol = new TableColumn("Euro");
+        TableColumn<Vergoedingskosten, String> euroCol = new TableColumn("Euro");
         euroCol.prefWidthProperty().bind(vergTabelAfd.widthProperty().divide(2));
         afdCol.setCellValueFactory(new PropertyValueFactory<>("afdeling"));
         afdCol.setEditable(false);
         euroCol.setCellValueFactory(new PropertyValueFactory<>("euro"));
         euroCol.setEditable(true);
         euroCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        euroCol.setOnEditCommit((CellEditEvent<Vergoeding, String> t) -> {
-            ((Vergoeding) t.getTableView().getItems().get(
+        euroCol.setOnEditCommit((CellEditEvent<Vergoedingskosten, String> t) -> {
+            ((Vergoedingskosten) t.getTableView().getItems().get(
                 t.getTablePosition().getRow())
                 ).setEuroDec(t.getNewValue());
             database.updateVergoedingToDatabase(t.getTableView().getItems().get(t.getTablePosition().getRow()).getAfdeling(), t.getNewValue());
@@ -97,7 +97,7 @@ public class AppSettings {
         vergoedingsBox.getChildren().add(vergTabelAfd);
         try {
             if (database.checkIfVergoedingExists("km")) {
-                kmvergoedingtf = new TextField(database.getVergoedingFromDatabase("km"));
+                kmvergoedingtf = new TextField(database.getVergoedingenFromDatabase("km"));
             } else {
                 kmvergoedingtf = new TextField();
             }

@@ -5,6 +5,8 @@
  */
 package javafxcusmanager;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -320,7 +322,7 @@ public class GameSchedule {
                     wisCel.setOnAction(wiscel -> {
                         System.out.println("Wis hometeam");
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), null, gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), null));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), null, gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), null));
 
                     });
                     MenuItem wisRij = new MenuItem("Wis wedstrijd");
@@ -405,7 +407,7 @@ public class GameSchedule {
                                 System.out.println("Home club = " + hcn);
                             }
                         }
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), team, gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), database.getClubFromTeam(team.getTeamNaam())));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), team, gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), database.getClubFromTeam(team.getTeamNaam())));
 
                     }
                     table.setItems(secondFilter);
@@ -453,7 +455,7 @@ public class GameSchedule {
                     wisCel.setOnAction(wiscel -> {
                         System.out.println("Wis @field");
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), null));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), null));
 
                     });
                     MenuItem wisRij = new MenuItem("Wis wedstrijd");
@@ -533,7 +535,7 @@ public class GameSchedule {
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
                         System.out.println("Home team = " + gameData.get(newIndex).getHomeTeam());
                         System.out.println("Home club = " + database.getClubFromTeam(text));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), database.getClubFromTeam(text)));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), database.getClubFromTeam(text)));
 
                     }
                     table.setItems(secondFilter);
@@ -580,7 +582,7 @@ public class GameSchedule {
                 wisCel.setOnAction(wiscel -> {
                     System.out.println("Wis visitingteam");
                     int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                    gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), null, gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                    gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), null, gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
                 });
                 MenuItem wisRij = new MenuItem("Wis wedstrijd");
                 cm.getItems().add(wisRij);
@@ -651,7 +653,7 @@ public class GameSchedule {
                 } else {
                     // get index of filteredGame in gameData
                     int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
-                    gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), team, gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                    gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), team, gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
                 }
                 table.setItems(secondFilter);
                 success = true;
@@ -670,7 +672,7 @@ public class GameSchedule {
         plateUmpireCol.prefWidthProperty().bind(table.widthProperty().divide(9));
         
         plateUmpireCol.setCellValueFactory(
-            new PropertyValueFactory<>("plateUmpireName")
+            new PropertyValueFactory<>("plateUmpire")
         );
         
         plateUmpireCol.setCellFactory(e -> {
@@ -678,7 +680,6 @@ public class GameSchedule {
                 @Override
                 public void updateItem(Umpire item, boolean empty) {
                     // Make sure you call super.updateItem, or you might get really weird bugs.
-                    
                     super.updateItem(item, empty);
                     if (item == null || empty ) {
                         setText(null);
@@ -703,7 +704,7 @@ public class GameSchedule {
                     wisCel.setOnAction(wiscel -> {
                         System.out.println("Wis plate umpire");
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), null, gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), null, gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
                     });
                     MenuItem wisRij = new MenuItem("Wis wedstrijd");
                     cm.getItems().add(wisRij);
@@ -776,7 +777,7 @@ public class GameSchedule {
                     } else {
                         // get index of filteredGame in gameData
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), umpire, gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), umpire, gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
                     }
                     table.setItems(secondFilter);
                     success = true;
@@ -791,7 +792,7 @@ public class GameSchedule {
         TableColumn base1UmpiresCol = new TableColumn("Base 1");
         base1UmpiresCol.prefWidthProperty().bind(table.widthProperty().divide(9));
         base1UmpiresCol.setCellValueFactory(
-            new PropertyValueFactory<>("base1UmpireName")
+            new PropertyValueFactory<>("base1Umpire")
         );
         base1UmpiresCol.setCellFactory(e -> {
             TableCell<ObservableList<Game>, Umpire> cell = new TableCell<ObservableList<Game>, Umpire> () {
@@ -822,7 +823,7 @@ public class GameSchedule {
                     wisCel.setOnAction(wiscel -> {
                         System.out.println("Wis base 1 umpire");
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), null, gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), null, gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
                     });
                     MenuItem wisRij = new MenuItem("Wis wedstrijd");
                     cm.getItems().add(wisRij);
@@ -893,7 +894,7 @@ public class GameSchedule {
                     } else {
                         
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), umpire, gameData.get(newIndex).getBase2UmpireName(), gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), umpire, gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
 
                     }
                     table.setItems(secondFilter);
@@ -909,7 +910,7 @@ public class GameSchedule {
         TableColumn base2UmpiresCol = new TableColumn("Base 2");
         base2UmpiresCol.prefWidthProperty().bind(table.widthProperty().divide(9));
         base2UmpiresCol.setCellValueFactory(
-            new PropertyValueFactory<>("base2UmpireName")
+            new PropertyValueFactory<>("base2Umpire")
         );
         base2UmpiresCol.setCellFactory(e -> {
             TableCell<ObservableList<Game>, Umpire> cell = new TableCell<ObservableList<Game>, Umpire> () {
@@ -940,7 +941,7 @@ public class GameSchedule {
                     wisCel.setOnAction(wiscel -> {
                         System.out.println("Wis base 2 umpire");
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), null, gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), null, gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
                     });
                     MenuItem wisRij = new MenuItem("Wis wedstrijd");
                     cm.getItems().add(wisRij);
@@ -1011,7 +1012,7 @@ public class GameSchedule {
                     } else {
                         
                         int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), umpire, gameData.get(newIndex).getBase3UmpireName(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), umpire, gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
 
                     }
                     table.setItems(secondFilter);
@@ -1027,7 +1028,7 @@ public class GameSchedule {
         TableColumn base3UmpiresCol = new TableColumn("Base 3");
         base3UmpiresCol.prefWidthProperty().bind(table.widthProperty().divide(9));
         base3UmpiresCol.setCellValueFactory(
-            new PropertyValueFactory<>("base3UmpireName")
+            new PropertyValueFactory<>("base3Umpire")
         );
         base3UmpiresCol.setCellFactory(e -> {
             TableCell<ObservableList<Game>, Umpire> cell = new TableCell<ObservableList<Game>, Umpire> () {
@@ -1058,7 +1059,7 @@ public class GameSchedule {
                     wisCel.setOnAction(wiscel -> {
                         System.out.println("Wis base 3 umpire");
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), null, "", gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), null, "", gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
                     });
                     MenuItem wisRij = new MenuItem("Wis wedstrijd");
                     cm.getItems().add(wisRij);
@@ -1147,7 +1148,7 @@ public class GameSchedule {
                         } else {
 
                             int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
-                            gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpireName(), gameData.get(newIndex).getBase1UmpireName(), gameData.get(newIndex).getBase2UmpireName(), umpire, gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                            gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), umpire, gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
 
                         }
                         table.setItems(secondFilter);
@@ -1179,7 +1180,7 @@ public class GameSchedule {
             Double distb2 = Double.parseDouble(database.getDistFromUmpireClub(b2.getUmpireLicentie(), c.getClubNummer()));
             Umpire b3 = database.getUmpireFromGameSchedule(ind, "base3umpire");
             Double distb3 = Double.parseDouble(database.getDistFromUmpireClub(b3.getUmpireLicentie(), c.getClubNummer()));
-            totalDistance = Double.toString(distp*2 + distb1*2 + distb2*2 + distb3*2);
+            totalDistance = Double.toString(round(distp*2 + distb1*2 + distb2*2 + distb3*2, 3));
             return new ReadOnlyStringWrapper(totalDistance);
         });
         
@@ -1219,10 +1220,10 @@ public class GameSchedule {
         FilteredList<Game> secondFilter = gameData.filtered(g -> g.getGameDatum().equals(datum));
         for (Game gameToday : secondFilter) {
             ArrayList<String> umpiresForThisDate = new ArrayList<>();
-            umpiresForThisDate.add(gameToday.getPlateUmpireName().getUmpireLicentie());
-            umpiresForThisDate.add(gameToday.getBase1UmpireName().getUmpireLicentie());
-            umpiresForThisDate.add(gameToday.getBase2UmpireName().getUmpireLicentie());
-            umpiresForThisDate.add(gameToday.getBase3UmpireName().getUmpireLicentie());
+            umpiresForThisDate.add(gameToday.getPlateUmpire().getUmpireLicentie());
+            umpiresForThisDate.add(gameToday.getBase1Umpire().getUmpireLicentie());
+            umpiresForThisDate.add(gameToday.getBase2Umpire().getUmpireLicentie());
+            umpiresForThisDate.add(gameToday.getBase3Umpire().getUmpireLicentie());
             if (umpiresForThisDate.contains(umpirelicentie)) {
                 bool = Boolean.TRUE;
             } else {
@@ -1231,6 +1232,14 @@ public class GameSchedule {
         }
         
         return bool;
+    }
+
+    private static double round(Double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
+
     }
     
     

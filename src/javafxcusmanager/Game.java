@@ -151,14 +151,14 @@ public class Game {
      * 
      * @return String plate umpire name
      */
-    public Umpire getPlateUmpireName() {
+    public Umpire getPlateUmpire() {
         return plateumpire.get();
     }
     /** Set plate umpire name
      * 
      * @param plateUmpireName String plate umpire
      */
-    public void setPlateUmpireName(Umpire plateUmpireName) {
+    public void setPlateUmpire(Umpire plateUmpireName) {
         this.plateumpire.set(plateUmpireName);
     }
     
@@ -170,42 +170,42 @@ public class Game {
      * 
      * @return String First Base umpire
      */
-    public Umpire getBase1UmpireName() {
+    public Umpire getBase1Umpire() {
         return base1umpire.get();
     }
     /** Set First Base umpire
      * 
      * @param base1Ump 
      */
-    public void setBase1UmpireName(Umpire base1Ump) {
+    public void setBase1Umpire(Umpire base1Ump) {
         this.base1umpire.set(base1Ump);
     }
     /** Get Second Base umpire
      * 
      * @return String Second Base umpire
      */
-    public Umpire getBase2UmpireName() {
+    public Umpire getBase2Umpire() {
         return base2umpire.get();
     }
     /** Set Second Base umpire
      * 
      * @param base2Ump 
      */
-    public void setBase2UmpireName(Umpire base2Ump) {
+    public void setBase2Umpire(Umpire base2Ump) {
         this.base2umpire.set(base2Ump);
     }
     /** Get Third Base umpire
      * 
      * @return String Third Base umpire
      */
-     public Umpire getBase3UmpireName() {
+     public Umpire getBase3Umpire() {
         return base3umpire.get();
     }
     /** Set Third Base umpire
      * 
      * @param base3Ump 
      */
-    public void setBase3UmpireName(Umpire base3Ump) {
+    public void setBase3Umpire(Umpire base3Ump) {
         this.base3umpire.set(base3Ump);
     }
     /** Get Game Date

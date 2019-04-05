@@ -314,7 +314,7 @@ public class DocumentHandling {
         try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
             fileWriter.write("Games");
             wedstrijdschema.forEach((k) ->  {
-                String fileContent = "\n" + k.getWeekString() + ";"+k.getAfdelingString() + ";" + k.getGameDatum() + ";" + k.getGameUur() + ";" + k.getHomeTeam() + ";" + k.getVisitingTeam() + ";" + k.getPlateUmpireName() + ";" + k.getBase1UmpireName() + ";" + k.getBase2UmpireName() + ";" + k.getBase3UmpireName() + ";" + k.getGameNumber() + ";" + k.getGameindex() + ";" + k.getSeizoen() + ";" + k.getHomeClub().getClubNummer();
+                String fileContent = "\n" + k.getWeekString() + ";"+k.getAfdelingString() + ";" + k.getGameDatum() + ";" + k.getGameUur() + ";" + k.getHomeTeam() + ";" + k.getVisitingTeam() + ";" + k.getPlateUmpire() + ";" + k.getBase1Umpire() + ";" + k.getBase2Umpire() + ";" + k.getBase3Umpire() + ";" + k.getGameNumber() + ";" + k.getGameindex() + ";" + k.getSeizoen() + ";" + k.getHomeClub().getClubNummer();
                 try {
                     fileWriter.write(fileContent);
                 } catch(IOException e) {
