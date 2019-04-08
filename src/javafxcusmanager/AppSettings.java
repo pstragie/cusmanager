@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -107,11 +108,11 @@ public class AppSettings {
         Label kmvergoedingslabel = new Label("Onkostenvergoeding per km (€):");
         vergoedingsBox.getChildren().add(kmvergoedingslabel);
         kmvergoedingtf.setAlignment(Pos.CENTER_LEFT);
-        kmvergoedingtf.setPromptText("0,000");
+        kmvergoedingtf.setPromptText("0.000");
         kmvergoedingtf.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if (!newValue.matches("\\d{0,7}([\\,]\\d{0,4})?")) {
+                if (!newValue.matches("\\d{0,7}([\\.]\\d{0,4})?")) {
                     kmvergoedingtf.setText(oldValue);
                 }
             }
@@ -126,6 +127,7 @@ public class AppSettings {
         Button sluitButton = new Button("Sluiten");
         saveButton.setOnAction(save -> {
             // Store landcodes
+            database.deleteAllLandcodesInDatabase();
             for (String lc : landcodes.getText().split(",")) {
                 String landcode = lc.trim();
                 database.storeLandCode(landcode);

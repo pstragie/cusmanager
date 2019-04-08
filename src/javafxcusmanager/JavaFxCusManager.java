@@ -37,7 +37,7 @@ public class JavaFxCusManager extends Application {
         //undecorator.getStylesheets().add("skin/undecorator.css");
         //undecorator.setFadeInTransition();
          
-        Scene scene = new Scene(root, 2000, 500);
+        Scene scene = new Scene(root, 2000, 800);
         scene.setFill(Color.TRANSPARENT);
         //primaryStage.initStyle(StageStyle.TRANSPARENT);
         scene.getStylesheets().add(getClass().getResource("css/BorderStyles.css").toExternalForm());

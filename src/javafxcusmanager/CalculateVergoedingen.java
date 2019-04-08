@@ -25,13 +25,17 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 /**
  *
@@ -53,6 +57,8 @@ public class CalculateVergoedingen {
     private Button berekenUmpire, berekenAlleUmpires, exporteer, sluiten;
     private ObservableList<Vergoeding> observableVergoedingList = FXCollections.observableArrayList();
     private Boolean all;
+    private VBox leftBox = new VBox(10);
+    private VBox overzicht = new VBox(10);
     
     public CalculateVergoedingen(ObservableList<Umpire> umpires, ObservableList<Club> clubs, ObservableList<Vergoedingskosten> vergoedingen, ObservableList<Game> games, ObservableList<Afdeling> afdelingen) {
         this.umpires = umpires;
@@ -64,7 +70,7 @@ public class CalculateVergoedingen {
         database = new Database();
         pref = Preferences.userNodeForPackage(AppSettings.class);
         all = Boolean.FALSE;
-
+        overzicht.prefHeight(600);
     }
     
     /** Calculate vergoedingen
@@ -75,7 +81,6 @@ public class CalculateVergoedingen {
         HBox mainHBox = new HBox(10);
         mainHBox.setPadding(new Insets(10, 10, 10, 10));
         // Left options
-        VBox leftBox = new VBox(10);
         GridPane grid = new GridPane();
         grid.setHgap(5);
         umpLabel = new Label("Umpire ");
@@ -95,8 +100,8 @@ public class CalculateVergoedingen {
         grid.add(periodTo, 6, 1);
         
         leftBox.getChildren().add(grid);
-        ArrayList<Vergoeding> vergArray = new ArrayList<>();
-        leftBox.getChildren().add(showTable(observableVergoedingList));
+        leftBox.getChildren().add(overzicht);
+        
         HBox buttonBox = new HBox(5);
         berekenUmpire = new Button("Bereken umpire");
         berekenAlleUmpires = new Button("Bereken alle umpires");
@@ -106,10 +111,16 @@ public class CalculateVergoedingen {
         berekenUmpire.setOnAction(bereken -> {
             all = Boolean.FALSE;
             ArrayList<Umpire> umpArray = new ArrayList<>();
-            umpArray.add((Umpire) umpCombo.getSelectionModel().getSelectedItem());
+            Umpire ump = (Umpire) umpCombo.getSelectionModel().getSelectedItem();
+            umpArray.add(ump);
             berekenVergoedingen(umpArray, mainpanel.stringToLocalDate(periodFrom.getText()), mainpanel.stringToLocalDate(periodTo.getText()));
             observableVergoedingList.clear();
             observableVergoedingList.addAll(database.getUitbetalingenFromDatabase(umpArray.get(0).getUmpireLicentie()));
+            leftBox.getChildren().remove(overzicht);
+            overzicht.getChildren().clear();
+            overzicht.getChildren().add(showTable(observableVergoedingList));
+            overzicht.getChildren().add(showDetailGrid(ump));
+            leftBox.getChildren().add(overzicht);
         });
         berekenAlleUmpires.setOnAction(bereken -> {
             all = Boolean.TRUE;
@@ -117,6 +128,10 @@ public class CalculateVergoedingen {
             berekenVergoedingen(umpArray, mainpanel.stringToLocalDate(periodFrom.getText()), mainpanel.stringToLocalDate(periodTo.getText()));
             observableVergoedingList.clear();
             observableVergoedingList.addAll(database.getAllUitbetalingenFromDatabase());
+            leftBox.getChildren().remove(overzicht);
+            overzicht.getChildren().clear();
+            overzicht.getChildren().add(showTable(observableVergoedingList));
+            leftBox.getChildren().add(overzicht);
         });
         sluiten.setOnAction(sluit -> {
            Stage stage = (Stage) sluiten.getScene().getWindow();
@@ -218,7 +233,11 @@ public class CalculateVergoedingen {
 
         TableView vergTable = new TableView(vergoedingen);
         vergTable.setEditable(false);
-//        vergTable.setPrefHeight(700);
+        if (all) {
+            vergTable.setPrefHeight(700);
+        } else {
+            vergTable.setPrefHeight(55);
+        }
         vergTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
         TableColumn umpireCol = new TableColumn("Umpire");
@@ -382,6 +401,11 @@ public class CalculateVergoedingen {
                     berekenVergoedingen(umpArray, mainpanel.stringToLocalDate(periodFrom.getText()), mainpanel.stringToLocalDate(periodTo.getText()));
                     observableVergoedingList.clear();
                     observableVergoedingList.addAll(database.getUitbetalingenFromDatabase(umpArray.get(vindex).getUmpireLicentie()));
+                    leftBox.getChildren().remove(overzicht);
+                    overzicht.getChildren().clear();
+                    overzicht.getChildren().add(showTable(observableVergoedingList));
+                    overzicht.getChildren().add(showDetailGrid(umpArray.get(vindex)));
+                    leftBox.getChildren().add(overzicht);
                 });
                 
             }
@@ -404,5 +428,65 @@ public class CalculateVergoedingen {
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.doubleValue();
 
+    }
+    
+    private TextArea showDetailGrid(Umpire ump) {
+        //GridPane grid = new GridPane();
+        
+        
+        String s = ump.getUmpireVoornaam() + " " + ump.getUmpireNaam();
+        s += "\n\n";
+        Double kms = database.getUitbetalingenFromDatabase(ump.getUmpireLicentie()).getKilometers();
+        s += "Totaal aantal kilometers: " + (Double.toString(kms));
+        
+        ArrayList<Pair> numGames = new ArrayList<>();
+        numGames.addAll(numberOfGamesCalled(ump));
+        for (Afdeling afd : afdelingen) {
+            s += "\n" + String.format("%-" + 16 + "s", afd.getAfdelingsNaam());
+            for (Pair p : numGames) {
+                if ((Afdeling) p.getKey() == afd) {
+                    Integer i = (Integer) p.getValue();
+                    Double v = Double.parseDouble(database.getVergoedingenFromDatabase(afd.getAfdelingsNaam()));
+                    s += String.format("%-2s", Integer.toString(i));
+                    s += " x " + String.format("%-4s", Double.toString(v)) + " = " + Double.toString(i * v);
+                }
+            }
+        }
+        
+        s += "\n\nVergoeding kilometers = " + database.getUitbetalingenFromDatabase(ump.getUmpireLicentie()).getKmeuro() + " €";
+        s += "\nVergoeding wedstrijden = " + database.getUitbetalingenFromDatabase(ump.getUmpireLicentie()).getWedstrijdvergoeding() + " €";
+        s += "\nTotaalbedrag vergoeding = " + database.getUitbetalingenFromDatabase(ump.getUmpireLicentie()).getTotaal() + " €";
+                
+        
+        
+        TextArea textarea = new TextArea(s);
+        Font font = new Font(java.awt.Font.MONOSPACED, 14);
+        textarea.setFont(font);
+        textarea.setPrefHeight(600);
+        textarea.setEditable(false);
+        //grid.add(textarea, 0, 1);
+        return textarea;
+    }
+    
+    private ArrayList<Pair> numberOfGamesCalled(Umpire ump) {
+        System.out.println("Afdelingen: " + afdelingen);
+        System.out.println("Games: " + games);
+        ArrayList<Pair> numberOfGames = new ArrayList<>();
+        for (Afdeling afd : afdelingen) {
+            Integer number = 0;
+            for (Game game : games) {
+                if (game.getAfdelingString().equals(afd.getAfdelingsNaam())) {
+                    System.out.println("Afdeling = " + game.getAfdelingString() + ", Plate umpire = " + game.getPlateUmpire().getUmpireLicentie());
+                    if (game.getPlateUmpire().getUmpireLicentie().equals(ump.getUmpireLicentie()) || game.getBase1Umpire().getUmpireLicentie().equals(ump.getUmpireLicentie()) || game.getBase2Umpire().getUmpireLicentie().equals(ump.getUmpireLicentie()) || game.getBase3Umpire().getUmpireLicentie().equals(ump.getUmpireLicentie())) {
+                        number += 1;
+                        System.out.println("Game found: " + number);
+                    }
+                }
+            }
+            Pair p = new Pair(afd, number);
+            numberOfGames.add(p);
+        }
+        System.out.println("numberOfGames = " + numberOfGames);
+        return numberOfGames;
     }
 }

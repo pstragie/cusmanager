@@ -34,7 +34,10 @@ import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.WeekFields;
 import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -43,6 +46,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.transformation.FilteredList;
+import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuItem;
@@ -147,20 +151,38 @@ public class GameSchedule {
         return date;
     }
     
+    /** Get Current Week
+     * 
+     * @return Integer
+     */
+    private int getCurrentWeek() {
+        LocalDate date = LocalDate.now();
+        WeekFields weekFields = WeekFields.of(Locale.getDefault());
+        return date.get(weekFields.weekOfWeekBasedYear());
+    }
+    
+    /** Create Calendar for afdeling
+     * 
+     * @param afdeling
+     * @return 
+     */
     public VBox createCalendar(String afdeling) {
         
         VBox yearCalendar = new VBox();
         VBox vbox = new VBox();
-        
-        
+        Double max_height = 170.0;
         yearCalendar.setPadding(new Insets(5, 0, 5, 0));
         for(int week=Integer.parseInt(startOfYear); week<=52; week++) {
             vbox.getChildren().add(createWeekCalendar(afdeling, week));
         }
         
-        
         ScrollPane sideBarScroller = new ScrollPane(vbox);
         sideBarScroller.setFitToWidth(true);
+        Double corr = Double.parseDouble(startOfYear);
+        Double teller = getCurrentWeek() - corr - 1;
+        Double noemer = 52.0 - corr;
+        Double scrollHeight = teller / noemer;
+        sideBarScroller.setVvalue(scrollHeight);
         yearCalendar.getChildren().add(sideBarScroller);
         return yearCalendar;
     }
@@ -177,6 +199,11 @@ public class GameSchedule {
         VBox calendarbox = new VBox(2);
         final Label label = new Label("Week " + week);
         label.setPadding(new Insets(1, 0, 1, 5));
+        final Button addLineButton = new Button("+");
+        addLineButton.setFont(new Font("Arial", 15));
+        addLineButton.setOnAction(pressed -> {
+            
+        });
         // TODO: flexible week count according to user selection (1 January or start of competition
         label.setFont(new Font("Arial", 15));
         
@@ -190,7 +217,7 @@ public class GameSchedule {
             // Verify if table of this week is empty
             String w = String.format("%02d", week);
             String g = String.format("%02d", 1);
-            String gi = afdeling+seizoen+w+g;
+            String gi = afdeling+seizoen+w+g+getRandomString();
             try {
                 if (!database.checkIfGameExists(gi)) {
                     System.out.println("Dragover detected, creating first empty game: " + gi);
@@ -329,7 +356,8 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), null, null, null, null, null, null, null, null, null, seizoen, null));
+                        gameData.remove(newIndex);
+                        //gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(),  null, null, null, null, null, null, null, seizoen, null));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -386,12 +414,12 @@ public class GameSchedule {
                     System.out.println("filter: " + filt);
                     String w = String.format("%02d", week);
                     String g = String.format("%02d", rowIndex+1);
-                    String gi = afdeling+seizoen+w+g;
+                    String gi = afdeling+seizoen+w+g+getRandomString();
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
                         int sprong = rowIndex - secondFilter.size();
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
-                            String gix = afdeling+seizoen+w+ga;
+                            String gix = afdeling+seizoen+w+ga+getRandomString();
                             gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
                         }
                         gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, team, null, null, null, null, null, "", seizoen, database.getClubFromTeam(team.getTeamNaam())));                      
@@ -462,7 +490,8 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), null, null, null, null, null, null, null, null, null, seizoen, null));
+                        gameData.remove(newIndex);
+                        //gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), null, null, null, null, null, null, null, null, null, seizoen, null));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -519,12 +548,12 @@ public class GameSchedule {
                     System.out.println("filter: " + filt);
                     String w = String.format("%02d", week);
                     String g = String.format("%02d", rowIndex+1);
-                    String gi = afdeling+seizoen+w+g;
+                    String gi = afdeling+seizoen+w+g+getRandomString();
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
                         int sprong = rowIndex - secondFilter.size();
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
-                            String gix = afdeling+seizoen+w+ga;
+                            String gix = afdeling+seizoen+w+ga+getRandomString();
                             gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
                         }
                         gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, database.getClubFromTeam(text)));
@@ -588,7 +617,8 @@ public class GameSchedule {
                 cm.getItems().add(wisRij);
                 wisRij.setOnAction(wisrij -> {
                     int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                    gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), null, null, null, null, null, null, null, null, null, seizoen, null));
+                    gameData.remove(newIndex);
+                    //gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), null, null, null, null, null, null, null, null, null, seizoen, null));
                 });
                 cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                 .then(cm)
@@ -641,12 +671,12 @@ public class GameSchedule {
                 Team team = database.getTeamFromDatabase(db.getString(), afdeling);
                 String w = String.format("%02d", week);
                 String g = String.format("%02d", rowIndex+1);
-                String gi = afdeling+seizoen+w+g;
+                String gi = afdeling+seizoen+w+g+getRandomString();
                 if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
                     int sprong = rowIndex - secondFilter.size();
                     for(int i=0; i<sprong; i++) {
                         String ga = String.format("%02d", rowIndex-sprong+i+1);
-                        String gix = afdeling+seizoen+w+ga;
+                        String gix = afdeling+seizoen+w+ga+getRandomString();
                         gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
                     }
                    gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, team, null, null, null, null, "", seizoen, null));
@@ -710,7 +740,8 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen, null));
+                        gameData.remove(newIndex);
+                        //gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen, null));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -765,12 +796,12 @@ public class GameSchedule {
                     Umpire umpire = database.getUmpireFromDatabase(db.getString());
                     String w = String.format("%02d", week);
                     String g = String.format("%02d", rowIndex+1);
-                    String gi = afdeling+seizoen+w+g;
+                    String gi = afdeling+seizoen+w+g+getRandomString();
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
                         int sprong = rowIndex - secondFilter.size();
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
-                            String gix = afdeling+seizoen+w+ga;
+                            String gix = afdeling+seizoen+w+ga+getRandomString();
                             gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
                         }
                         gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, umpire, null, null, null, "", seizoen, null));
@@ -829,7 +860,8 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen, null));
+                        gameData.remove(newIndex);
+                        //gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen, null));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -881,13 +913,13 @@ public class GameSchedule {
                     Umpire umpire = database.getUmpireFromDatabase(db.getString());
                     String w = String.format("%02d", week);
                     String g = String.format("%02d", rowIndex+1);
-                    String gi = afdeling+seizoen+w+g;
+                    String gi = afdeling+seizoen+w+g+getRandomString();
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
                         
                         int sprong = rowIndex - secondFilter.size();
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
-                            String gix = afdeling+seizoen+w+ga;
+                            String gix = afdeling+seizoen+w+ga+getRandomString();
                             gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
                         }
                         gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, umpire, null, null, "", seizoen, null));
@@ -947,7 +979,8 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen, null));
+                        gameData.remove(newIndex);
+                        //gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen, null));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -999,13 +1032,13 @@ public class GameSchedule {
                     Umpire umpire = database.getUmpireFromDatabase(db.getString());
                     String w = String.format("%02d", week);
                     String g = String.format("%02d", rowIndex+1);
-                    String gi = afdeling+seizoen+w+g;
+                    String gi = afdeling+seizoen+w+g+getRandomString();
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
                         
                         int sprong = rowIndex - secondFilter.size();
                         for(int i=0; i<sprong; i++) {
                             String ga = String.format("%02d", rowIndex-sprong+i+1);
-                            String gix = afdeling+seizoen+w+ga;
+                            String gix = afdeling+seizoen+w+ga+getRandomString();
                             gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
                         }
                         gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, umpire, null, "", seizoen, null));
@@ -1065,7 +1098,8 @@ public class GameSchedule {
                     cm.getItems().add(wisRij);
                     wisRij.setOnAction(wisrij -> {
                         int newIndex = gameData.indexOf(secondFilter.get(cell.getIndex()));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen, null));
+                        gameData.remove(newIndex);
+                        //gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, null, seizoen, null));
                     });
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
@@ -1135,13 +1169,13 @@ public class GameSchedule {
                         Umpire umpire = database.getUmpireFromDatabase(db.getString());
                         String w = String.format("%02d", week);
                         String g = String.format("%02d", rowIndex+1);
-                        String gi = afdeling+seizoen+w+g;   
+                        String gi = afdeling+seizoen+w+g+getRandomString();   
                         if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
 
                             int sprong = rowIndex - secondFilter.size();
                             for(int i=0; i<sprong; i++) {
                                 String ga = String.format("%02d", rowIndex-sprong+i+1);
-                                String gix = afdeling+seizoen+w+ga;
+                                String gix = afdeling+seizoen+w+ga+getRandomString();
                                 gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
                             }
                             gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, umpire, "", seizoen, null));
@@ -1188,8 +1222,10 @@ public class GameSchedule {
         
         table.setItems(secondFilter);
         table.setFixedCellSize(25);
-        table.setMaxHeight(150);
-        table.setMinHeight(150);
+        table.prefHeightProperty().bind(table.fixedCellSizeProperty().multiply(Bindings.size(table.getItems()).add(1.51)));
+        //table.minHeightProperty().bind(table.prefHeightProperty());
+        table.maxHeightProperty().bind(table.prefHeightProperty());
+        table.setMinHeight(170);
         table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
         //table.prefHeight(100 + 45);
@@ -1311,5 +1347,16 @@ public class GameSchedule {
         }
     }
 
-    
+    private String getRandomString() {
+        String s = "";
+        Random rand = new Random();
+        String alphabet = "abcdefghijklmnopqrstuvwxyz"; 
+        String x = "";
+        int n = rand.nextInt(1000);
+        for (int i = 0; i < 3; i++) {
+            x += alphabet.charAt(rand.nextInt(alphabet.length()));
+        }
+        s = x + n;
+        return s;
+    }
 }

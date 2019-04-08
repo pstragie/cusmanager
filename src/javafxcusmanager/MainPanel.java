@@ -138,9 +138,9 @@ public class MainPanel {
                                 leftTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
                                 rightTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
                                 centerTabPane.getTabs().add(new Tab(additem.getAfdelingsNaam()));  // Add from observableTabList to get the correct order!
-                                leftTabPane.getTabs().addAll(getClubTabArrayList());
-                                rightTabPane.getTabs().addAll(getUmpireTabArrayList());
-                                centerTabPane.getTabs().addAll(getGameTabArrayList());
+                                //leftTabPane.getTabs().addAll(getClubTabArrayList());
+                                //rightTabPane.getTabs().addAll(getUmpireTabArrayList());
+                                //centerTabPane.getTabs().addAll(getGameTabArrayList());
                                 // TO DO: Store in database
                                 database.insertNewAfdelingToDatabase(additem.getAfdelingsNaam(), additem.getAfdelingsCategorie(), Boolean.TRUE);
                                 try {

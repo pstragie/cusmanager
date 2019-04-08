@@ -213,11 +213,10 @@ public class Afdelingen {
                 });
             
             addButton.setOnAction((ActionEvent event) -> {
-                System.out.println("Toevoegen ---------" + nieuwnaam.getText());
                 afdelingenlijst.add(new Afdeling(nieuwnaam.getText(), disciplineBox.getSelectionModel().getSelectedItem().toString()));
-                database.insertNewAfdelingToDatabase(nieuwnaam.getText(), disciplineBox.getSelectionModel().getSelectedItem().toString(), Boolean.TRUE);
+                //database.insertNewAfdelingToDatabase(nieuwnaam.getText(), disciplineBox.getSelectionModel().getSelectedItem().toString(), Boolean.TRUE);
                 nieuwnaam.setText("");
-                });
+            });
             
             
             // Button for saving

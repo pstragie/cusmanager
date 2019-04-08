@@ -1777,7 +1777,9 @@ public class Database {
                     break;
             }
             stmt = con.createStatement();
+            if (!checkIfLandcodeExists(landcode)) {
             stmt.executeUpdate("INSERT INTO APP.landcodes " + "VALUES ('" + landcode + "', '" + land + "')");
+            }
         } catch(SQLException e) {
             System.err.println(e);
         } finally {
@@ -1791,6 +1793,10 @@ public class Database {
         }
     }
     
+    /** Get land codes from database
+     * 
+     * @return 
+     */
     public ArrayList<String> getLandcodesFromDatabase() {
         ArrayList<String> landcodes = new ArrayList<>();
         try {
@@ -1814,6 +1820,49 @@ public class Database {
             }
         }
         return landcodes;
+    }
+    
+    public void deleteAllLandcodesInDatabase() {
+        try {
+            stmt = con.createStatement();
+            String sql2 = "DELETE FROM APP.Landcodes WHERE 1=1";
+            stmt.executeUpdate(sql2);
+        } catch(SQLException e) {
+            System.err.println(e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+    }
+    public Boolean checkIfLandcodeExists(String landcode) throws SQLException {
+        ResultSet rs = null;
+        
+        try {
+            stmt = con.createStatement();
+            String sql = "Select 1 from APP.Landcodes where landcode = ?";  
+            PreparedStatement ps = con.prepareStatement(sql);
+            //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
+            ps.setString(1, landcode);
+            rs = ps.executeQuery();
+            return rs.next();
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            //rs.close();
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return Boolean.TRUE;
     }
     
     /** Get vergoeding euro string from database
