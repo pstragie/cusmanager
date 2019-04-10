@@ -1,6 +1,9 @@
 package javafxcusmanager;
 
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -10,7 +13,18 @@ import java.sql.Statement;
 import java.time.LocalTime;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -34,6 +48,7 @@ public class Database {
     public Database() {
         try {
             String host = "jdbc:derby://localhost:1527/cusdb;create=false";
+            String driverClass = "org.apache.derby.jdbc.ClientDriver";
             String unm = "pstragier";
             String pswrd = "Isabelle30?";
             con = DriverManager.getConnection(host, unm, pswrd);
@@ -1375,6 +1390,118 @@ public class Database {
         return Boolean.TRUE;
     }
     
+    public Boolean checkIfWeekHasGame(Integer week, String afdeling) throws SQLException {
+        ResultSet rs = null;
+        System.out.println("Checking if game exists... current Games: ?" );
+        
+        try {
+            stmt = con.createStatement();
+            String sql = "Select * from APP.Games where week = ? AND afdeling = ?";  
+            PreparedStatement ps = con.prepareStatement(sql);
+            //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
+            ps.setString(1, Integer.toString(week));
+            ps.setString(2, afdeling);
+            rs = ps.executeQuery();
+            return rs.next();
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            rs.close();
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return Boolean.TRUE;
+    }
+    
+    public Integer countNumberOfGames(Integer week, String afdeling) throws SQLException {
+        ResultSet rs = null;
+        Integer count = 0;
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT COUNT(*) FROM APP.GAMES AS COUNT WHERE WEEK = ? AND AFDELING = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, Integer.toString(week));
+            ps.setString(2, afdeling);
+            rs = ps.executeQuery();
+            System.out.println("RS = " + rs);
+            System.out.println(rs.getInt("count"));
+            while(rs.next()){
+                count=rs.getInt("count");
+            }
+        } catch(SQLException e) {
+            
+        }
+        System.out.println("count = " + count);
+        return count;
+    }
+    public Boolean checkForEmptyGame(Integer week, String afd) {
+        Boolean empty;
+        empty = false;
+        ResultSet rs = null;
+        System.out.println("Checking for empty line...");
+        try {
+            stmt = con.createStatement();
+            String sql = "Select * from APP.Games where afdeling = ? and week = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, afd);
+            ps.setString(2, Integer.toString(week));
+            rs = ps.executeQuery();
+            
+            while(rs.next()) {
+                String w = rs.getString("week");
+                String a = rs.getString("afdeling");
+                String gd = rs.getString("gamedate");
+                String gt = rs.getString("gametime");
+                Team ht = getTeamFromDatabase(rs.getString("hometeam"), a);
+                Team vt = getTeamFromDatabase(rs.getString("visitingteam"), a);
+                Umpire pu = getUmpireFromDatabase(rs.getString("plateumpire"));
+                Umpire b1 = getUmpireFromDatabase(rs.getString("base1umpire"));
+                Umpire b2 = getUmpireFromDatabase(rs.getString("base2umpire"));
+                Umpire b3 = getUmpireFromDatabase(rs.getString("base3umpire"));
+                String gn = rs.getString("gamenumber");
+                String gi = rs.getString("gameindex");
+                String se = rs.getString("seizoen");
+                String atfield = rs.getString("atfield");
+                Club hc = getClubFromDatabase(atfield);
+                mainpanel = new MainPanel();
+                LocalDate gdatum = mainpanel.stringToLocalDate(gd);
+                System.out.println("DB -> games: " + w + ", " + a + ", " + gd + ", " + gt + ", " + ht + ", " + vt + ", " + pu + ", " + b1 + ", " + b2 + ", " + b3 + ", " + gn + ", " + gi + ", " + se + ".");
+                if (ht == null && vt == null) {
+                    empty = true;
+                    System.out.println("Empty line found!");
+                    return true;
+                } else {
+                    empty = false;
+                    System.out.println("Line not empty");
+                }
+            }
+            
+                    
+        } catch(SQLException e) {
+            System.err.println("SQL Exception: " + e);
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                if(stmt!=null) {
+                    try {
+                        stmt.close();
+                    } catch(SQLException e) {
+                        System.err.println("Could not close query statement");
+                    }
+                }
+            }
+        }
+        
+        return empty;
+    }
     public void insertDistanceToDatabase(Umpire ump, Club club, String distance) {
         System.out.println("Insert Distance To Database...");
         try {
@@ -2014,5 +2141,71 @@ public class Database {
             }
         }
         return Boolean.TRUE;
+    }
+    
+    public void exportToWorksheet(ObservableList<Afdeling> afdelingen) throws FileNotFoundException {
+        
+        HSSFWorkbook wb = new HSSFWorkbook();//for earlier version use HSSF
+        afdelingen.forEach(afd -> { 
+            ResultSet rs = null;
+        
+            try {
+                String sql = "Select * from APP.GAMES WHERE afdeling = ?";
+                //rs = stmt.executeQuery();
+                stmt = con.createStatement();
+                //stmt = con.createStatement();
+                //String sql = "Select 1 from APP.Vergoedingen where afdeling = ?";  
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, afd.getAfdelingsNaam());
+                rs = ps.executeQuery();
+
+                //Apache POI Jar Link-
+                //http://a.mbbsindia.com/poi/release/bin/poi-bin-3.13-20150929.zip
+
+
+
+                HSSFSheet sheet = wb.createSheet(afd.getAfdelingsNaam());
+                HSSFRow header = sheet.createRow(0);
+                header.createCell(0).setCellValue("afdeling");
+                header.createCell(1).setCellValue("hometeam");
+                header.createCell(2).setCellValue("visitingteam");
+                header.createCell(3).setCellValue("plateumpire");
+                sheet.autoSizeColumn(1);
+                sheet.autoSizeColumn(2);
+                sheet.setColumnWidth(3, 256*25);//256-character width
+                sheet.setZoom(150);//scale-150%
+
+                int index = 1;
+                while(rs.next()){
+                    HSSFRow row = sheet.createRow(index);
+                    row.createCell(0).setCellValue(rs.getString("afdeling"));
+                    row.createCell(1).setCellValue(rs.getString("hometeam"));
+                    row.createCell(2).setCellValue(rs.getString("visitingteam"));
+                    row.createCell(3).setCellValue(rs.getString("plateumpire"));
+                    index++;                   
+                }
+
+
+            FileOutputStream fileOut = new FileOutputStream("Wedstrijdschema.xlsx");// before 2007 version xls
+            wb.write(fileOut);
+            fileOut.close();
+
+            
+
+
+            stmt.close();
+            rs.close();
+
+            } catch (SQLException | FileNotFoundException ex) {
+                Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Information Dialog");
+            alert.setHeaderText(null);
+            alert.setContentText("User Details Exported in Excel Sheet.");
+            alert.showAndWait();
     }
 }

@@ -6,6 +6,7 @@
 package javafxcusmanager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -637,7 +638,15 @@ public class MainPanel {
                 });
             }
         });
-        
+        MenuItem schemadelen = new MenuItem("Schema delen...");
+        menuGames.getItems().add(schemadelen);
+        schemadelen.setOnAction(a -> {
+            try {
+                database.exportToWorksheet(afdelingen);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
         MenuItem rewindImportGames = new MenuItem("Import terugdraaien");
         menuGames.getItems().add(rewindImportGames);
         File gtmpDir = new File("games_backup.txt");

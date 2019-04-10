@@ -181,17 +181,19 @@ public class CalculateVergoedingen {
             gameVergoedingOne = 0.0;
             Integer aantalwed = 0;
             for (Game g : games) {
-                System.out.println("Club = " + g.getHomeClub().getClubNaam());
-                System.out.println("umpire name = " + g.getPlateUmpire().getUmpireVoornaam() + " " + g.getPlateUmpire().getUmpireNaam());
-                if (g.getPlateUmpire().getUmpireLicentie().equals(u.getUmpireLicentie())) {
-                    aantalwed += 1;
-                    String clubnr = g.getHomeClub().getClubNummer();
-                    Double d = Double.parseDouble(database.getDistFromUmpireClub(u.getUmpireLicentie(), clubnr));
-                    System.out.println("clubnummer = " + clubnr + ", distance = " + d);
-                    kmOne += d;
-                    kmAll += d;
-                    gameVergoedingOne += Double.parseDouble(afdelingsVergoeding.get(g.getAfdelingString()));
-                    gameVergoedingAll += Double.parseDouble(afdelingsVergoeding.get(g.getAfdelingString()));
+                if (g.getHomeClub() != null) {
+                    //System.out.println("Club = " + g.getHomeClub().getClubNaam());
+                    //System.out.println("umpire name = " + g.getPlateUmpire().getUmpireVoornaam() + " " + g.getPlateUmpire().getUmpireNaam());
+                    if (g.getPlateUmpire().getUmpireLicentie().equals(u.getUmpireLicentie())) {
+                        aantalwed += 1;
+                        String clubnr = g.getHomeClub().getClubNummer();
+                        Double d = Double.parseDouble(database.getDistFromUmpireClub(u.getUmpireLicentie(), clubnr));
+                        System.out.println("clubnummer = " + clubnr + ", distance = " + d);
+                        kmOne += d;
+                        kmAll += d;
+                        gameVergoedingOne += Double.parseDouble(afdelingsVergoeding.get(g.getAfdelingString()));
+                        gameVergoedingAll += Double.parseDouble(afdelingsVergoeding.get(g.getAfdelingString()));
+                    }
                 }
             }
             System.out.println("Aantal kilometers "+ u.getUmpireVoornaam() + " = " + kmOne * 2 + " km");

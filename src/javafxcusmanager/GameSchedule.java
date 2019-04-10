@@ -5,6 +5,9 @@
  */
 package javafxcusmanager;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
@@ -55,6 +58,7 @@ import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
+
 
 /** Wedstrijdschema
  * 
@@ -219,10 +223,10 @@ public class GameSchedule {
             String g = String.format("%02d", 1);
             String gi = afdeling+seizoen+w+g+getRandomString();
             try {
-                if (!database.checkIfGameExists(gi)) {
+                if (!database.checkIfWeekHasGame(week, afdeling)) {
                     System.out.println("Dragover detected, creating first empty game: " + gi);
                     gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));
-                }
+                } 
             } catch (SQLException ex) {
                 Logger.getLogger(GameSchedule.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -1222,7 +1226,7 @@ public class GameSchedule {
         
         table.setItems(secondFilter);
         table.setFixedCellSize(25);
-        table.prefHeightProperty().bind(table.fixedCellSizeProperty().multiply(Bindings.size(table.getItems()).add(1.51)));
+        table.prefHeightProperty().bind(table.fixedCellSizeProperty().multiply(Bindings.size(table.getItems()).add(2.50)));
         //table.minHeightProperty().bind(table.prefHeightProperty());
         table.maxHeightProperty().bind(table.prefHeightProperty());
         table.setMinHeight(170);
@@ -1359,4 +1363,5 @@ public class GameSchedule {
         s = x + n;
         return s;
     }
+    
 }

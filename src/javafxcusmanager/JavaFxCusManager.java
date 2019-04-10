@@ -29,6 +29,12 @@ public class JavaFxCusManager extends Application {
         MainPanel mainPanel = new MainPanel();
         StackPane root = new StackPane();
         
+        try { Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+            System.out.println("Started DERBY in embedded+network mode");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Class not found when starting embedded driver");
+        }
+        
         //StackPane root = FXMLLoader.load(getClass().getResource("Libraries/Undecorator.jar/delopapp/classic/ClientArea.fxml"));
         root.getChildren().add(mainPanel.MainPanel());
         //Undecorator undecorator = new Undecorator(primaryStage, root);
