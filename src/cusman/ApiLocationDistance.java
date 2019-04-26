@@ -69,14 +69,14 @@ public class ApiLocationDistance {
             }
             
         }
-        System.out.println("clubLatLongArray = " + clubLatLongArray);
+        //System.out.println("clubLatLongArray = " + clubLatLongArray);
         String latUmp = (String) umpLatLong.getKey();
         String longUmp = (String) umpLatLong.getValue();
-        System.out.println("latUmp = " + latUmp + ", longUmp = " + longUmp);
+        //System.out.println("latUmp = " + latUmp + ", longUmp = " + longUmp);
         String totalDistance = "";
         
         String originString = latUmp + "," + longUmp;
-        System.out.println("Origin String = " + originString);
+        //System.out.println("Origin String = " + originString);
         String destinationsString = "";
             
         ArrayList<String> destinationsArray = new ArrayList<>();
@@ -88,7 +88,7 @@ public class ApiLocationDistance {
         }
         
         String destinationsLatLon = String.join(";", destinationsArray);
-        System.out.println("Destinations String = " + destinationsLatLon);
+        //System.out.println("Destinations String = " + destinationsLatLon);
         
         try {
             //URL url = new URL("http://dev.virtualearth.net/REST/v1/Routes?wayPoint.1={wayPpoint1}&viaWaypoint.2={viaWaypoint2}&waypoint.3={waypoint3}&wayPoint.n={waypointN}&heading={heading}&optimize={optimize}&avoid={avoid}&distanceBeforeFirstTurn={distanceBeforeFirstTurn}&routeAttributes={routeAttributes}&timeType={timeType}&dateTime={dateTime}&maxSolutions={maxSolutions}&tolerances={tolerances}&distanceUnit={distanceUnit}&key={'" + BingMapsKey + "'}");

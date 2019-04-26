@@ -382,7 +382,7 @@ public class ShowDistances {
             umpireselection = umpires.get(0);
         } else {
             ArrayList<Afdeling> emptyArray = new ArrayList<>();
-            Club emptyClub = new Club("", "", "", "", "", "", "", "", "", "", "", "", emptyArray, Boolean.FALSE, "", "");
+            Club emptyClub = new Club("", "", "", "", "", "", "", "", "", "", "", Boolean.FALSE, "", "", "", emptyArray);
             umpireselection = new Umpire("", "", "", "", "", "", "", "", "", "", emptyClub, emptyArray, Boolean.FALSE, "", "");
         }
         

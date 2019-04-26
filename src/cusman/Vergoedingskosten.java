@@ -6,7 +6,7 @@ package cusman;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.apache.derby.client.am.Decimal;
+//import org.apache.derby.client.am.Decimal;
 
 /**
  *

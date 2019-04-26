@@ -27,7 +27,7 @@ public class GamedateCell extends TableCell<Game, LocalDate> {
         public GamedateCell() {
             
           
-            formatter = DateTimeFormatter.ofPattern("MMMM d") ;
+            formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy") ;
             datePicker = new DatePicker() ;
             
             

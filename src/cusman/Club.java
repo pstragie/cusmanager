@@ -35,22 +35,23 @@ public class Club {
     /** Model for Club
      * 
      * @param clubnaamString
-     * @param ligaString
-     * @param clubnummerString
      * @param clubvoorzitterString
+     * @param clubnummerString
      * @param clubstraatString
      * @param clubstraatnummerString
      * @param clubpostcodeString
      * @param clubstadString
      * @param clubemailString
      * @param clubtelefoonString
+     * @param ligaString
      * @param clubwebsiteString
-     * @param clubteamsArray
      * @param bool
      * @param latitudeString
-     * @param longitudeString 
+     * @param longitudeString
+     * @param landcodeString
+     * @param clubteamsArray 
      */
-    public Club(String clubnaamString, String ligaString, String clubnummerString, String clubvoorzitterString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, String landcodeString, String clubemailString, String clubtelefoonString, String clubwebsiteString, ArrayList clubteamsArray, Boolean bool, String latitudeString, String longitudeString) {
+    public Club(String clubnaamString, String clubvoorzitterString, String clubnummerString, String clubstraatString, String clubstraatnummerString, String clubpostcodeString, String clubstadString, String clubemailString, String clubtelefoonString, String ligaString, String clubwebsiteString, Boolean bool, String latitudeString, String longitudeString, String landcodeString, ArrayList clubteamsArray) {
         this.clubnaam = new SimpleStringProperty(clubnaamString);
         this.liga = new SimpleStringProperty(ligaString);
         this.clubnummer = new SimpleStringProperty(clubnummerString);

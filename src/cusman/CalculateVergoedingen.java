@@ -165,9 +165,7 @@ public class CalculateVergoedingen {
                 database.exportUitbetalingUmpireToWorksheet(umpires, afdelingen);
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(CalculateVergoedingen.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            } 
         });
         
         buttonBox.getChildren().addAll(berekenUmpire, berekenAlleUmpires, exporteer, sluiten);
@@ -218,7 +216,7 @@ public class CalculateVergoedingen {
                             aantalwed += 1;
                             String clubnr = g.getHomeClub().getClubNummer();
                             Double d = Double.parseDouble(database.getDistFromUmpireClub(u.getUmpireLicentie(), clubnr));
-                            System.out.println("clubnummer = " + clubnr + ", distance = " + d);
+                            //System.out.println("clubnummer = " + clubnr + ", distance = " + d);
                             kmOne += d;
                             kmAll += d;
                             gameVergoedingOne += Double.parseDouble(afdelingsVergoeding.get(g.getAfdelingString()));

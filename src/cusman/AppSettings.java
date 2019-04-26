@@ -5,12 +5,12 @@
 package cusman;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -169,7 +169,7 @@ public class AppSettings {
         grid.setPadding(new Insets(25, 25, 25, 25));
         pref = Preferences.userNodeForPackage(AppSettings.class);
         seizoenLabel = new Label("Seizoen (Jaartal)");
-        seizoentf = new TextField(pref.get("seizoen", "2018"));
+        seizoentf = new TextField(pref.get("seizoen", "2019"));
         seizoentf.setAlignment(Pos.CENTER_LEFT);
         landcodeLabel = new Label("Landcodes (BE, NL, FR)");
         // TO DO: Automatisch seizoen aanpassen
@@ -186,7 +186,9 @@ public class AppSettings {
                 }
             }
         });
-        landcodes = new TextField("BE, NL, FR");
+        ArrayList<String> lcArray = database.getLandcodesFromDatabase();
+        String lcString = String.join(", ", lcArray);
+        landcodes = new TextField(lcString);
         grid.add(seizoenLabel, 0, 1);
         grid.add(seizoentf, 1, 1);
         grid.add(warningSeizoen, 0, 2, 2, 1);

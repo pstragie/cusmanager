@@ -5,11 +5,10 @@
  */
 package cusman;
 
-import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -26,14 +25,15 @@ public class CUSMan extends Application {
     
     @Override
     public void start(Stage primaryStage) throws Exception {
-        MainPanel mainPanel = new MainPanel();
-        StackPane root = new StackPane();
         
         try { Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
             System.out.println("Started DERBY in embedded mode");
         } catch (ClassNotFoundException e) {
             System.err.println("Class not found when starting embedded driver");
         }
+        
+        MainPanel mainPanel = new MainPanel();
+        StackPane root = new StackPane();
         
         //StackPane root = FXMLLoader.load(getClass().getResource("Libraries/Undecorator.jar/delopapp/classic/ClientArea.fxml"));
         root.getChildren().add(mainPanel.MainPanel());
@@ -47,34 +47,31 @@ public class CUSMan extends Application {
         scene.setFill(Color.TRANSPARENT);
         //primaryStage.initStyle(StageStyle.TRANSPARENT);
         scene.getStylesheets().add(getClass().getResource("css/BorderStyles.css").toExternalForm());
+        
         primaryStage.setTitle("CUS Manager");
         primaryStage.setScene(scene);
         primaryStage.show();
+        primaryStage.setOnCloseRequest(event -> {
+            System.out.println("Stage is closing");
+            try {
+                DriverManager.getConnection("jdbc:derby:;shutdown=true");
+            } catch (SQLException ex) {
+                Logger.getLogger(CUSMan.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
     
     /**
      * @param args the command line arguments
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.lang.InstantiationException
+     * @throws java.lang.IllegalAccessException
      */
-    public static void main(String[] args) {
-        try {
-            Class.forName("org.apache.derby.jdbc.ClientDriver");
-        } catch (ClassNotFoundException e) {
-            System.out.println(e);
-        }
+    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         
-        try {
-            Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/cusdb;create=false;user=pstragier;password=Isabelle30?");
-            Statement stmt = con.createStatement();
-            
-            
-            ResultSet rs = stmt.executeQuery("SELECT * FROM APP.Afdelingen");
-            while(rs.next()) {
-                String s = rs.getString("afdelingsnaam");
-                System.out.println(s);
-            }
-        } catch(SQLException e) {
-            System.err.println("SQL Exception startup: " + e);
-        }
+        Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
+        
+        
         
         
         launch(args);

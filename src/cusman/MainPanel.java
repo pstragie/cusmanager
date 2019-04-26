@@ -256,7 +256,7 @@ public class MainPanel {
         // Games
         games = FXCollections.observableArrayList();
         games.addAll(database.getAllGamesFromDatabase());
-        System.out.println("gamedata = " + games);
+        //System.out.println("gamedata = " + games);
         games.addListener((ListChangeListener.Change<? extends Game> change) -> { 
             while(change.next()) {
                 if(change.wasUpdated()) {
@@ -316,27 +316,27 @@ public class MainPanel {
                                         String ht_naam = additem.getHomeTeam().getTeamNaam();
                                         if (database.getClubFromTeam(ht_naam) != null) {
                                             hc = database.getClubFromTeam(ht_naam).getClubNummer();
-                                            System.out.println("Home Club number = " + hc);
+                                            //System.out.println("Home Club number = " + hc);
                                         } else {
                                             hc = "";
                                         }
                                     } else {
                                         hc = "";
                                     }
-                                    System.out.println(Integer.parseInt(additem.getWeekString()));
-                                    System.out.println(additem.getAfdelingString());
-                                    System.out.println(localDateToString(additem.getGameDatum()));
-                                    System.out.println(additem.getGameUur());
-                                    System.out.println(ht);
-                                    System.out.println(vt);
-                                    System.out.println(pl); 
-                                    System.out.println(b1l); 
-                                    System.out.println(b2l);
-                                    System.out.println(b3l);
-                                    System.out.println(additem.getGameNumber());
-                                    System.out.println(additem.getGameindex());
-                                    System.out.println(additem.getSeizoen());
-                                    System.out.println(hc);
+//                                    System.out.println(Integer.parseInt(additem.getWeekString()));
+//                                    System.out.println(additem.getAfdelingString());
+//                                    System.out.println(localDateToString(additem.getGameDatum()));
+//                                    System.out.println(additem.getGameUur());
+//                                    System.out.println(ht);
+//                                    System.out.println(vt);
+//                                    System.out.println(pl); 
+//                                    System.out.println(b1l); 
+//                                    System.out.println(b2l);
+//                                    System.out.println(b3l);
+//                                    System.out.println(additem.getGameNumber());
+//                                    System.out.println(additem.getGameindex());
+//                                    System.out.println(additem.getSeizoen());
+//                                    System.out.println(hc);
                                     database.insertNewGameToDatabase(Integer.parseInt(additem.getWeekString()), additem.getAfdelingString(), localDateToString(additem.getGameDatum()), additem.getGameUur(), ht, vt, pl, b1l, b2l, b3l, additem.getGameNumber(), additem.getGameindex(), additem.getSeizoen(), hc);
                                 }
                             } catch (SQLException ex) {
@@ -411,7 +411,7 @@ public class MainPanel {
         MenuItem umpiresBeheren = new MenuItem("Umpires beheren...");
         umpiresBeheren.setOnAction(e -> {
               
-            System.out.println("umpiresBeheren Clicked");
+            System.out.println("umpires Beheren Clicked");
             Stage stage = new Stage();
             Scene scene = new Scene(UmpirePaneel(), 1000, 800);
             //stage.initStyle(StageStyle.UNIFIED);
@@ -440,7 +440,7 @@ public class MainPanel {
                     for (Afdeling a : ump.getUmpireAfdelingen()) {
                         s += a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie() + ",";
                     }
-                    System.out.print("String s = " + s);
+                    System.out.println("String s = " + s);
                     database.insertNewUmpireToDatabase(ump.getUmpireNaam(), ump.getUmpireVoornaam(), ump.getUmpireLicentie(), ump.getUmpireStraat(), ump.getUmpireHuisnummer(), ump.getUmpirePostcode(), ump.getUmpireStad(), ump.getUmpireLand(), ump.getUmpireTelefoon(), ump.getUmpireEmail(), ump.getUmpireClub().getClubNummer(), s, ump.getActief(), ump.getLatitude(), ump.getLongitude());
                 }
                 umpires.clear();
@@ -457,11 +457,22 @@ public class MainPanel {
             stageD.setScene(scene);
             stageD.show();
         });
-        Button button = new Button("Exporteren (backup)");
+        Button umpireExportButton = new Button("Exporteren (backup)");
         CustomMenuItem customMenuItem = new CustomMenuItem();
-        customMenuItem.setContent(button);
+        customMenuItem.setContent(umpireExportButton);
         customMenuItem.setHideOnClick(true);
         menuUmpires.getItems().add(customMenuItem);
+        umpireExportButton.setOnAction(clicked -> {
+            ArrayList<Umpire> ump = new ArrayList<>(umpires);
+            documentHandler.storeUmpires(ump, Boolean.FALSE);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Umpires exporteren.");
+            alert.setHeaderText("Exporteren klaar.");
+            alert.setContentText("OK om verder te gaan.");
+            alert.showAndWait();
+        });
+        
+        
         // Menu Clubs
         Menu clubsAndTeams = new Menu("Clubs & Teams");
         menubar.getMenus().add(clubsAndTeams);        
@@ -491,7 +502,8 @@ public class MainPanel {
                 // Import clubs in de database
                 ArrayList<Club> arrayClubs = documentHandler.getClubsFromFile(absPath);
                 for(Club cl : arrayClubs) {
-                    //System.out.println(cl);
+                    System.out.println(cl);
+                    System.out.println("clubdetails: " + cl.getClubNaam()+ ", " +cl.getVoorzitter()+ ", " +cl.getClubNummer()+ ", " +cl.getClubStraat()+ ", " +cl.getClubStraatNummer()+ ", " +cl.getClubPostcode()+ ", " +cl.getClubStad()+ ", " +cl.getLandCode()+ ", " +cl.getClubEmail()+ ", " +cl.getClubTelefoon()+ ", " +cl.getLiga()+ ", " +cl.getClubWebsite()+ ", " +cl.getVisible()+ ", " +cl.getLatitude()+ ", " +cl.getLongitude());
                     database.insertNewClubToDatabase(cl.getClubNaam(), cl.getVoorzitter(), cl.getClubNummer(), cl.getClubStraat(), cl.getClubStraatNummer(), cl.getClubPostcode(), cl.getClubStad(), cl.getLandCode(), cl.getClubEmail(), cl.getClubTelefoon(), cl.getLiga(), cl.getClubWebsite(), cl.getVisible(), cl.getLatitude(), cl.getLongitude());
                     for (Team t: cl.getClubTeams()) {
                         database.insertTeamsInDatabase(t.getTeamNaam(), t.getTeamAfdeling().getAfdelingsNaam(), cl.getClubNummer(), t.getTeamAfdeling().getAfdelingsCategorie());
@@ -1188,13 +1200,44 @@ public class MainPanel {
         }
     }
     
+    /** Belgian type local date to string
+     * 
+     * @param localdate
+     * @return 
+     */
     public String localDateToString (LocalDate localdate) {
         String date = localdate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         return date;
     }
     
+    /** American type local date to string
+     * 
+     * @param localdate
+     * @return 
+     */
+    public String americanDateToString (LocalDate localdate) {
+        String date = localdate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        return date;
+    }
+    /** Belgian type date string to local date
+     * 
+     * @param date dd/MM/yyyy
+     * @return 
+     */
     public LocalDate stringToLocalDate (String date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        LocalDate datum = LocalDate.parse(date, formatter);
+        return datum;
+    }
+    
+    /** American type date string to local date
+     * 
+     * @param date yyyy/MM/dd
+     * @return 
+     */
+    public LocalDate americanStringToLocalDate(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         LocalDate datum = LocalDate.parse(date, formatter);
         return datum;
     }

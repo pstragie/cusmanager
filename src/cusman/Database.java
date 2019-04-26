@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -47,20 +48,550 @@ public class Database {
     public Connection con;
     public Preferences pref;
 
+    private void setDBSystemDir() {
+        // Decide on the db system directory: <userhome>/.addressbook/
+        String userHomeDir = System.getProperty("user.home", ".");
+        String systemDir = userHomeDir + "/.derby";
 
+        // Set the db system directory.
+        System.setProperty("derby.system.home", systemDir);
+    }
+    
     public Database() {
+        setDBSystemDir();
+        String dbName = System.getProperty("derby.system.home");
+        String host = "jdbc:derby:";
+        //String host = "jdbc:derby://https://www.pws-solutions.be:21/cusdb;create=true";
+        //String unm = "pieteup276";
+        //String pswrd = "ipttoha6";
+        //String host = "jdbc:derby:DefaultCusDB;create=true";
+        //String host = "jdbc:derby:DefaultCusManDB;create=false";
+        //String unm = "pstragier";
+        //String pswrd = "Isabelle30?";
+        String unm = "APP";
+        String pswrd = "CUSMan";
+        Properties props = new Properties();
+        props.put("user", unm);
+        props.put("password", pswrd);
         try {
-            String host = "jdbc:derby://localhost:1527/cusdb;create=false";
-            String driverClass = "org.apache.derby.jdbc.ClientDriver";
-            String unm = "pstragier";
-            String pswrd = "Isabelle30?";
-            con = DriverManager.getConnection(host, unm, pswrd);
+            System.out.println("Trying to connect to database!");
+            con = DriverManager.getConnection(host + dbName + ";create=true", props);
+//            createTableVergoedingen(con);
+//            createTableAfdelingen(con);
+//            createTableClubs(con);
+//            createTableDistances(con);
+//            createTableGames(con);
+//            createTableLandcodes(con);
+//            createTableTeams(con);
+//            createTableUitbetalingen(con);
+//            createTableUmpires(con);
+            
             //con = DriverManager.getConnection("jdbc:derby://localhost:1527/cusdb;create=false;user=pstragier;password=Isabelle30?");
         } catch(SQLException e) {
             System.err.println("SQL Exception database: " + e);
         } 
         pref = Preferences.userNodeForPackage(AppSettings.class);
 
+    }
+    
+    Connection createConnection() {
+        String host = "jdbc:derby:";
+        String dbName = System.getProperty("derby.system.home");
+        String unm = "APP";
+        String pswrd = "CUSMan";
+        Properties props = new Properties();
+        props.put("user", unm);
+        props.put("password", pswrd);
+        try {
+            Class driverClass = Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+            //LOG.log(Level.INFO, "Driver loaded: {0}", driverClass);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, "Driver not found", ex);
+        }
+
+        try {
+            Connection connection = DriverManager.getConnection(host + dbName + ";create=false", props);
+
+
+            Logger.getLogger(Database.class.getName()).log(Level.INFO, "Connection created: {0}", connection);
+            return connection;
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, "Unable to connect to DB", ex);
+            return null;
+        }
+    }
+    
+    private boolean createTableAfdelingen(Connection dbConnection) {
+        System.out.println("Create tables");
+        boolean bCreatedTables = false;
+        Statement statement = null;
+        String strCreateAddressTable = "CREATE TABLE APP.AFDELINGEN(\n"
+                + " id integer NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n"
+                + " afdelingsnaam VARCHAR(30),\n"
+                + " discipline VARCHAR(30),\n"
+                + " kbbsf BOOLEAN)";
+        try {
+            statement = dbConnection.createStatement();
+            //statement.execute("DROP TABLE APP.Afdelingen");
+            statement.executeUpdate(strCreateAddressTable);
+            bCreatedTables = true;
+        } catch (SQLException ex) {
+            
+            Logger lgr = Logger.getLogger(Database.class.getName());
+
+            if (((ex.getErrorCode() == 50000)
+                    && ("XJ015".equals(ex.getSQLState())))) {
+
+                lgr.log(Level.INFO, "Derby shut down normally", ex);
+
+            } else {
+
+                lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        } finally {
+
+            try {
+
+                if (statement != null) {
+                    statement.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException ex) {
+                Logger lgr = Logger.getLogger(Database.class.getName());
+                lgr.log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
+        return bCreatedTables;
+    }
+    
+    private boolean createTableClubs(Connection dbConnection) {
+        System.out.println("Create tables");
+        boolean bCreatedTables = false;
+        Statement statement = null;
+        String strCreateAddressTable = "CREATE TABLE APP.CLUBS(\n"
+                + " id integer NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n"
+                + " clubnaam VARCHAR(50),\n"
+                + " clubvoorzitter VARCHAR(50),\n"
+                + " clubnummer VARCHAR(50),\n"
+                + " clubstraat VARCHAR(50),\n"
+                + " clubhuisnummer VARCHAR(50),\n"
+                + " clubpostcode VARCHAR(50),\n"
+                + " clubstad VARCHAR(50),\n"
+                + " clubemail VARCHAR(50),\n"
+                + " clubtelefoon VARCHAR(50),\n"
+                + " liga VARCHAR(50),\n"
+                + " clubwebsite VARCHAR(50),\n"
+                + " visible BOOLEAN,\n"
+                + " latitude VARCHAR(50),\n"
+                + " longitude VARCHAR(50),\n"
+                + " clublandcode VARCHAR(50))";
+        try {
+            statement = dbConnection.createStatement();
+            //statement.execute("DROP TABLE APP.Afdelingen");
+            statement.executeUpdate(strCreateAddressTable);
+            bCreatedTables = true;
+        } catch (SQLException ex) {
+            
+            Logger lgr = Logger.getLogger(Database.class.getName());
+
+            if (((ex.getErrorCode() == 50000)
+                    && ("XJ015".equals(ex.getSQLState())))) {
+
+                lgr.log(Level.INFO, "Derby shut down normally", ex);
+
+            } else {
+
+                lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        } finally {
+
+            try {
+
+                if (statement != null) {
+                    statement.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException ex) {
+                Logger lgr = Logger.getLogger(Database.class.getName());
+                lgr.log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
+        return bCreatedTables;
+    }
+    
+    private boolean createTableDistances(Connection dbConnection) {
+        System.out.println("Create tables");
+        boolean bCreatedTables = false;
+        Statement statement = null;
+        String strCreateAddressTable = "CREATE TABLE APP.DISTANCES(\n"
+                + " id integer NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n"
+                + " umpire VARCHAR(50),\n"
+                + " club VARCHAR(50),\n"
+                + " distance VARCHAR(50))";
+                
+        try {
+            statement = dbConnection.createStatement();
+            //statement.execute("DROP TABLE APP.Afdelingen");
+            statement.executeUpdate(strCreateAddressTable);
+            bCreatedTables = true;
+        } catch (SQLException ex) {
+            
+            Logger lgr = Logger.getLogger(Database.class.getName());
+
+            if (((ex.getErrorCode() == 50000)
+                    && ("XJ015".equals(ex.getSQLState())))) {
+
+                lgr.log(Level.INFO, "Derby shut down normally", ex);
+
+            } else {
+
+                lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        } finally {
+
+            try {
+
+                if (statement != null) {
+                    statement.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException ex) {
+                Logger lgr = Logger.getLogger(Database.class.getName());
+                lgr.log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
+        return bCreatedTables;
+    }
+    
+    private boolean createTableGames(Connection dbConnection) {
+        System.out.println("Create tables");
+        boolean bCreatedTables = false;
+        Statement statement = null;
+        String strCreateAddressTable = "CREATE TABLE APP.GAMES(\n"
+                + " id integer NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n"
+                + " afdeling VARCHAR(50),\n"
+                + " hometeam VARCHAR(50),\n"
+                + " visitingteam VARCHAR(50),\n"
+                + " plateumpire VARCHAR(50),\n"
+                + " base1umpire VARCHAR(50),\n"
+                + " base2umpire VARCHAR(50),\n"
+                + " base3umpire VARCHAR(50),\n"
+                + " gamenumber VARCHAR(50),\n"
+                + " gameindex VARCHAR(50),\n"
+                + " week VARCHAR(50),\n"
+                + " seizoen VARCHAR(50),\n"
+                + " gamedate BOOLEAN,\n"
+                + " gametime VARCHAR(50),\n"
+                + " atfield VARCHAR(50))";
+        try {
+            statement = dbConnection.createStatement();
+            //statement.execute("DROP TABLE APP.Afdelingen");
+            statement.executeUpdate(strCreateAddressTable);
+            bCreatedTables = true;
+        } catch (SQLException ex) {
+            
+            Logger lgr = Logger.getLogger(Database.class.getName());
+
+            if (((ex.getErrorCode() == 50000)
+                    && ("XJ015".equals(ex.getSQLState())))) {
+
+                lgr.log(Level.INFO, "Derby shut down normally", ex);
+
+            } else {
+
+                lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        } finally {
+
+            try {
+
+                if (statement != null) {
+                    statement.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException ex) {
+                Logger lgr = Logger.getLogger(Database.class.getName());
+                lgr.log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
+        return bCreatedTables;
+    }
+    
+    private boolean createTableLandcodes(Connection dbConnection) {
+        System.out.println("Create tables");
+        boolean bCreatedTables = false;
+        Statement statement = null;
+        String strCreateAddressTable = "CREATE TABLE APP.LANDCODES(\n"
+                + " id integer NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n"
+                + " landcode VARCHAR(50),\n"
+                + " land VARCHAR(50))";
+        try {
+            statement = dbConnection.createStatement();
+            //statement.execute("DROP TABLE APP.Afdelingen");
+            statement.executeUpdate(strCreateAddressTable);
+            stmt = con.createStatement();
+            
+            bCreatedTables = true;
+        } catch (SQLException ex) {
+            
+            Logger lgr = Logger.getLogger(Database.class.getName());
+
+            if (((ex.getErrorCode() == 50000)
+                    && ("XJ015".equals(ex.getSQLState())))) {
+
+                lgr.log(Level.INFO, "Derby shut down normally", ex);
+
+            } else {
+
+                lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        } finally {
+
+            try {
+
+                if (statement != null) {
+                    statement.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException ex) {
+                Logger lgr = Logger.getLogger(Database.class.getName());
+                lgr.log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
+        return bCreatedTables;
+    }
+    
+    private boolean createTableTeams(Connection dbConnection) {
+        System.out.println("Create tables");
+        boolean bCreatedTables = false;
+        Statement statement = null;
+        String strCreateAddressTable = "CREATE TABLE APP.TEAMS(\n"
+                + " id integer NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n"
+                + " teamnaam VARCHAR(50),\n"
+                + " teamafdeling VARCHAR(50),\n"
+                + " club VARCHAR(50),\n"
+                + " discipline VARCHAR(50))";
+        try {
+            statement = dbConnection.createStatement();
+            //statement.execute("DROP TABLE APP.Afdelingen");
+            statement.executeUpdate(strCreateAddressTable);
+            bCreatedTables = true;
+        } catch (SQLException ex) {
+            
+            Logger lgr = Logger.getLogger(Database.class.getName());
+
+            if (((ex.getErrorCode() == 50000)
+                    && ("XJ015".equals(ex.getSQLState())))) {
+
+                lgr.log(Level.INFO, "Derby shut down normally", ex);
+
+            } else {
+
+                lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        } finally {
+
+            try {
+
+                if (statement != null) {
+                    statement.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException ex) {
+                Logger lgr = Logger.getLogger(Database.class.getName());
+                lgr.log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
+        return bCreatedTables;
+    }
+    
+    private boolean createTableUitbetalingen(Connection dbConnection) {
+        System.out.println("Create tables");
+        boolean bCreatedTables = false;
+        Statement statement = null;
+        String strCreateAddressTable = "CREATE TABLE APP.UITBETALINGEN(\n"
+                + " id integer NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n"
+                + " umpirelicentie VARCHAR(50),\n"
+                + " kilometers DOUBLE,\n"
+                + " kmeuro DOUBLE,\n"
+                + " aantalwedstrijden INTEGER,\n"
+                + " wedstrijdvergoeding DOUBLE,\n"
+                + " totaal DOUBLE,\n"
+                + " uitbetaald BOOLEAN)";
+        try {
+            statement = dbConnection.createStatement();
+            //statement.execute("DROP TABLE APP.Afdelingen");
+            statement.executeUpdate(strCreateAddressTable);
+            bCreatedTables = true;
+        } catch (SQLException ex) {
+            
+            Logger lgr = Logger.getLogger(Database.class.getName());
+
+            if (((ex.getErrorCode() == 50000)
+                    && ("XJ015".equals(ex.getSQLState())))) {
+
+                lgr.log(Level.INFO, "Derby shut down normally", ex);
+
+            } else {
+
+                lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        } finally {
+
+            try {
+
+                if (statement != null) {
+                    statement.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException ex) {
+                Logger lgr = Logger.getLogger(Database.class.getName());
+                lgr.log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
+        return bCreatedTables;
+    }
+    
+    private boolean createTableUmpires(Connection dbConnection) {
+        System.out.println("Create tables");
+        boolean bCreatedTables = false;
+        Statement statement = null;
+        String strCreateAddressTable = "CREATE TABLE APP.UMPIRES(\n"
+                + " id integer NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n"
+                + " umpirelicentie VARCHAR(50),\n"
+                + " umpirehuisnummer VARCHAR(50),\n"
+                + " umpirepostcode VARCHAR(50),\n"
+                + " umpirestad VARCHAR(50),\n"
+                + " umpiretelefoon VARCHAR(50),\n"
+                + " umpireemail VARCHAR(50),\n"
+                + " umpireclub VARCHAR(50),\n"
+                + " umpirestraat VARCHAR(50),\n"
+                + " afdeling VARCHAR(2000),\n"
+                + " umpirenaam VARCHAR(50),\n"
+                + " actief BOOLEAN,\n"
+                + " umpirevoornaam VARCHAR(50),\n"
+                + " latitude VARCHAR(50),\n"
+                + " longitude VARCHAR(50),\n"
+                + " umpirelandcode VARCHAR(50))";
+        try {
+            statement = dbConnection.createStatement();
+            //statement.execute("DROP TABLE APP.Afdelingen");
+            statement.executeUpdate(strCreateAddressTable);
+            bCreatedTables = true;
+        } catch (SQLException ex) {
+            
+            Logger lgr = Logger.getLogger(Database.class.getName());
+
+            if (((ex.getErrorCode() == 50000)
+                    && ("XJ015".equals(ex.getSQLState())))) {
+
+                lgr.log(Level.INFO, "Derby shut down normally", ex);
+
+            } else {
+
+                lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        } finally {
+
+            try {
+
+                if (statement != null) {
+                    statement.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException ex) {
+                Logger lgr = Logger.getLogger(Database.class.getName());
+                lgr.log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
+        return bCreatedTables;
+    }
+    
+    private boolean createTableVergoedingen(Connection dbConnection) {
+        System.out.println("Create tables");
+        boolean bCreatedTables = false;
+        Statement statement = null;
+        String strCreateAddressTable = "CREATE TABLE APP.VERGOEDINGEN(\n"
+                + " id integer NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n"
+                + " afdeling VARCHAR(50),\n"
+                + " euro VARCHAR(50))";
+        try {
+            statement = dbConnection.createStatement();
+            //statement.execute("DROP TABLE APP.Afdelingen");
+            statement.executeUpdate(strCreateAddressTable);
+            bCreatedTables = true;
+        } catch (SQLException ex) {
+            
+            Logger lgr = Logger.getLogger(Database.class.getName());
+
+            if (((ex.getErrorCode() == 50000)
+                    && ("XJ015".equals(ex.getSQLState())))) {
+
+                lgr.log(Level.INFO, "Derby shut down normally", ex);
+
+            } else {
+
+                lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        } finally {
+
+            try {
+
+                if (statement != null) {
+                    statement.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException ex) {
+                Logger lgr = Logger.getLogger(Database.class.getName());
+                lgr.log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
+        return bCreatedTables;
     }
     
     /** Haal alle afdelingen uit de database
@@ -93,6 +624,10 @@ public class Database {
         }
         return arrayAfdelingen;
     }
+    
+    
+    
+    
     
     /** Verwijder alle afdelingen uit de database
      * 
@@ -148,10 +683,10 @@ public class Database {
             
             stmt = con.createStatement();
             // Replace data if exists, insert if not exist {
-            stmt.executeUpdate("INSERT INTO APP.Afdelingen " + "VALUES ('" + naam + "', '" + discipline + "', '" + kbbsf + "')");
+            stmt.executeUpdate("INSERT INTO APP.Afdelingen " + "VALUES (default, '" + naam + "', '" + discipline + "', '" + kbbsf + "')");
             
         } catch(SQLException e) {
-            System.err.println("SQL Exception: " + e);
+            System.err.println("SQL Exception while inserting new afdeling: " + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -233,15 +768,15 @@ public class Database {
             ResultSet rs = stmt.executeQuery(sql);
             while(rs.next()) {
                 String a = rs.getString("clubnaam");
-                String d = rs.getString("clubvoorzitter");
+                String b = rs.getString("clubvoorzitter");
                 String c = rs.getString("clubnummer");
-                String e = rs.getString("clubstraat");
-                String f = rs.getString("clubhuisnummer");
-                String g = rs.getString("clubpostcode");
-                String h = rs.getString("clubstad");
-                String i = rs.getString("clubemail");
-                String j = rs.getString("clubtelefoon");
-                String b = rs.getString("liga");
+                String d = rs.getString("clubstraat");
+                String e = rs.getString("clubhuisnummer");
+                String f = rs.getString("clubpostcode");
+                String g = rs.getString("clubstad");
+                String h = rs.getString("clubemail");
+                String i = rs.getString("clubtelefoon");
+                String j = rs.getString("liga");
                 String k = rs.getString("clubwebsite");
                 Boolean l = rs.getBoolean("visible");
                 String lat = rs.getString("latitude");
@@ -250,7 +785,7 @@ public class Database {
                 ArrayList<Team> teamArray = new ArrayList<>();
                 teamArray.addAll(Database.this.getTeamsFromDatabase(c));
                 //System.out.println("DB -> clubs: visible = " + l);
-                Club cl = new Club(a, b, c, d, e, f, g, h, lc, i, j, k, teamArray, l, lat, lon);
+                Club cl = new Club(a, b, c, d, e, f, g, h, i, j, k, l, lat, lon, lc, teamArray);
                 arrayClubs.add(cl);
             }
             
@@ -275,7 +810,7 @@ public class Database {
      */
     public Club getClubFromDatabase(String clubnummer) {
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", Boolean.FALSE, "",  "", "", teamArray);
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.Clubs WHERE clubnummer = '" + clubnummer + "'";
@@ -288,7 +823,6 @@ public class Database {
                 String f = rs.getString("clubhuisnummer");
                 String g = rs.getString("clubpostcode");
                 String h = rs.getString("clubstad");
-                String lc = rs.getString("clublandcode");
                 String i = rs.getString("clubemail");
                 String j = rs.getString("clubtelefoon");
                 String b = rs.getString("liga");
@@ -296,9 +830,11 @@ public class Database {
                 Boolean l = rs.getBoolean("visible");
                 String lat = rs.getString("latitude");
                 String lon = rs.getString("longitude");
+                String lc = rs.getString("clublandcode");
+
                 teamArray.addAll(Database.this.getTeamsFromDatabase(c));
                 //System.out.println("DB -> clubs: visible = " + l);
-                cl = new Club(a, b, c, d, e, f, g, h, lc, i, j, k, teamArray, l, lat, lon);
+                cl = new Club(a, b, c, d, e, f, g, h, i, j, k, l, lat, lon, lc, teamArray);
                 
             }
             
@@ -390,18 +926,21 @@ public class Database {
      * @param clubhuisnummer
      * @param clubpostcode
      * @param clubstad
+     * @param clubland
      * @param clubemail
      * @param clubtelefoon
      * @param liga
-     * @param clubwebsite 
-     * @param visible Boolean
+     * @param clubwebsite
+     * @param visible
+     * @param lat
+     * @param lon 
      */
     public void insertNewClubToDatabase(String clubnaam, String clubvoorzitter, String clubnummer, String clubstraat, String clubhuisnummer, String clubpostcode, String clubstad, String clubland, String clubemail, String clubtelefoon, String liga, String clubwebsite, Boolean visible, String lat, String lon) {
-        
+        System.out.println(clubnaam + ", " + clubvoorzitter + ", " + clubnummer + ", " + clubstraat + ", " + clubhuisnummer + ", " + clubpostcode + ", " + clubstad + ", " + clubemail + ", " + clubtelefoon + ", " + liga + ", " + clubwebsite + ", " + visible + ", " + lat + ", " + lon);
         try {
             stmt = con.createStatement();
             // Replace data if exists, insert if not exist {
-            stmt.executeUpdate("INSERT INTO APP.Clubs " + "VALUES ('" + clubnaam + "', '" + clubvoorzitter + "', '" + clubnummer + "', '" + clubstraat + "', '" + clubhuisnummer + "', '" + clubpostcode + "', '" + clubstad + "', '" + clubemail + "', '" + clubtelefoon + "', '" + liga + "', '" + clubwebsite + "', '" + visible + "', '" + lat + "', '" + lon + "', '" + clubland + "')");
+            stmt.executeUpdate("INSERT INTO APP.Clubs " + "VALUES (default, '" + clubnaam + "', '" + clubvoorzitter + "', '" + clubnummer + "', '" + clubstraat + "', '" + clubhuisnummer + "', '" + clubpostcode + "', '" + clubstad + "', '" + clubemail + "', '" + clubtelefoon + "', '" + liga + "', '" + clubwebsite + "', '" + visible + "', '" + lat + "', '" + lon + "', '" + clubland + "')");
             
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting club: " + e);
@@ -640,7 +1179,7 @@ public class Database {
         //System.out.println("Umpire requested from database!");
         ArrayList<Afdeling> afdarray = new ArrayList<>();
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", Boolean.FALSE, "", "", "", teamArray);
         Umpire u = new Umpire("", "", "", "", "", "", "", "", "", "", cl, afdarray, Boolean.TRUE, "", "");
         try {
             stmt = con.createStatement();
@@ -747,19 +1286,23 @@ public class Database {
      * @param umpirehuisnummer
      * @param umpirepostcode
      * @param umpirestad
+     * @param umpirelandcode
      * @param umpiretelefoon
      * @param umpireemail
      * @param umpireclubnummer
      * @param afdeling
      * @param actief 
+     * @param lat 
+     * @param lon 
      */
     public void insertNewUmpireToDatabase(String umpirenaam, String umpirevoornaam, String umpirelicentie, String umpirestraat, String umpirehuisnummer, String umpirepostcode, String umpirestad, String umpirelandcode, String umpiretelefoon, String umpireemail, String umpireclubnummer, String afdeling, Boolean actief, String lat, String lon) {
         System.out.println("Insert Umpire To Database...");
+        System.out.println("bool = " + actief);
         try {
             stmt = con.createStatement();
             // Replace data if exists, insert if not exist {
             //System.out.println("Inserting into Umpires: " + umpirelicentie + ", " + umpirehuisnummer + ", " + umpirepostcode + ", " + umpirestad + ", " + umpiretelefoon + ", " + umpireemail + ", " + umpireclub + ", " + afdeling ", " + umpirenaam + ", " + actief + ", " + umpirevoornaam + ".");
-            stmt.executeUpdate("INSERT INTO APP.Umpires " + "VALUES ('" + umpirelicentie + "', '" + umpirehuisnummer + "', '" + umpirepostcode + "', '" + umpirestad + "', '" + umpiretelefoon + "', '" + umpireemail + "', '" + umpireclubnummer + "', '" + umpirestraat + "', '" + afdeling + "', '" + umpirenaam + "', '" + actief + "', '" + umpirevoornaam + "', '" + lat + "', '" + lon + "', '" + umpirelandcode + "')");
+            stmt.executeUpdate("INSERT INTO APP.Umpires " + "VALUES (default, '" + umpirelicentie + "', '" + umpirehuisnummer + "', '" + umpirepostcode + "', '" + umpirestad + "', '" + umpiretelefoon + "', '" + umpireemail + "', '" + umpireclubnummer + "', '" + umpirestraat + "', '" + afdeling + "', '" + umpirenaam + "', '" + actief + "', '" + umpirevoornaam + "', '" + lat + "', '" + lon + "', '" + umpirelandcode + "')");
             
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting umpire: " + e);
@@ -1049,7 +1592,7 @@ public class Database {
         try {
             stmt = con.createStatement();
             // Replace data if exists, insert if not exist {
-            stmt.executeUpdate("INSERT INTO APP.Teams " + "VALUES ('" + teamnaam + "', '" + teamafdeling + "', '" + clubnummer + "', '" + discipline + "')");
+            stmt.executeUpdate("INSERT INTO APP.Teams " + "VALUES (default, '" + teamnaam + "', '" + teamafdeling + "', '" + clubnummer + "', '" + discipline + "')");
             
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting team: " + e);
@@ -1122,7 +1665,7 @@ public class Database {
         return Boolean.TRUE;
     }
     
-    // CLUBS
+    // GAMES
     /** Haal alle games op uit de database
      * 
      * @return Lijst van games
@@ -1285,7 +1828,7 @@ public class Database {
         System.out.println("Insert Game To Database...");
         try {
             stmt = con.createStatement();
-            stmt.executeUpdate("INSERT INTO APP.Games " + "VALUES ('" + afdeling + "', '" + hometeam + "', '" + visitingteam + "', '" + plateumpire + "', '" + base1umpire + "', '" + base2umpire + "', '" + base3umpire + "', '" + gamenumber + "', '" + gameindex + "', '" + week + "', '" + seizoen + "', '" + gamedate + "', '" + gametime + "', '" + atfield + "')");
+            stmt.executeUpdate("INSERT INTO APP.Games " + "VALUES (default, '" + afdeling + "', '" + hometeam + "', '" + visitingteam + "', '" + plateumpire + "', '" + base1umpire + "', '" + base2umpire + "', '" + base3umpire + "', '" + gamenumber + "', '" + gameindex + "', '" + week + "', '" + seizoen + "', '" + gamedate + "', '" + gametime + "', '" + atfield + "')");
             
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting game: " + e);
@@ -1509,7 +2052,7 @@ public class Database {
         System.out.println("Insert Distance To Database...");
         try {
             stmt = con.createStatement();
-            stmt.executeUpdate("INSERT INTO APP.Distances " + "VALUES ('" + ump.getUmpireLicentie() + "', '" + club.getClubNummer() + "', '" + distance + "')");
+            stmt.executeUpdate("INSERT INTO APP.Distances " + "VALUES (default, '" + ump.getUmpireLicentie() + "', '" + club.getClubNummer() + "', '" + distance + "')");
             
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting distance: " + e);
@@ -1586,7 +2129,7 @@ public class Database {
     public String getClubFromDatabaseLatLon(String latitude, String longitude) {
         String clubnaam = "";
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", Boolean.FALSE, "", "", "", teamArray);
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.CLUBS WHERE latitude = '" + latitude + "' AND longitude = '" + longitude + "'";
@@ -1614,14 +2157,14 @@ public class Database {
 
     public Club getClubFromTeam(String team) {
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", Boolean.FALSE, "", "", "", teamArray);
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.TEAMS WHERE teamnaam = '" + team + "' ";
             ResultSet rs = stmt.executeQuery(sql);
             while(rs.next()) {
                 String clubnummer = rs.getString("club");
-                System.out.println("Club from team = " + clubnummer);
+                //System.out.println("Club from team = " + clubnummer);
                 cl = getClubFromDatabase(clubnummer);
             }
             
@@ -1647,7 +2190,7 @@ public class Database {
      */
     public Club getClubFromGameIndex(String gameindex) {
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", Boolean.FALSE, "", "", "", teamArray);
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.GAMES WHERE gameindex = '" + gameindex + "'";
@@ -1712,14 +2255,14 @@ public class Database {
     public String getDistFromUmpireClub(String umpirelicentie, String clubnummer) {
         String distance = "0.0";
         ArrayList<Team> teamArray = new ArrayList<>();
-        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", "", teamArray, Boolean.FALSE, "", "");
+        Club cl = new Club("", "", "", "", "", "", "", "", "", "", "", Boolean.FALSE, "", "", "", teamArray);
         try {
             stmt = con.createStatement();
             String sql = "SELECT * from APP.DISTANCES WHERE umpire = '" + umpirelicentie + "' AND club = '" + clubnummer + "'";
             ResultSet rs = stmt.executeQuery(sql);
             while(rs.next()) {
                 distance = rs.getString("distance");
-                System.out.println("Distance = " + distance);
+                //System.out.println("Distance = " + distance);
                 
             }
             
@@ -1802,7 +2345,7 @@ public class Database {
         System.out.println("Insert Vergoeding To Database...");
         try {
             stmt = con.createStatement();
-            stmt.executeUpdate("INSERT INTO APP.Vergoedingen " + "VALUES ('" + afdeling + "', '" + euro + "')");
+            stmt.executeUpdate("INSERT INTO APP.Vergoedingen " + "VALUES (default, '" + afdeling + "', '" + euro + "')");
             
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting vergoeding: " + e);
@@ -1903,15 +2446,19 @@ public class Database {
                 case "FR":
                     land = "Frankrijk";
                     break;
+                case "DE":
+                    land = "Duitsland";
+                    break;
                 default:
                     break;
             }
+            //con = createConnection();
             stmt = con.createStatement();
             if (!checkIfLandcodeExists(landcode)) {
-            stmt.executeUpdate("INSERT INTO APP.landcodes " + "VALUES ('" + landcode + "', '" + land + "')");
+                stmt.executeUpdate("INSERT INTO APP.landcodes " + "VALUES (default, '" + landcode + "', '" + land + "')");
             }
         } catch(SQLException e) {
-            System.err.println(e);
+            System.err.println("SQLException when inserting landcodes:" + e);
         } finally {
             if(stmt!=null) {
                 try{
@@ -1971,9 +2518,9 @@ public class Database {
     }
     public Boolean checkIfLandcodeExists(String landcode) throws SQLException {
         ResultSet rs = null;
-        
+        Statement stmt1 = null;
         try {
-            stmt = con.createStatement();
+            stmt1 = con.createStatement();
             String sql = "Select 1 from APP.Landcodes where landcode = ?";  
             PreparedStatement ps = con.prepareStatement(sql);
             //rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName + " WHERE afdelingsnaam = '" + naam + "'");
@@ -1984,9 +2531,9 @@ public class Database {
             System.err.println("SQL Exception: " + e);
         } finally {
             //rs.close();
-            if(stmt!=null) {
+            if(stmt1!=null) {
                 try{
-                    stmt.close();
+                    stmt1.close();
                 } catch(SQLException e) {
                     System.err.println("Could not close query statement");
                 }
@@ -2082,7 +2629,7 @@ public class Database {
                     System.out.println("aw type = " + aw + ": " + aw.getClass().getName());
                     System.out.println("verg type = " + wv + ": " +  wv.getClass().getName());
                     System.out.println("tot type = " + tot + ": " +  tot.getClass().getName());
-            stmt.executeUpdate("INSERT INTO APP.Uitbetalingen " + "VALUES ('" + u.getUmpireLicentie() + "', " + km + ", " + kme + ", " + aw + ", " + wv + ", " + tot + ", '" + uitbetaald + "')");
+            stmt.executeUpdate("INSERT INTO APP.Uitbetalingen " + "VALUES (default, '" + u.getUmpireLicentie() + "', " + km + ", " + kme + ", " + aw + ", " + wv + ", " + tot + ", '" + uitbetaald + "')");
         } catch(SQLException e) {
             System.err.println("SQL Exception while inserting uitbetaling: " + e);
         } finally {
@@ -2550,5 +3097,72 @@ public class Database {
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.doubleValue();
 
+    }
+
+    public Boolean umpireHasGameOnSameDay(Umpire umpire, LocalDate gameDatum) {
+        Boolean bool = false;
+        mainpanel = new MainPanel();
+        String datum = mainpanel.americanDateToString(gameDatum);
+        ArrayList<Game> games = checkForDoubleBooking(datum);
+        games.forEach(g -> {
+            System.out.println("Game: " + g.getGameNumber() + ", " + g.getHomeClub());
+        });
+        if (games.size() > 0) {
+            bool = true;
+        } 
+        return bool;
+    }
+    
+    /** Get all games from database on certain date
+     * 
+     * @param datum
+     * @return 
+     */
+    private ArrayList<Game> checkForDoubleBooking(String datum) {
+        System.out.println("Get all games from database....on date....." + datum);
+        ArrayList<Game> arrayGames = new ArrayList<>();
+        System.out.println("Datum = " + datum);
+        try {
+            stmt = con.createStatement();
+            String sql = "SELECT * from APP.Games where gamedate = '" + datum + "'";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()) {
+                String w = rs.getString("week");
+                String a = rs.getString("afdeling");
+                String gd = rs.getString("gamedate");
+                String gt = rs.getString("gametime");
+                Team ht = getTeamFromDatabase(rs.getString("hometeam"), a);
+                Team vt = getTeamFromDatabase(rs.getString("visitingteam"), a);
+                Umpire pu = getUmpireFromDatabase(rs.getString("plateumpire"));
+                Umpire b1 = getUmpireFromDatabase(rs.getString("base1umpire"));
+                Umpire b2 = getUmpireFromDatabase(rs.getString("base2umpire"));
+                Umpire b3 = getUmpireFromDatabase(rs.getString("base3umpire"));
+                String gn = rs.getString("gamenumber");
+                String gi = rs.getString("gameindex");
+                String se = rs.getString("seizoen");
+                String atfield = rs.getString("atfield");
+                Club hc = getClubFromDatabase(atfield);
+                
+                mainpanel = new MainPanel();
+                LocalDate gdatum = mainpanel.stringToLocalDate(gd);
+                //System.out.println("DB -> games: " + w + ", " + a + ", " + gd + ", " + gt + ", " + ht + ", " + vt + ", " + pu + ", " + b1 + ", " + b2 + ", " + b3 + ", " + gn + ", " + gi + ", " + se + ".");
+                Game g = new Game(gi, a, w, gdatum, gt, ht, vt, pu, b1, b2, b3, gn, se, hc);
+                
+                arrayGames.add(g);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Get games: " + e);
+        } finally {
+            if(stmt!=null) {
+                try{
+                    stmt.close();
+                } catch(SQLException e) {
+                    System.err.println("Could not close query statement");
+                }
+            }
+        }
+        return arrayGames;
+    
     }
 }

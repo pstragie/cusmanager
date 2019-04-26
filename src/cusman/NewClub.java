@@ -5,10 +5,7 @@
  */
 package cusman;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -22,7 +19,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 /**
  *
@@ -144,7 +140,7 @@ public class NewClub {
                     }else {
                         confirmed = true;
                         ArrayList<Team> emptyArray = new ArrayList<>();
-                        clubs.add(new Club(clubnaamtf.getText(), ligatf.getText(), clubnummertf.getText(), voorzittertf.getText(), straattf.getText(), huisnummertf.getText(), postcodetf.getText(), stadtf.getText(), landcodeCombobox.getSelectionModel().getSelectedItem().toString(), clubemailtf.getText(), clubtelefoontf.getText(), websitetf.getText(), emptyArray, Boolean.TRUE, "", ""));
+                        clubs.add(new Club(clubnaamtf.getText(), ligatf.getText(), clubnummertf.getText(), voorzittertf.getText(), straattf.getText(), huisnummertf.getText(), postcodetf.getText(), stadtf.getText(), clubemailtf.getText(), clubtelefoontf.getText(), websitetf.getText(), Boolean.TRUE, "", "", landcodeCombobox.getSelectionModel().getSelectedItem().toString(), emptyArray));
                         database.insertNewClubToDatabase(clubnaamtf.getText(), voorzittertf.getText(), clubnummertf.getText(), straattf.getText(), huisnummertf.getText(), postcodetf.getText(), stadtf.getText(), landcodeCombobox.getSelectionModel().getSelectedItem().toString(), clubemailtf.getText(), clubtelefoontf.getText(), ligatf.getText(), websitetf.getText(), confirmed, "", "");
                         // Close window
                         Stage stage = (Stage) toevoegen.getScene().getWindow();

@@ -143,7 +143,7 @@ public class DocumentHandling {
         header = brTest .readLine();
         System.out.println("Firstline is : " + header);
         } catch(IOException e) {
-            System.err.println("Error reading umpire file");
+            System.err.println("Error reading clubs file");
         }
         // Read from file
         if (header.contains("Clubs")) {
@@ -155,16 +155,19 @@ public class DocumentHandling {
                                 String[] parts = line.split(";");
                                 ArrayList<Team> array = new ArrayList<>();
                                 System.out.println("parts: " + parts.length);
-                                System.out.println("parts: 0:" + parts[0] + " 1: " + parts[1] + " 2: " + parts[2] + " 3: " + parts[3] + " 4: " + parts[4] + " 5: " + parts[5] + " 6: " + parts[6] + " 7: " + parts[7] + " 8: " + parts[8] + " 9: " + parts[9] + " 10: " + parts[10] + " 11: " + parts[11]);
+                                System.out.println("parts: 0:" + parts[0] + " 1: " + parts[1] + " 2: " + parts[2] + " 3: " + parts[3] + " 4: " + parts[4] + " 5: " + parts[5] + " 6: " + parts[6] + " 7: " + parts[7] + " 8: " + parts[8] + " 9: " + parts[9] + " 10: " + parts[10] + " 11: " + parts[11] + " 12: " + parts[12] + " 13: " + parts[13] + " 14: " + parts[14] + " 15: " + parts[15]);
                                 // Extract teams from part 11
-                                String[] teamparts = parts[11].split(",");
-                                for(String s : teamparts) {
-                                    String team = s.split(":")[0];
-                                    Afdeling afd = new Afdeling(s.split(":")[1], "");
-                                    array.add(new Team(team, afd));
+                                if (parts[14].length() >= 1) {
+                                    String[] teamparts = parts[14].split(",");
+                                    for(String s : teamparts) {
+                                        String team = s.split(":")[0];
+                                        Afdeling afd = new Afdeling(s.split(":")[1], "");
+                                        array.add(new Team(team, afd));
+                                    }
+                                } else {
+                                    System.out.println("No teams found for: " + parts[0]);
                                 }
-                                
-                                list.add(new Club(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10], parts[11], array, Boolean.TRUE, parts[13], parts[14]));
+                                list.add(new Club(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10], Boolean.valueOf(parts[15]), parts[11], parts[12], parts[13], array));
                     });
 
 		} catch(IOException e) {
@@ -228,7 +231,37 @@ public class DocumentHandling {
                     tmpT.add(tmpString);
                 }
                 String teams = String.join(",", tmpT);
-                String fileContent = "\n" + k.getClubNaam() + ";" + k.getLiga() + ";" + k.getClubNummer() + ";" + k.getVoorzitter() + ";" + k.getClubStraat() + ";" + k.getClubStraatNummer() + ";" + k.getClubPostcode() + ";" + k.getClubStad() + ";" + k.getClubEmail() + ";" + k.getClubTelefoon() + ";" + k.getClubWebsite() + ";" + teams + ";" + k.getVisible();
+                String fileContent = "\n" + k.getClubNaam() + ";" + k.getVoorzitter() + ";" + k.getClubNummer() + ";" + k.getClubStraat() + ";" + k.getClubStraatNummer() + ";" + k.getClubPostcode() + ";" + k.getClubStad() + ";" + k.getClubEmail() + ";" + k.getClubTelefoon() + ";" + k.getLiga() + ";" + k.getClubWebsite() + ";" + k.getLatitude() + ";" + k.getLongitude() + ";" + k.getLandCode() + ";" + teams + ";" + k.getVisible();
+                try {
+                    fileWriter.write(fileContent);
+                } catch(IOException e) {
+                    System.out.println(e);
+                }
+            });
+        } catch (IOException e) {
+            System.out.println("Error writing afdelingen: " + e);
+        }
+        
+    }
+    
+    public void storeUmpires(ArrayList<Umpire> umpires, Boolean backup) {
+        // Write to file
+        String bestandsnaam = null;
+        if (backup) {
+            bestandsnaam = "umpires_backup.txt";
+        } else {
+            bestandsnaam = "umpires"+LocalDate.now()+".txt";
+        }
+        try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
+            fileWriter.write("Umpires");
+            umpires.forEach((u) ->  {
+                List<String> tmpU = new ArrayList<>();
+                for (Afdeling a : u.getUmpireAfdelingen()) {
+                    String tmpString = a.getAfdelingsNaam() + ":" + a.getAfdelingsCategorie();
+                    tmpU.add(tmpString);
+                }
+                String Uafdelingen = String.join(",", tmpU);
+                String fileContent = "\n" + u.getUmpireNaam()+ ";" + u.getUmpireVoornaam()+ ";" + u.getUmpireLicentie()+ ";" + u.getUmpireStraat()+ ";" + u.getUmpireHuisnummer()+ ";" + u.getUmpirePostcode()+ ";" + u.getUmpireStad()+ ";" + u.getUmpireLand()+ ";" + u.getUmpireTelefoon()+ ";" + u.getUmpireEmail()+ ";" + u.getUmpireClub().getClubNaam()+ ";" + Uafdelingen + ";" + u.getLatitude() + ";" + u.getLongitude() + ";" + u.getActief();
                 try {
                     fileWriter.write(fileContent);
                 } catch(IOException e) {
@@ -268,9 +301,9 @@ public class DocumentHandling {
                             String[] parts = line.split(";");
                             ArrayList<Afdeling> array = new ArrayList<>();
                             System.out.println("parts: " + parts.length);
-                            System.out.println("parts: 0:" + parts[0] + " 1: " + parts[1] + " 2: " + parts[2] + " 3: " + parts[3] + " 4: " + parts[4] + " 5: " + parts[5] + " 6: " + parts[6] + " 7: " + parts[7] + " 8: " + parts[8] + " 9: " + parts[9]);
+                            System.out.println("parts: 0:" + parts[0] + " 1: " + parts[1] + " 2: " + parts[2] + " 3: " + parts[3] + " 4: " + parts[4] + " 5: " + parts[5] + " 6: " + parts[6] + " 7: " + parts[7] + " 8: " + parts[8] + " 9: " + parts[9] + " 10: " + parts[10] + " 11: " + parts[11] + " 12: " + parts[12] + " 13: " + parts[13] + " 14: " + parts[14]);
                             // Extract teams from part 11
-                            String[] afdparts = parts[10].split(",");
+                            String[] afdparts = parts[11].split(",");
                             ArrayList<Afdeling> arraylist = new ArrayList<>();
                             for(String s : afdparts) {
                                 //String afdlijst = s.split(",");
@@ -279,8 +312,8 @@ public class DocumentHandling {
   
                             }
                             database = new Database();
-                            Club yclub = database.getClubFromDatabase(parts[9]);
-                            list.add(new Umpire(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], yclub, arraylist, Boolean.getBoolean(parts[14]), parts[12], parts[13]));
+                            Club yclub = database.getClubFromDatabase(parts[10]);
+                            list.add(new Umpire(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], yclub, arraylist, Boolean.valueOf(parts[14]), parts[12], parts[13]));
                 });
                 
 
@@ -318,7 +351,7 @@ public class DocumentHandling {
                 try {
                     fileWriter.write(fileContent);
                 } catch(IOException e) {
-                    System.out.println(e);
+                    System.out.println("IOException: " + e);
                 }
             });
         } catch (IOException e) {
@@ -370,7 +403,7 @@ public class DocumentHandling {
                                 Umpire b3U = database.getUmpireFromDatabase(b3);
                                 Team htT = database.getTeamFromDatabase(ht, afd);
                                 Team vtT = database.getTeamFromDatabase(vt, afd);
-                                LocalDate datum = mainPanel.stringToLocalDate(gd);
+                                LocalDate datum = mainPanel.americanStringToLocalDate(gd);
                         list.add(new Game(gi, afd, w, datum, gt, htT, vtT, puU, b1U, b2U, b3U, gn, se, hc));
                     });
                     

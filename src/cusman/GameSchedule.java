@@ -37,6 +37,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,7 +47,9 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.transformation.FilteredList;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuItem;
@@ -55,7 +58,6 @@ import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
-import org.apache.poi.ss.formula.FormulaType;
 
 
 /** Wedstrijdschema
@@ -349,10 +351,17 @@ public class GameSchedule {
                         int currentIndex = indexProperty().getValue();
                         Game thisGame = (Game) homeTeamCol.getTableView().getItems().get(currentIndex);
                         Team vteam = thisGame.getVisitingTeam();
-                        if (!empty && (vteam != null && vteam.equals(item))) {
-                            setStyle("-fx-background-color: '" + colorCellError + "'");
-                        } else {
+                        if (!empty) {
                             setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                            if (vteam != null) {
+                                if (vteam.getTeamNaam() != null && vteam.getTeamNaam().equals(item.getTeamNaam())) {
+                                    setStyle("-fx-background-color: '" + colorCellError + "'");
+                                }
+                            } else {
+                                setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                            }
+                        } else {
+                            setStyle("-fx-background-color: '" + colorCellNone + "'");
                         }
                         setGraphic(null);
                     }
@@ -616,10 +625,17 @@ public class GameSchedule {
                         int currentIndex = indexProperty().getValue();
                         Game thisGame = (Game) visitingTeamCol.getTableView().getItems().get(currentIndex);
                         Team hteam = thisGame.getHomeTeam();
-                        if (!empty && hteam != null && hteam.equals(item)) {
-                            setStyle("-fx-background-color: '" + colorCellError + "'");
-                        } else {
+                        if (!empty) {
                             setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                            if (hteam != null) {
+                                if (hteam.getTeamNaam() != null && hteam.getTeamNaam().equals(item.getTeamNaam())) {
+                                    setStyle("-fx-background-color: '" + colorCellError + "'");
+                                }
+                            } else {
+                                setStyle("-fx-background-color: '" + colorCellFilled + "'");
+                            }
+                        } else {
+                            setStyle("-fx-background-color: '" + colorCellNone + "'");
                         }
                         setGraphic(null);
                     }
@@ -745,7 +761,7 @@ public class GameSchedule {
                         setStyle("-fx-background-color: '" + colorCellNone + "'");
                         setGraphic(null);
                     } else {
-                        System.out.println("ump = " + item.getUmpireNaam());
+                        //System.out.println("ump = " + item.getUmpireNaam());
                         setText(item.getUmpireVoornaam() + " " + item.getUmpireNaam());
                         int currentIndex = indexProperty().getValue();
                         Game thisGame = (Game) plateUmpireCol.getTableView().getItems().get(currentIndex);
@@ -851,18 +867,51 @@ public class GameSchedule {
                     String w = String.format("%02d", week);
                     String g = String.format("%02d", rowIndex+1);
                     String gi = afdeling+seizoen+w+g+getRandomString();
-                    if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
-                        int sprong = rowIndex - secondFilter.size();
-                        for(int i=0; i<sprong; i++) {
-                            String ga = String.format("%02d", rowIndex-sprong+i+1);
-                            String gix = afdeling+seizoen+w+ga+getRandomString();
-                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
+                    int newIndex1 = gameData.indexOf(secondFilter.get(rowIndex));
+                    if (!database.umpireHasGameOnSameDay(umpire, gameData.get(newIndex1).getGameDatum())) {
+                        System.out.println("Umpire does not have game on this day!");
+                        if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
+                            int sprong = rowIndex - secondFilter.size();
+                            for(int i=0; i<sprong; i++) {
+                                String ga = String.format("%02d", rowIndex-sprong+i+1);
+                                String gix = afdeling+seizoen+w+ga+getRandomString();
+                                gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
+                            }
+                            gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, umpire, null, null, null, "", seizoen, null));
+                        } else {
+                            // get index of filteredGame in gameData
+                            int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
+                            gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), umpire, gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
                         }
-                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, umpire, null, null, null, "", seizoen, null));
                     } else {
-                        // get index of filteredGame in gameData
-                        int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), umpire, gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        System.out.println("Umpire already has a game on this day!");
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                        alert.setTitle("Mogelijks dubbele boeking");
+                        if (gameData.get(newIndex1).getHomeClub() != null) {
+                            alert.setHeaderText("Umpire heeft al een wedstrijd op " + gameData.get(newIndex1).getGameDatum() + "\nOp het veld van: " + gameData.get(newIndex1).getHomeClub().getClubNaam() + "\nAfdeling: " + gameData.get(newIndex1).getAfdelingString());
+                        } else {
+                            alert.setHeaderText("");
+                        }
+                        alert.setContentText("Umpire toch plaatsen?");
+
+                        Optional<ButtonType> result = alert.showAndWait();
+                        if (result.get() == ButtonType.OK){
+                            if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
+                                int sprong = rowIndex - secondFilter.size();
+                                for(int i=0; i<sprong; i++) {
+                                    String ga = String.format("%02d", rowIndex-sprong+i+1);
+                                    String gix = afdeling+seizoen+w+ga+getRandomString();
+                                    gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
+                                }
+                                gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, umpire, null, null, null, "", seizoen, null));
+                            } else {
+                                // get index of filteredGame in gameData
+                                int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
+                                gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), umpire, gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                            }
+                        } else {
+                            System.out.println("Double booking canceled.");
+                        }
                     }
                     table.setItems(secondFilter);
                     success = true;
@@ -1280,10 +1329,8 @@ public class GameSchedule {
         totalDistCol.setCellValueFactory((p) -> {
             String totalDistance = "";
             int i = table.getItems().indexOf(p.getValue());
-            System.out.println("index = " + i);
             //String ind = gameindexCol.getCellData(i);
             String ind = gamenumberCol.getCellData(i);
-            System.out.println("game index??? = " + ind);
             Club c = database.getClubFromGameIndex(ind);
             Umpire u = database.getUmpireFromGameSchedule(ind, "plateumpire");
             Double distp = Double.parseDouble(database.getDistFromUmpireClub(u.getUmpireLicentie(), c.getClubNummer()));
