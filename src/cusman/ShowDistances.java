@@ -7,6 +7,7 @@ package cusman;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.binding.Bindings;
@@ -22,7 +23,9 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -148,19 +151,17 @@ public class ShowDistances {
                 Pair p = new Pair(0.0, 0.0);
 
                 for (Umpire umpire : umpires) {
-                ArrayList<Club> clubArray = new ArrayList<>(clubs);
+                    ArrayList<Club> clubArray = new ArrayList<>(clubs);
                 
-                try {
-                    apiLocationDistance.calculateDistance(umpire, clubArray);
-                } catch (IOException ex) {
-                    Logger.getLogger(ShowDistances.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                    try {
+                        apiLocationDistance.calculateDistance(umpire, clubArray);
+                    } catch (IOException ex) {
+                        Logger.getLogger(ShowDistances.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                  
-            }
-              
-              
-              
-            return true;
+                }
+
+                return true;
             }
         };
     }
@@ -410,6 +411,7 @@ public class ShowDistances {
         TableView distanceTable = new TableView(distlist);
         distanceTable.setEditable(false);
         distanceTable.setPrefHeight(1000.0);
+        distanceTable.setPrefWidth(500);
         TableColumn<Club, String> clubCol = new TableColumn("Club");
         clubCol.setMinWidth(30);
         clubCol.prefWidthProperty().bind(distanceTable.widthProperty().divide(2));
@@ -424,7 +426,7 @@ public class ShowDistances {
         
         distCol.setCellValueFactory((p) -> {
             int i = distanceTable.getItems().indexOf(p.getValue());
-            System.out.println("index = " + i);
+            //System.out.println("index = " + i);
             return new ReadOnlyStringWrapper(distArray.get(i));
         });
         
@@ -442,8 +444,8 @@ public class ShowDistances {
                     kaartlabel.setFont(Font.font( null, FontWeight.BOLD, 20));
                     centerVbox.getChildren().add(kaartlabel);
                     mapBox = new VBox(5);
-                    Double bh = 600.0;
-                    Double bw = 600.0;
+                    Double bh = 650.0;
+                    Double bw = 650.0;
                     mapBox = apiLocationDistance.showMap(umpireselection, clubselection, bh, bw);
                     mapBox.setAlignment(Pos.CENTER);
                     centerVbox.getChildren().add(mapBox);
@@ -538,6 +540,11 @@ public class ShowDistances {
                         apiLocationDistance = new ApiLocationDistance();
                         ArrayList<Club> clubarray = new ArrayList<>(clubs);
                         try {
+                            if (umpireselection.getLatitude() == null || umpireselection.getLongitude() == null || umpireselection.getLatitude().isEmpty() || umpireselection.getLongitude().isEmpty()) {
+                                System.out.println("Lat or Lon unknown for " + umpireselection.getUmpireNaam());
+                                Pair<Double, Double> pair = apiLocationDistance.getLocationUmpire(umpireselection);
+                                database.updateUmpireLocationInDatabase(umpireselection.getUmpireLicentie(), Double.toString(pair.getKey()), Double.toString(pair.getValue()));
+                            }
                             apiLocationDistance.calculateDistance(umpireselection, clubarray);
                         } catch (IOException ex) {
                             Logger.getLogger(UmpireView.class.getName()).log(Level.SEVERE, null, ex);
@@ -553,6 +560,26 @@ public class ShowDistances {
                         vertDistances.getChildren().add(distanceTable(umpires.get(0)));
                         bpane.setRight(vertDistances);
                     });
+                    
+                    MenuItem showDetails = new MenuItem("Details");
+                    cm.getItems().add(showDetails);
+                    showDetails.setOnAction((show) -> {
+                        //Show umpire details
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Umpire details");
+                        alert.setHeaderText(umpireselection.getUmpireVoornaam() + " " + umpireselection.getUmpireNaam());
+                        alert.setContentText("Licentienummer: " + umpireselection.getUmpireLicentie() + 
+                                "\nClub: " + umpireselection.getUmpireClub().getClubNaam() + 
+                                "\nStraat: " + umpireselection.getUmpireStraat() + " " + umpireselection.getUmpireHuisnummer() +
+                                "\nStad: " + umpireselection.getUmpirePostcode() + " " + umpireselection.getUmpireStad() +
+                                "\nLand: " + umpireselection.getUmpireLand() +
+                                "\nEmail: " + umpireselection.getUmpireEmail() + 
+                                "\nTel: " + umpireselection.getUmpireTelefoon());
+                        
+                        Optional<ButtonType> result = alert.showAndWait();
+                        
+                    });
+                    
                     cell.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(cell.itemProperty()))
                     .then(cm)
                     .otherwise((ContextMenu)null));

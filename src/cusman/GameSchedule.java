@@ -58,6 +58,7 @@ import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.util.Pair;
 
 
 /** Wedstrijdschema
@@ -70,15 +71,15 @@ public class GameSchedule {
     
     private static final int MAX_ITEMS = 3;
     private DocumentHandling documentHandler;
-    private MainPanel mainpanel;
+    private final MainPanel mainpanel;
     private Database database;
     public int startOfWeekCount = 0; // 0 = Runs with Year Calendar (January 1); 1 = Runs with competition start (date can be set);
     private final TableView<Game> table = new TableView<>();
     private ObservableList<Game> gameData;
     private ObservableList<Team> teams;
-    private ObservableList<Afdeling> afdelingen;
-    private ObservableList<Club> clubs;
-    private ObservableList<Umpire> umpires;
+    private final ObservableList<Afdeling> afdelingen;
+    private final ObservableList<Club> clubs;
+    private final ObservableList<Umpire> umpires;
     private ObservableList<LocalTime> uren;
     private ArrayList<Umpire> emptyArray = new ArrayList<>();
     private String colorCellFilled = "lightgreen";
@@ -227,7 +228,9 @@ public class GameSchedule {
                 if (!database.checkIfWeekHasGame(week, afdeling)) {
                     System.out.println("Dragover detected, creating first empty game: " + gi);
                     gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));
-                } 
+                } else {
+                    System.out.println("Dragover detected, game(s) exist!");
+                }
             } catch (SQLException ex) {
                 Logger.getLogger(GameSchedule.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -864,53 +867,37 @@ public class GameSchedule {
                 if (event.getDragboard().hasString()) {            
                     System.out.println("String on db = " + db.getString());
                     Umpire umpire = database.getUmpireFromDatabase(db.getString());
-                    String w = String.format("%02d", week);
-                    String g = String.format("%02d", rowIndex+1);
-                    String gi = afdeling+seizoen+w+g+getRandomString();
-                    int newIndex1 = gameData.indexOf(secondFilter.get(rowIndex));
-                    if (!database.umpireHasGameOnSameDay(umpire, gameData.get(newIndex1).getGameDatum())) {
-                        System.out.println("Umpire does not have game on this day!");
-                        if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
-                            int sprong = rowIndex - secondFilter.size();
-                            for(int i=0; i<sprong; i++) {
-                                String ga = String.format("%02d", rowIndex-sprong+i+1);
-                                String gix = afdeling+seizoen+w+ga+getRandomString();
-                                gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
-                            }
-                            gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, umpire, null, null, null, "", seizoen, null));
-                        } else {
+                    
+                    if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
+                        System.out.println("Geen wedstrijd gepland!");
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Geen wedstrijd gepland.");
+                        alert.setHeaderText("Plan eerst een wedstrijd");
+                        alert.setContentText("Sleep een team naar deze lijn om \neen wedstrijd te plannen.");
+                        Optional<ButtonType> result = alert.showAndWait();
+                    } else {
+                        int newIndex1 = gameData.indexOf(secondFilter.get(rowIndex));
+                        Pair<Boolean, Game> pair = database.umpireHasGameOnSameDay(umpire, gameData.get(newIndex1).getGameDatum(), gameData.get(newIndex1).getHomeClub());
+                        if (!pair.getKey()) {
+                            System.out.println("Umpire does not have game on this day!");
                             // get index of filteredGame in gameData
                             int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
                             gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), umpire, gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
-                        }
-                    } else {
-                        System.out.println("Umpire already has a game on this day!");
-                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                        alert.setTitle("Mogelijks dubbele boeking");
-                        if (gameData.get(newIndex1).getHomeClub() != null) {
-                            alert.setHeaderText("Umpire heeft al een wedstrijd op " + gameData.get(newIndex1).getGameDatum() + "\nOp het veld van: " + gameData.get(newIndex1).getHomeClub().getClubNaam() + "\nAfdeling: " + gameData.get(newIndex1).getAfdelingString());
                         } else {
-                            alert.setHeaderText("");
-                        }
-                        alert.setContentText("Umpire toch plaatsen?");
+                            System.out.println("Umpire already has a game on this day!");
+                            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                            alert.setTitle("Mogelijks dubbele boeking");
+                            alert.setHeaderText("Umpire " + umpire.getUmpireVoornaam() + " " + umpire.getUmpireNaam() + "\nheeft al een wedstrijd op " + mainpanel.americanDateToString(gameData.get(newIndex1).getGameDatum()) + "\nOp het veld van: " + pair.getValue().getHomeClub().getClubNaam() + "\nAfdeling: " + pair.getValue().getAfdelingString());
+                            alert.setContentText("Umpire toch plaatsen?");
 
-                        Optional<ButtonType> result = alert.showAndWait();
-                        if (result.get() == ButtonType.OK){
-                            if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
-                                int sprong = rowIndex - secondFilter.size();
-                                for(int i=0; i<sprong; i++) {
-                                    String ga = String.format("%02d", rowIndex-sprong+i+1);
-                                    String gix = afdeling+seizoen+w+ga+getRandomString();
-                                    gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
-                                }
-                                gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, umpire, null, null, null, "", seizoen, null));
-                            } else {
+                            Optional<ButtonType> result = alert.showAndWait();
+                            if (result.get() == ButtonType.OK){
                                 // get index of filteredGame in gameData
                                 int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
                                 gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), umpire, gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                            } else {
+                                System.out.println("Double booking canceled.");
                             }
-                        } else {
-                            System.out.println("Double booking canceled.");
                         }
                     }
                     table.setItems(secondFilter);
@@ -1027,19 +1014,36 @@ public class GameSchedule {
                     String g = String.format("%02d", rowIndex+1);
                     String gi = afdeling+seizoen+w+g+getRandomString();
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
-                        
-                        int sprong = rowIndex - secondFilter.size();
-                        for(int i=0; i<sprong; i++) {
-                            String ga = String.format("%02d", rowIndex-sprong+i+1);
-                            String gix = afdeling+seizoen+w+ga+getRandomString();
-                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
-                        }
-                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, umpire, null, null, "", seizoen, null));
+                        System.out.println("Geen wedstrijd gepland!");
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Geen wedstrijd gepland.");
+                        alert.setHeaderText("Plan eerst een wedstrijd");
+                        alert.setContentText("Sleep een team naar deze lijn om \neen wedstrijd te plannen.");
+                        Optional<ButtonType> result = alert.showAndWait();
                     } else {
-                        
-                        int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), umpire, gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        int newIndex1 = gameData.indexOf(secondFilter.get(rowIndex));
+                        Pair<Boolean, Game> pair = database.umpireHasGameOnSameDay(umpire, gameData.get(newIndex1).getGameDatum(), gameData.get(newIndex1).getHomeClub());
+                        if (!pair.getKey()) {
+                            System.out.println("Umpire does not have game on this day!");
+                            // get index of filteredGame in gameData
+                            int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
+                            gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), umpire, gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        } else {
+                            System.out.println("Umpire already has a game on this day!");
+                            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                            alert.setTitle("Mogelijks dubbele boeking");
+                            alert.setHeaderText("Umpire " + umpire.getUmpireVoornaam() + " " + umpire.getUmpireNaam() + "\nheeft al een wedstrijd op " + mainpanel.americanDateToString(gameData.get(newIndex1).getGameDatum()) + "\nOp het veld van: " + pair.getValue().getHomeClub().getClubNaam() + "\nAfdeling: " + pair.getValue().getAfdelingString());
+                            alert.setContentText("Umpire toch plaatsen?");
 
+                            Optional<ButtonType> result = alert.showAndWait();
+                            if (result.get() == ButtonType.OK){
+                                // get index of filteredGame in gameData
+                                int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
+                                gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire() ,umpire, gameData.get(newIndex).getBase2Umpire(), gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                            } else {
+                                System.out.println("Double booking canceled.");
+                            }
+                        }
                     }
                     table.setItems(secondFilter);
                     success = true;
@@ -1154,19 +1158,36 @@ public class GameSchedule {
                     String g = String.format("%02d", rowIndex+1);
                     String gi = afdeling+seizoen+w+g+getRandomString();
                     if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
-                        
-                        int sprong = rowIndex - secondFilter.size();
-                        for(int i=0; i<sprong; i++) {
-                            String ga = String.format("%02d", rowIndex-sprong+i+1);
-                            String gix = afdeling+seizoen+w+ga+getRandomString();
-                            gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
-                        }
-                        gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, umpire, null, "", seizoen, null));
+                        System.out.println("Geen wedstrijd gepland!");
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Geen wedstrijd gepland.");
+                        alert.setHeaderText("Plan eerst een wedstrijd");
+                        alert.setContentText("Sleep een team naar deze lijn om \neen wedstrijd te plannen.");
+                        Optional<ButtonType> result = alert.showAndWait();
                     } else {
-                        
-                        int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
-                        gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), umpire, gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        int newIndex1 = gameData.indexOf(secondFilter.get(rowIndex));
+                        Pair<Boolean, Game> pair = database.umpireHasGameOnSameDay(umpire, gameData.get(newIndex1).getGameDatum(), gameData.get(newIndex1).getHomeClub());
+                        if (!pair.getKey()) {
+                            System.out.println("Umpire does not have game on this day!");
+                            // get index of filteredGame in gameData
+                            int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
+                            gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), umpire, gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                        } else {
+                            System.out.println("Umpire already has a game on this day!");
+                            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                            alert.setTitle("Mogelijks dubbele boeking");
+                            alert.setHeaderText("Umpire " + umpire.getUmpireVoornaam() + " " + umpire.getUmpireNaam() + "\nheeft al een wedstrijd op " + mainpanel.americanDateToString(gameData.get(newIndex1).getGameDatum()) + "\nOp het veld van: " + pair.getValue().getHomeClub().getClubNaam() + "\nAfdeling: " + pair.getValue().getAfdelingString());
+                            alert.setContentText("Umpire toch plaatsen?");
 
+                            Optional<ButtonType> result = alert.showAndWait();
+                            if (result.get() == ButtonType.OK){
+                                // get index of filteredGame in gameData
+                                int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
+                                gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), umpire, gameData.get(newIndex).getBase3Umpire(), gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                            } else {
+                                System.out.println("Double booking canceled.");
+                            }
+                        }
                     }
                     table.setItems(secondFilter);
                     success = true;
@@ -1299,20 +1320,36 @@ public class GameSchedule {
                         String g = String.format("%02d", rowIndex+1);
                         String gi = afdeling+seizoen+w+g+getRandomString();   
                         if(rowIndex < 0 || rowIndex >= secondFilter.size()) {
-
-                            int sprong = rowIndex - secondFilter.size();
-                            for(int i=0; i<sprong; i++) {
-                                String ga = String.format("%02d", rowIndex-sprong+i+1);
-                                String gix = afdeling+seizoen+w+ga+getRandomString();
-                                gameData.add(new Game(gix, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, null, "", seizoen, null));                            
-                            }
-                            gameData.add(new Game(gi, afdeling, Integer.toString(week), getDate(week, seizoen, 6), defaultGamehour, null, null, null, null, null, umpire, "", seizoen, null));
-                        } else {
-
+                        System.out.println("Geen wedstrijd gepland!");
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Geen wedstrijd gepland.");
+                        alert.setHeaderText("Plan eerst een wedstrijd");
+                        alert.setContentText("Sleep een team naar deze lijn om \neen wedstrijd te plannen.");
+                        Optional<ButtonType> result = alert.showAndWait();
+                    } else {
+                        int newIndex1 = gameData.indexOf(secondFilter.get(rowIndex));
+                        Pair<Boolean, Game> pair = database.umpireHasGameOnSameDay(umpire, gameData.get(newIndex1).getGameDatum(), gameData.get(newIndex1).getHomeClub());
+                        if (!pair.getKey()) {
+                            System.out.println("Umpire does not have game on this day!");
+                            // get index of filteredGame in gameData
                             int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
                             gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), umpire, gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
-
+                        } else {
+                            System.out.println("Umpire already has a game on this day!");
+                            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                            alert.setTitle("Mogelijks dubbele boeking");
+                            alert.setHeaderText("Umpire " + umpire.getUmpireVoornaam() + " " + umpire.getUmpireNaam() + "\nheeft al een wedstrijd op " + mainpanel.americanDateToString(gameData.get(newIndex1).getGameDatum()) + "\nOp het veld van: " + pair.getValue().getHomeClub().getClubNaam() + "\nAfdeling: " + pair.getValue().getAfdelingString());
+                            alert.setContentText("Umpire toch plaatsen?");
+                            Optional<ButtonType> result = alert.showAndWait();
+                            if (result.get() == ButtonType.OK){
+                                // get index of filteredGame in gameData
+                                int newIndex = gameData.indexOf(secondFilter.get(rowIndex));
+                                gameData.set(newIndex, new Game(gameData.get(newIndex).getGameindex(), afdeling, Integer.toString(week), gameData.get(newIndex).getGameDatum(), gameData.get(newIndex).getGameUur(), gameData.get(newIndex).getHomeTeam(), gameData.get(newIndex).getVisitingTeam(), gameData.get(newIndex).getPlateUmpire(), gameData.get(newIndex).getBase1Umpire(), gameData.get(newIndex).getBase2Umpire(), umpire, gameData.get(newIndex).getGameNumber(), gameData.get(newIndex).getSeizoen(), gameData.get(newIndex).getHomeClub()));
+                            } else {
+                                System.out.println("Double booking canceled.");
+                            }
                         }
+                    }
                         table.setItems(secondFilter);
                         success = true;
                     }

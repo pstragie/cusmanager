@@ -21,6 +21,7 @@ import java.util.prefs.Preferences;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.util.Pair;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -295,7 +296,7 @@ public class Database {
                 + " gameindex VARCHAR(50),\n"
                 + " week VARCHAR(50),\n"
                 + " seizoen VARCHAR(50),\n"
-                + " gamedate BOOLEAN,\n"
+                + " gamedate VARCHAR(50),\n"
                 + " gametime VARCHAR(50),\n"
                 + " atfield VARCHAR(50))";
         try {
@@ -3099,18 +3100,42 @@ public class Database {
 
     }
 
-    public Boolean umpireHasGameOnSameDay(Umpire umpire, LocalDate gameDatum) {
+    public Pair<Boolean, Game> umpireHasGameOnSameDay(Umpire umpire, LocalDate gameDatum, Club homeClub) {
         Boolean bool = false;
         mainpanel = new MainPanel();
         String datum = mainpanel.americanDateToString(gameDatum);
         ArrayList<Game> games = checkForDoubleBooking(datum);
-        games.forEach(g -> {
-            System.out.println("Game: " + g.getGameNumber() + ", " + g.getHomeClub());
-        });
-        if (games.size() > 0) {
-            bool = true;
-        } 
-        return bool;
+        Game h = null;
+        for (Game g : games) {
+            System.out.println("Game: " + g.getGameindex()+ ", " + g.getHomeClub() + ", " + g.getPlateUmpire() + ", " + g.getBase1Umpire());
+            if (g.getPlateUmpire().getUmpireLicentie().equals(umpire.getUmpireLicentie())) {
+                bool = true;
+                h = g;
+                Pair<Boolean, Game> pair = new Pair<>(bool, h);
+                return pair;
+            } else if (g.getBase1Umpire().getUmpireLicentie().equals(umpire.getUmpireLicentie())) {
+                bool = true;
+                h = g;
+                Pair<Boolean, Game> pair = new Pair<>(bool, h);
+                return pair;
+            } else if (g.getBase2Umpire().getUmpireLicentie().equals(umpire.getUmpireLicentie())) {
+                bool = true;
+                h = g;
+                Pair<Boolean, Game> pair = new Pair<>(bool, h);
+                return pair;
+            } else if (g.getBase3Umpire().getUmpireLicentie().equals(umpire.getUmpireLicentie())) {
+                bool = true;
+                h = g;
+                Pair<Boolean, Game> pair = new Pair<>(bool, h);
+                return pair;
+            } else {
+                bool = false;
+                h = null;
+                
+            }
+        }
+        Pair<Boolean, Game> pair = new Pair<>(bool, h);
+        return pair;
     }
     
     /** Get all games from database on certain date
