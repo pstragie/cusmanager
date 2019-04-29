@@ -10,7 +10,7 @@ import javafx.beans.property.StringProperty;
 
 /**
  *
- * @author Pieter Stragier <pstragier@gmail.be>
+ * @author Pieter Stragier
  */
 public class Vergoedingskosten {
     private final SimpleStringProperty afdeling;

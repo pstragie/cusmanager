@@ -34,8 +34,5 @@ public class UserPreferences {
 
   }
 
-  public static void main(String[] args) {
-    UserPreferences test = new UserPreferences();
-    test.setPreference();
-  }
+  
 }

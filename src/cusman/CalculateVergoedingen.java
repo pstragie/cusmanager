@@ -38,7 +38,7 @@ import javafx.util.Pair;
 
 /**
  *
- * @author Pieter Stragier <pstragier@gmail.be>
+ * @author Pieter Stragier
  */
 public class CalculateVergoedingen {
     
@@ -155,14 +155,14 @@ public class CalculateVergoedingen {
         });
         exporteer.setOnAction(export -> {
             try {
-                database.exportUitbetalingenToWorksheet();
+                database.exportUitbetalingenToWorksheet(periodFrom.getText(), periodTo.getText());
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(CalculateVergoedingen.class.getName()).log(Level.SEVERE, null, ex);
             }
             try {
-                database.exportUitbetalingUmpireToWorksheet(umpires, afdelingen);
+                database.exportUitbetalingUmpireToWorksheet(umpires, afdelingen, periodFrom.getText(), periodTo.getText());
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
             } 

@@ -25,7 +25,7 @@ import javafx.util.Pair;
 
 /**
  *
- * @author Pieter Stragier <pstragier@gmail.be>
+ * @author Pieter Stragier
  */
 public class ExistingClubDetails {
     

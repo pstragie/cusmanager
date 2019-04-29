@@ -13,7 +13,7 @@ import java.util.Date;
 
 /**
  *
- * @author Pieter Stragier <pstragier@gmail.be>
+ * @author Pieter Stragier
  */
 public class DatabaseGames {
     public Statement stm;
@@ -29,10 +29,17 @@ public class DatabaseGames {
     
     /** Voeg een game toe aan de database
      * 
-     * @param teamnaam
-     * @param teamafdeling
-     * @param club
-     * @param discipline 
+     * @param week
+     * @param afdeling
+     * @param gamedate
+     * @param gametime
+     * @param hometeam
+     * @param visitingteam
+     * @param plateumpire
+     * @param base1umpire
+     * @param base2umpire
+     * @param base3umpire
+     * @param gamenumber 
      */
     public void insertGamesInDatabase(Integer week, String afdeling, Date gamedate, Time gametime, String hometeam, String visitingteam, String plateumpire, String base1umpire, String base2umpire, String base3umpire, String gamenumber) {
         try {
@@ -55,10 +62,17 @@ public class DatabaseGames {
     
     /** Update een team in de database
      * 
-     * @param teamnaam
-     * @param teamafdeling
-     * @param club
-     * @param discipline 
+     * @param week
+     * @param afdeling
+     * @param gamedate
+     * @param gametime
+     * @param hometeam
+     * @param visitingteam
+     * @param plateumpire
+     * @param base1umpire
+     * @param base2umpire
+     * @param base3umpire
+     * @param gamenumber 
      */
     public void updateGameToDatabase(Integer week, String afdeling, Date gamedate, Time gametime, String hometeam, String visitingteam, String plateumpire, String base1umpire, String base2umpire, String base3umpire, String gamenumber) {
         try {

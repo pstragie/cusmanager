@@ -150,7 +150,7 @@ public class DocumentHandling {
         // Read from file
 		try(Stream<String> stream = Files.lines(Paths.get(filepath))) {
                     
-                    stream.filter(f -> !f.equals("Clubs"))
+                    stream.filter(f -> !f.equals("Clubs") && !f.startsWith("Clubnaam"))
                             .forEach(line -> {
                                 String[] parts = line.split(";");
                                 ArrayList<Team> array = new ArrayList<>();
@@ -223,7 +223,7 @@ public class DocumentHandling {
             bestandsnaam = "clubs"+LocalDate.now()+".txt";
         }
         try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
-            fileWriter.write("Clubs");
+            fileWriter.write("Clubs\nClubnaam;Voorzitter;Clubnummer;Straat;Huisnummer;Postcode;Stad;email;Telefoon;Liga;website;Latitude;Longitude;Land;Teams(naam:afd);Visible(Bool)");
             clubs.forEach((k) ->  {
                 List<String> tmpT = new ArrayList<>();
                 for (Team t : k.getClubTeams()) {
@@ -253,7 +253,7 @@ public class DocumentHandling {
             bestandsnaam = "umpires"+LocalDate.now()+".txt";
         }
         try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
-            fileWriter.write("Umpires");
+            fileWriter.write("Umpires\nFamilienaam;Voornaam;Licentie;Straat;Huisnummer;Postcode;Stad;Land;Telefoon;email;Club;Afdelingen(afd:discipline);Latitude;Longitude;Actief(Bool)");
             umpires.forEach((u) ->  {
                 List<String> tmpU = new ArrayList<>();
                 for (Afdeling a : u.getUmpireAfdelingen()) {
@@ -285,18 +285,19 @@ public class DocumentHandling {
         
         // Check if correct file
         try {
-        BufferedReader brTest = new BufferedReader(new FileReader(filepath));
-        header = brTest .readLine();
-        System.out.println("Firstline is : " + header);
+            BufferedReader brTest = new BufferedReader(new FileReader(filepath));
+            header = brTest .readLine();
+            System.out.println("Firstline is : " + header);
         } catch(IOException e) {
             System.err.println("Error reading umpire file");
         }
+        
         // Read from file
         if (header.contains("Umpires")) {
-
+            
             try(Stream<String> stream = Files.lines(Paths.get(filepath))) {
                 
-                stream.filter(f -> !f.equals("Umpires") && !f.equals("") && !f.equals("\n"))
+                stream.filter(f -> !f.equals("Umpires") && !f.equals("") && !f.equals("\n") && !f.startsWith("Familienaam"))
                         .forEach(line -> {
                             String[] parts = line.split(";");
                             ArrayList<Afdeling> array = new ArrayList<>();
@@ -347,7 +348,8 @@ public class DocumentHandling {
         try (FileWriter fileWriter = new FileWriter(bestandsnaam)) {
             fileWriter.write("Games");
             wedstrijdschema.forEach((k) ->  {
-                String fileContent = "\n" + k.getWeekString() + ";"+k.getAfdelingString() + ";" + k.getGameDatum() + ";" + k.getGameUur() + ";" + k.getHomeTeam() + ";" + k.getVisitingTeam() + ";" + k.getPlateUmpire() + ";" + k.getBase1Umpire() + ";" + k.getBase2Umpire() + ";" + k.getBase3Umpire() + ";" + k.getGameNumber() + ";" + k.getGameindex() + ";" + k.getSeizoen() + ";" + k.getHomeClub().getClubNummer();
+                System.out.println("Gamenumber = " + k.getGameNumber());
+                String fileContent = "\n" + k.getWeekString() + ";"+k.getAfdelingString() + ";" + mainPanel.americanDateToString(k.getGameDatum()) + ";" + k.getGameUur() + ";" + k.getHomeTeam().getTeamNaam() + ";" + k.getVisitingTeam().getTeamNaam() + ";" + k.getPlateUmpire().getUmpireLicentie() + ";" + k.getBase1Umpire().getUmpireLicentie() + ";" + k.getBase2Umpire().getUmpireLicentie() + ";" + k.getBase3Umpire().getUmpireLicentie() + ";" + k.getGameNumber() + ";" + k.getGameindex() + ";" + k.getSeizoen() + ";" + k.getHomeClub().getClubNummer() + ";false";
                 try {
                     fileWriter.write(fileContent);
                 } catch(IOException e) {
@@ -364,6 +366,7 @@ public class DocumentHandling {
         System.out.println("Reading game file...");
         ArrayList<Game> list = new ArrayList<>();
         String header = null;
+        database = new Database();
         // Check if correct file
         try {
             BufferedReader brTest = new BufferedReader(new FileReader(filepath));
@@ -396,14 +399,19 @@ public class DocumentHandling {
                                 String gi = parts[11];
                                 String se = parts[12];
                                 String atfield = parts[13];
-                                Club hc = database.getClubFromDatabase(atfield);
+                                Club hc = null;
+                                if (atfield != null || atfield != "") {
+                                    hc = database.getClubFromDatabase(atfield);
+                                } else {
+                                    hc = null;
+                                }
                                 Umpire puU = database.getUmpireFromDatabase(pu);
                                 Umpire b1U = database.getUmpireFromDatabase(b1);
                                 Umpire b2U = database.getUmpireFromDatabase(b2);
                                 Umpire b3U = database.getUmpireFromDatabase(b3);
                                 Team htT = database.getTeamFromDatabase(ht, afd);
                                 Team vtT = database.getTeamFromDatabase(vt, afd);
-                                LocalDate datum = mainPanel.americanStringToLocalDate(gd);
+                                LocalDate datum = mainPanel.stringToLocalDate(gd);
                         list.add(new Game(gi, afd, w, datum, gt, htT, vtT, puU, b1U, b2U, b3U, gn, se, hc));
                     });
                     

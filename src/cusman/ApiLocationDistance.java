@@ -22,7 +22,7 @@ import javafx.util.Pair;
 import org.json.*;
 /**
  *
- * @author Pieter Stragier <pstragier@gmail.be>
+ * @author Pieter Stragier
  */
 public class ApiLocationDistance {
     
@@ -52,7 +52,7 @@ public class ApiLocationDistance {
             umpLatLong = getLocationUmpire(ump);
             database.updateUmpireLocationInDatabase(ump.getUmpireLicentie(), Double.toString((Double) umpLatLong.getKey()), Double.toString((Double) umpLatLong.getValue()));
         } else {
-            umpLatLong = new Pair(lat, lon);
+            umpLatLong = new Pair<>(lat, lon);
         }
         for (Club c : clubs) {
             String clat = database.getLatitudeFromClubDatabase(c.getClubNummer());
@@ -65,7 +65,7 @@ public class ApiLocationDistance {
                 database.updateClubLocationInDatabase(c.getClubNummer(), Double.toString((Double) clubLatLong.getKey()), Double.toString((Double) clubLatLong.getValue()));
             } else {
                 System.out.println(c.getClubNaam() + ": lat and lon club in database.");
-                clubLatLongArray.add(new Pair(clat, clon));
+                clubLatLongArray.add(new Pair<>(clat, clon));
             }
             
         }
@@ -145,7 +145,7 @@ public class ApiLocationDistance {
         return totalDistance;
     }
     
-    public Pair getLocationUmpire(Umpire ump) throws IOException {
+    public Pair<Double, Double> getLocationUmpire(Umpire ump) throws IOException {
         Pair umpPair = new Pair<>(0.0, 0.0);
         String straat = ump.getUmpireStraat();
         straat = straat.replace(" ", "_");

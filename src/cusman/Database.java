@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,11 +49,12 @@ public class Database {
     public Statement stmt;
     public Connection con;
     public Preferences pref;
-
+    private ArrayList<String> tablesList;
+    
     private void setDBSystemDir() {
         // Decide on the db system directory: <userhome>/.addressbook/
         String userHomeDir = System.getProperty("user.home", ".");
-        String systemDir = userHomeDir + "/.derby";
+        String systemDir = userHomeDir + "/.derbyCUSMan2";
 
         // Set the db system directory.
         System.setProperty("derby.system.home", systemDir);
@@ -60,6 +62,17 @@ public class Database {
     
     public Database() {
         setDBSystemDir();
+        tablesList = new ArrayList<>();
+        tablesList.add("VERGOEDINGEN");
+        tablesList.add("AFDELINGEN");
+        tablesList.add("CLUBS");
+        tablesList.add("UMPIRES");
+        tablesList.add("GAMES");
+        tablesList.add("DISTANCES");
+        tablesList.add("LANDCODES");
+        tablesList.add("TEAMS");
+        tablesList.add("UITBETALINGEN");
+        
         String dbName = System.getProperty("derby.system.home");
         String host = "jdbc:derby:";
         //String host = "jdbc:derby://https://www.pws-solutions.be:21/cusdb;create=true";
@@ -76,8 +89,10 @@ public class Database {
         props.put("password", pswrd);
         try {
             System.out.println("Trying to connect to database!");
+            
+            createTablesIfNotExisting(con, tablesList);
+            
             con = DriverManager.getConnection(host + dbName + ";create=true", props);
-//            createTableVergoedingen(con);
 //            createTableAfdelingen(con);
 //            createTableClubs(con);
 //            createTableDistances(con);
@@ -111,7 +126,7 @@ public class Database {
         }
 
         try {
-            Connection connection = DriverManager.getConnection(host + dbName + ";create=false", props);
+            Connection connection = DriverManager.getConnection(host + dbName + ";create=true", props);
 
 
             Logger.getLogger(Database.class.getName()).log(Level.INFO, "Connection created: {0}", connection);
@@ -122,8 +137,63 @@ public class Database {
         }
     }
     
+    private void createTablesIfNotExisting(Connection con1, ArrayList<String> list) {
+                    
+
+        list.forEach(l -> {
+            try {
+                con = createConnection();
+                DatabaseMetaData dbm = con.getMetaData();
+                ResultSet tables = dbm.getTables(null, "APP", l, null);
+                if (tables.next()) {
+                    // Table exists
+                    System.out.println("Table already exists: " + l + ".");                    
+                }
+                else {
+                    // Table does not exist
+                    System.out.println("Table does not exist: " + l + ".");
+                    if (null != l) switch (l) {
+                        case "VERGOEDINGEN":
+                            createTableVergoedingen(con);
+                            break;
+                        case "AFDELINGEN":
+                            createTableAfdelingen(con);
+                            break;
+                        case "CLUBS":
+                            createTableClubs(con);
+                            break;
+                        case "DISTANCES":
+                            createTableDistances(con);
+                            break;
+                        case "GAMES":
+                            createTableGames(con);
+                            break;
+                        case "LANDCODES":
+                            createTableLandcodes(con);
+                            break;
+                        case "TEAMS":
+                            createTableTeams(con);
+                            break;
+                        case "UITBETALINGEN":
+                            createTableUitbetalingen(con);
+                            break;
+                        case "UMPIRES":
+                            createTableUmpires(con);
+                            break;
+                        default:
+                            break;
+                    }
+                    
+                    con.close();
+                    
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+    }
     private boolean createTableAfdelingen(Connection dbConnection) {
-        System.out.println("Create tables");
+        System.out.println("Create table AFDELINGEN");
         boolean bCreatedTables = false;
         Statement statement = null;
         String strCreateAddressTable = "CREATE TABLE APP.AFDELINGEN(\n"
@@ -171,7 +241,7 @@ public class Database {
     }
     
     private boolean createTableClubs(Connection dbConnection) {
-        System.out.println("Create tables");
+        System.out.println("Create table CLUBS");
         boolean bCreatedTables = false;
         Statement statement = null;
         String strCreateAddressTable = "CREATE TABLE APP.CLUBS(\n"
@@ -231,7 +301,7 @@ public class Database {
     }
     
     private boolean createTableDistances(Connection dbConnection) {
-        System.out.println("Create tables");
+        System.out.println("Create table DISTANCES");
         boolean bCreatedTables = false;
         Statement statement = null;
         String strCreateAddressTable = "CREATE TABLE APP.DISTANCES(\n"
@@ -280,7 +350,7 @@ public class Database {
     }
     
     private boolean createTableGames(Connection dbConnection) {
-        System.out.println("Create tables");
+        System.out.println("Create table GAMES");
         boolean bCreatedTables = false;
         Statement statement = null;
         String strCreateAddressTable = "CREATE TABLE APP.GAMES(\n"
@@ -339,7 +409,7 @@ public class Database {
     }
     
     private boolean createTableLandcodes(Connection dbConnection) {
-        System.out.println("Create tables");
+        System.out.println("Create table LANDCODES");
         boolean bCreatedTables = false;
         Statement statement = null;
         String strCreateAddressTable = "CREATE TABLE APP.LANDCODES(\n"
@@ -388,7 +458,7 @@ public class Database {
     }
     
     private boolean createTableTeams(Connection dbConnection) {
-        System.out.println("Create tables");
+        System.out.println("Create table TEAMS");
         boolean bCreatedTables = false;
         Statement statement = null;
         String strCreateAddressTable = "CREATE TABLE APP.TEAMS(\n"
@@ -437,7 +507,7 @@ public class Database {
     }
     
     private boolean createTableUitbetalingen(Connection dbConnection) {
-        System.out.println("Create tables");
+        System.out.println("Create table UITBETALINGEN");
         boolean bCreatedTables = false;
         Statement statement = null;
         String strCreateAddressTable = "CREATE TABLE APP.UITBETALINGEN(\n"
@@ -489,7 +559,7 @@ public class Database {
     }
     
     private boolean createTableUmpires(Connection dbConnection) {
-        System.out.println("Create tables");
+        System.out.println("Create table UMPIRES");
         boolean bCreatedTables = false;
         Statement statement = null;
         String strCreateAddressTable = "CREATE TABLE APP.UMPIRES(\n"
@@ -549,7 +619,7 @@ public class Database {
     }
     
     private boolean createTableVergoedingen(Connection dbConnection) {
-        System.out.println("Create tables");
+        System.out.println("Create table VERGOEDINGEN");
         boolean bCreatedTables = false;
         Statement statement = null;
         String strCreateAddressTable = "CREATE TABLE APP.VERGOEDINGEN(\n"
@@ -965,6 +1035,7 @@ public class Database {
      * @param clubhuisnummer
      * @param clubpostcode
      * @param clubstad
+     * @param clubLand
      * @param clubemail
      * @param clubtelefoon
      * @param liga
@@ -1049,7 +1120,7 @@ public class Database {
     
     /** Get Latitude from Club database
      * 
-     * @param umpirelicentie
+     * @param clubnummer
      * @return 
      */
     public String getLatitudeFromClubDatabase(String clubnummer) {
@@ -1081,9 +1152,9 @@ public class Database {
     
     /** Controleer of club bestaat in de database
      * 
-     * @param tableName
-     * @param naam
-     * @return
+     * @param tableName Tabalnaam
+     * @param clubnummer Clubnummer
+     * @return Boolean
      * @throws SQLException 
      */
     public Boolean checkIfClubExists(String tableName, String clubnummer) throws SQLException {
@@ -1148,7 +1219,7 @@ public class Database {
                         String[] p = parts.split(":");
                         Afdeling tempafd = new Afdeling(p[0], p[1]);
 
-                        afdArray.add(tempafd);
+                        boolean add = afdArray.add(tempafd);
                     }
                 }
                 // Get Object Club from list based on clubnaam
@@ -1258,7 +1329,7 @@ public class Database {
     
     /** Verwijder 1 umpire uit de database
      * 
-     * @param umpirenaam 
+     * @param licentie Licentienummer
      */
     public void deleteUmpireFromDatabase(String licentie) {
         try {
@@ -1320,18 +1391,19 @@ public class Database {
     
     /** Update umpire in de database
      * 
-     * @param umpirenaam
-     * @param umpirevoornaam
-     * @param umpirelicentie
-     * @param umpirestraat
-     * @param umpirehuisnummer
-     * @param umpirepostcode
-     * @param umpirestad
-     * @param umpiretelefoon
-     * @param umpireemail
-     * @param umpireclub
-     * @param afdeling
-     * @param actief 
+     * @param umpirenaam Familienaam van de umpire
+     * @param umpirevoornaam Voornaam
+     * @param umpirelicentie Licentienummer
+     * @param umpirestraat Straat
+     * @param umpirehuisnummer Huisnummer
+     * @param umpirepostcode Postcode
+     * @param umpirestad Stad
+     * @param umpirelandcode BE,NL,FR
+     * @param umpiretelefoon telefoon
+     * @param umpireemail email
+     * @param umpireclub club
+     * @param afdeling afdeling
+     * @param actief actief/niet-actief
      */
     public void updateUmpireToDatabase(String umpirenaam, String umpirevoornaam, String umpirelicentie, String umpirestraat, String umpirehuisnummer, String umpirepostcode, String umpirestad, String umpirelandcode, String umpiretelefoon, String umpireemail, String umpireclub, String afdeling, Boolean actief) {
         System.out.println("Update Umpire To Database...");
@@ -1380,8 +1452,8 @@ public class Database {
     
     /** Get longitude from umpire database
      * 
-     * @param umpirelicentie
-     * @return 
+     * @param umpirelicentie Licentienummer
+     * @return String
      */
     public String getLongitudeFromUmpireDatabase(String umpirelicentie) {
         String longi = "";
@@ -1413,8 +1485,8 @@ public class Database {
     
     /** Get Latitude from Umpire database
      * 
-     * @param umpirelicentie
-     * @return 
+     * @param umpirelicentie Licentienummer
+     * @return String
      */
     public String getLatitudeFromUmpireDatabase(String umpirelicentie) {
         String longi = "";
@@ -1444,8 +1516,7 @@ public class Database {
     }
     /** Controleer of umpire bestaat in de database
      * 
-     * @param tableName "Umpires"
-     * @param licentienummer Licentienummer umpire
+     * @param licentienummer
      * @return
      * @throws SQLException 
      */
@@ -1478,7 +1549,7 @@ public class Database {
     // TEAMS
     /** Haal alle teams uit de database
      * 
-     * @param club
+     * @param clubnummer
      * @return 
      */
     public ArrayList<Team> getTeamsFromDatabase(String clubnummer) {
@@ -1885,12 +1956,12 @@ public class Database {
      * @param waarde
      * @param gameindex 
      */
-    public void updateSingleItemInGameInDatabase(String item, String waarde, String gameindex) {
-        System.out.println("Update Game in Database...");
+    public void updateSingleItemInGameInDatabase(String item, String gameindex, String waarde) {
+        System.out.println("Update Single Value in Game Database...");
         try {
             stmt = con.createStatement();
             // Update row
-            stmt.executeUpdate("UPDATE APP.Games " + "SET "+item+" = '" + waarde + "' " + "WHERE gameindex = '" + gameindex + "'");
+            stmt.executeUpdate("UPDATE APP.Games " + "SET " + item + " = '" + waarde + "' " + "WHERE gameindex = '" + gameindex + "'");
         } catch(SQLException e) {
             System.err.println("SQL Exception while updating single item in games: " + e);
         } finally {
@@ -2646,8 +2717,13 @@ public class Database {
     
     /** Update vergoeding in the database
      * 
-     * @param afdeling
-     * @param euro 
+     * @param u
+     * @param km
+     * @param kme
+     * @param aw
+     * @param wv
+     * @param tot
+     * @param uitbetaald 
      */
     public void updateUitbetalingenToDatabase(Umpire u, Double km, Double kme, Integer aw, Double wv, Double tot, Boolean uitbetaald) {
         System.out.println("Update Uitbetaling in Database...");
@@ -2783,7 +2859,7 @@ public class Database {
                 sheet.autoSizeColumn(7);
                 sheet.autoSizeColumn(8);
                 sheet.autoSizeColumn(9);
-                FileOutputStream fileOut = new FileOutputStream("Wedstrijdschema.xlsx");// before 2007 version xls
+                FileOutputStream fileOut = new FileOutputStream("Wedstrijdschema"+Integer.toString(wk1)+"_"+Integer.toString(wk2)+".xlsx");// before 2007 version xls
                 wb.write(fileOut);
                 fileOut.close();
 
@@ -2804,7 +2880,7 @@ public class Database {
         alert.showAndWait();
     }
     
-    public void exportUitbetalingenToWorksheet() throws FileNotFoundException, IOException {
+    public void exportUitbetalingenToWorksheet(String pf, String pt) throws FileNotFoundException, IOException {
         
         HSSFWorkbook wb = new HSSFWorkbook();//for earlier version use HSSF
         HSSFSheet sheet = wb.createSheet("Vergoedingen");
@@ -2899,7 +2975,7 @@ public class Database {
             alert.showAndWait();
     }
     
-    public void exportUitbetalingUmpireToWorksheet(ObservableList<Umpire> umpires, ObservableList<Afdeling> afdelingen) throws FileNotFoundException {
+    public void exportUitbetalingUmpireToWorksheet(ObservableList<Umpire> umpires, ObservableList<Afdeling> afdelingen, String pf, String pt) throws FileNotFoundException {
         
         HSSFWorkbook wb = new HSSFWorkbook();//for earlier version use HSSF
         

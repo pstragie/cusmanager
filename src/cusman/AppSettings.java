@@ -32,7 +32,7 @@ import javafx.stage.Stage;
 
 /**
  *
- * @author Pieter Stragier <pstragier@gmail.be>
+ * @author Pieter Stragier
  */
 public class AppSettings {
     
@@ -79,9 +79,9 @@ public class AppSettings {
         vergTabelAfd.setEditable(true);
         vergTabelAfd.setPrefHeight(600.0);
         vergTabelAfd.setMinWidth(200.0);
-        TableColumn<Vergoedingskosten, String> afdCol = new TableColumn("Afdeling");
+        TableColumn<Vergoedingskosten, String> afdCol = new TableColumn<>("Afdeling");
         afdCol.prefWidthProperty().bind(vergTabelAfd.widthProperty().divide(2));
-        TableColumn<Vergoedingskosten, String> euroCol = new TableColumn("Euro");
+        TableColumn<Vergoedingskosten, String> euroCol = new TableColumn<>("Euro");
         euroCol.prefWidthProperty().bind(vergTabelAfd.widthProperty().divide(2));
         afdCol.setCellValueFactory(new PropertyValueFactory<>("afdeling"));
         afdCol.setEditable(false);

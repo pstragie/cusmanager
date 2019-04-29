@@ -58,7 +58,7 @@ import javafx.util.Pair;
 
 /**
  *
- * @author Pieter Stragier <pstragier@gmail.be>
+ * @author Pieter Stragier
  */
 public class ShowDistances {
     
@@ -148,11 +148,20 @@ public class ShowDistances {
         return new Task() {
             @Override
             protected Object call() throws Exception {
-                Pair p = new Pair(0.0, 0.0);
+                Pair<Double, Double> p = new Pair<>(0.0, 0.0);
 
                 for (Umpire umpire : umpires) {
                     ArrayList<Club> clubArray = new ArrayList<>(clubs);
-                
+                    try {
+                        if (umpire.getLatitude() == null || umpire.getLongitude() == null || umpire.getLatitude().isEmpty() || umpire.getLongitude().isEmpty()) {
+                            System.out.println("Lat or Lon unknown for " + umpire.getUmpireNaam());
+                            Pair<Double, Double> pair = apiLocationDistance.getLocationUmpire(umpire);
+                            database.updateUmpireLocationInDatabase(umpire.getUmpireLicentie(), Double.toString(pair.getKey()), Double.toString(pair.getValue()));
+                        }
+                        //apiLocationDistance.calculateDistance(umpireselection, clubarray);
+                    } catch (IOException ex) {
+                        Logger.getLogger(UmpireView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     try {
                         apiLocationDistance.calculateDistance(umpire, clubArray);
                     } catch (IOException ex) {
@@ -168,7 +177,6 @@ public class ShowDistances {
     
     /** Venster met afstanden tussen umpire en clubs
      * 
-     * @param ump
      * @return 
      */
     public Pane distancePane() {
@@ -260,7 +268,8 @@ public class ShowDistances {
         
         
         MenuItem afstandenHerberekenen = new MenuItem("Afstanden (her)berekenen");
-        afstandenHerberekenen.setOnAction(bereken -> {
+        afstandenHerberekenen.setOnAction((ActionEvent bereken) -> {
+            
             progressBar.setPrefWidth(350);
             progressBar.setPrefHeight(30);
             final Button sluitButton = new Button("Sluiten");
@@ -414,11 +423,15 @@ public class ShowDistances {
         distanceTable.setPrefWidth(500);
         TableColumn<Club, String> clubCol = new TableColumn("Club");
         clubCol.setMinWidth(30);
+        clubCol.setSortable(false);
         clubCol.prefWidthProperty().bind(distanceTable.widthProperty().divide(2));
       
         TableColumn<String, String> distCol = new TableColumn("Afstand");
+        distCol.setSortable(false);
         TableColumn<Club, String> latCol = new TableColumn("Latitude");
+        latCol.setSortable(false);
         TableColumn<Club, String> lonCol = new TableColumn("Longitude");
+        lonCol.setSortable(false);
         
         clubCol.setCellValueFactory(new PropertyValueFactory<>("clubnaam"));
         latCol.setCellValueFactory(new PropertyValueFactory<>("latitude"));

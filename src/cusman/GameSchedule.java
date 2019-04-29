@@ -63,7 +63,7 @@ import javafx.util.Pair;
 
 /** Wedstrijdschema
  * 
- * @author Pieter Stragier <pstragier@gmail.be>
+ * @author Pieter Stragier
  * @version 1.0
  * @since 1.0
  */
@@ -272,7 +272,7 @@ public class GameSchedule {
         gamenumberCol.setMinWidth(5);
         gamenumberCol.prefWidthProperty().bind(table.widthProperty().divide(9));
         gamenumberCol.setEditable(true);
-        gamenumberCol.setCellValueFactory(new PropertyValueFactory<>("gameindex"));
+        gamenumberCol.setCellValueFactory(new PropertyValueFactory<>("gamenumber"));
         // gamenumberCol.setCellFactory(col -> new GamenumberCell());
         gamenumberCol.setOnEditCommit(event -> event.getRowValue().setGameNumber(event.getNewValue()));
         gamenumberCol.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -286,7 +286,7 @@ public class GameSchedule {
         // Invisible column gameindexCol
         TableColumn<Game, String> gameindexCol = new TableColumn<>("Hidden index");
         gameindexCol.setCellValueFactory(new PropertyValueFactory<>("gameindex"));
-        
+        gameindexCol.setVisible(false);
 
 
         // TableColumn with datePicker
@@ -1366,8 +1366,7 @@ public class GameSchedule {
         totalDistCol.setCellValueFactory((p) -> {
             String totalDistance = "";
             int i = table.getItems().indexOf(p.getValue());
-            //String ind = gameindexCol.getCellData(i);
-            String ind = gamenumberCol.getCellData(i);
+            String ind = gameindexCol.getCellData(i);
             Club c = database.getClubFromGameIndex(ind);
             Umpire u = database.getUmpireFromGameSchedule(ind, "plateumpire");
             Double distp = Double.parseDouble(database.getDistFromUmpireClub(u.getUmpireLicentie(), c.getClubNummer()));
@@ -1394,7 +1393,7 @@ public class GameSchedule {
         //table.prefHeight(100 + 45);
         //table.prefHeightProperty().bind(Bindings.size(table.getItems()).multiply(table.getFixedCellSize()).add(45));
 
-        table.getColumns().addAll(gamenumberCol, gamedatumCol, gameTimeCol, homeTeamCol, visitingTeamCol, homeClubCol, plateUmpireCol, base1UmpireCol, base2UmpireCol, base3UmpireCol, totalDistCol);
+        table.getColumns().addAll(gamenumberCol, gamedatumCol, gameTimeCol, homeTeamCol, visitingTeamCol, homeClubCol, plateUmpireCol, base1UmpireCol, base2UmpireCol, base3UmpireCol, totalDistCol, gameindexCol);
         table.getSelectionModel().setCellSelectionEnabled(true);
 
         calendarbox.setPadding(new Insets(0, 0, 0, 0));

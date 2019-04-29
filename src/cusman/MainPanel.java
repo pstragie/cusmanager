@@ -712,7 +712,7 @@ public class MainPanel {
         // Menu Settings
         Menu menuSettings = new Menu("Settings");
         menubar.getMenus().add(menuSettings);
-        MenuItem settingsWijzigen = new MenuItem("Aanpassen");
+        MenuItem settingsWijzigen = new MenuItem("Aanpassen...");
         menuSettings.getItems().add(settingsWijzigen);
         settingsWijzigen.setOnAction(setting -> {
             Stage stage = new Stage();
@@ -738,7 +738,7 @@ public class MainPanel {
             }
         });
         
-        MenuItem berekenVergoedingen = new MenuItem("Vergoedingen berekenen");
+        MenuItem berekenVergoedingen = new MenuItem("Vergoedingen berekenen...");
         menuSettings.getItems().add(berekenVergoedingen);
         berekenVergoedingen.setOnAction(berekV -> {
            Stage stage = new Stage();

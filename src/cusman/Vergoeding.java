@@ -15,7 +15,7 @@ import javafx.beans.property.SimpleObjectProperty;
 
 /** Object Vergoeding
  * 
- * @author Pieter Stragier <pstragier@gmail.be>
+ * @author Pieter Stragier
  */
 public class Vergoeding {
     private final ObjectProperty<Umpire> umpire;
